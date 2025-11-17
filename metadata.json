@@ -1,0 +1,8 @@
+{
+  "name": "Artisan Batik VTO",
+  "description": "Rasakan kemewahan batik tulis asli dengan ruang pas virtual kami. Unggah foto Anda dan lihat bagaimana setiap karya Artisan Batik yang unik terlihat pada Anda.",
+  "requestFramePermissions": [
+    "camera"
+  ],
+  "prompt": ""
+}

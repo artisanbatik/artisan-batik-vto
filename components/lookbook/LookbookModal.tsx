@@ -1,0 +1,511 @@
+/**
+ * @license
+ * SPDX-License-Identifier: Apache-2.0
+*/
+
+import React, { useState, useRef, useCallback, useEffect, useMemo } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { LookbookImage } from '../../types';
+import { XIcon, DownloadIcon, WandSparklesIcon, ZoomInIcon, ChevronLeftIcon, SaveIcon, ChevronRightIcon, ZoomOutIcon, MaximizeIcon } from '../icons';
+import Spinner from '../Spinner';
+import { cn, ImageFormat, convertImage } from '../../lib/utils';
+import JSZip from 'jszip';
+import DownloadFormatModal from '../DownloadFormatModal';
+
+
+interface LookbookModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  isLoading: boolean;
+  images: LookbookImage[];
+  error: string | null;
+  style: string;
+  onRegenerate: (image: LookbookImage, refinementPrompt: string) => void;
+  regeneratingImageId: string | null;
+  onSave: () => void;
+  isSaved: boolean;
+  isMobile: boolean;
+  aspectRatio: string;
+}
+
+const RegeneratePrompt: React.FC<{
+    onCancel: () => void;
+    onConfirm: (prompt: string) => void;
+}> = ({ onCancel, onConfirm }) => {
+    const [prompt, setPrompt] = useState('');
+
+    return (
+        <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="absolute inset-0 bg-black/50 z-20 flex items-center justify-center p-4"
+            onClick={onCancel}
+        >
+            <motion.div
+                initial={{ scale: 0.9, y: 10 }}
+                animate={{ scale: 1, y: 0 }}
+                exit={{ scale: 0.9, y: 10 }}
+                onClick={(e) => e.stopPropagation()}
+                className="bg-white rounded-lg p-4 shadow-xl w-full max-w-sm"
+            >
+                <h3 className="font-semibold text-stone-800">Sempurnakan Gambar</h3>
+                <p className="text-sm text-stone-600 mt-1 mb-3">Apa yang ingin Anda ubah atau perbaiki?</p>
+                <textarea
+                    value={prompt}
+                    onChange={(e) => setPrompt(e.target.value)}
+                    placeholder='Contoh: "buat pencahayaan lebih dramatis"'
+                    className="w-full h-20 p-2 text-sm bg-white border border-stone-300 rounded-md focus:outline-none focus:ring-2 focus:ring-amber-600"
+                />
+                <div className="flex justify-end gap-2 mt-3">
+                    <button onClick={onCancel} className="px-3 py-1.5 text-sm font-semibold text-stone-700 bg-stone-200 rounded-md hover:bg-stone-300">Batal</button>
+                    <button 
+                        onClick={() => onConfirm(prompt)} 
+                        disabled={!prompt.trim()}
+                        className="px-3 py-1.5 text-sm font-semibold text-white bg-amber-700 rounded-md hover:bg-amber-800 disabled:opacity-50"
+                    >
+                        Buat Ulang
+                    </button>
+                </div>
+            </motion.div>
+        </motion.div>
+    );
+};
+
+const MIN_SCALE = 1;
+const MAX_SCALE = 5;
+const clamp = (val: number, min: number, max: number) => Math.min(Math.max(val, min), max);
+
+const LookbookModal: React.FC<LookbookModalProps> = ({ isOpen, onClose, isLoading, images, error, style, onRegenerate, regeneratingImageId, onSave, isSaved, isMobile, aspectRatio }) => {
+    const [zoomedImage, setZoomedImage] = useState<LookbookImage | null>(null);
+    const [isDownloading, setIsDownloading] = useState(false);
+    const [showRegenPrompt, setShowRegenPrompt] = useState(false);
+    const [isFormatModalOpen, setIsFormatModalOpen] = useState(false);
+    const [downloadType, setDownloadType] = useState<'single' | 'all' | null>(null);
+
+    // --- State untuk zoom dan pan ---
+    const [isZoomEnabled, setIsZoomEnabled] = useState(false);
+    const [scale, setScale] = useState(1);
+    const [position, setPosition] = useState({ x: 0, y: 0 });
+    const [isDragging, setIsDragging] = useState(false);
+    const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
+    const imageContainerRef = useRef<HTMLDivElement>(null);
+    
+    // --- Logika Zoom & Pan ---
+    const handleResetView = useCallback(() => {
+        setScale(1);
+        setPosition({ x: 0, y: 0 });
+    }, []);
+
+    useEffect(() => {
+        if (!isZoomEnabled) {
+            handleResetView();
+        }
+    }, [isZoomEnabled, handleResetView]);
+
+    useEffect(() => {
+        setIsZoomEnabled(false);
+        handleResetView();
+    }, [zoomedImage, handleResetView]);
+
+    const setClampedPosition = useCallback((newPos: { x: number; y: number }, currentScale: number) => {
+        if (!imageContainerRef.current) {
+          setPosition(newPos);
+          return;
+        }
+        
+        const container = imageContainerRef.current;
+        const containerRect = container.getBoundingClientRect();
+        
+        const minX = containerRect.width - containerRect.width * currentScale;
+        const minY = containerRect.height - containerRect.height * currentScale;
+        
+        const clampedX = clamp(newPos.x, minX, 0);
+        const clampedY = clamp(newPos.y, minY, 0);
+        
+        setPosition({ x: clampedX, y: clampedY });
+    }, []);
+
+    const handleZoom = (delta: number, clientX?: number, clientY?: number) => {
+        if (!isZoomEnabled || !imageContainerRef.current) return;
+    
+        const newScale = clamp(scale + delta, MIN_SCALE, MAX_SCALE);
+        if (newScale === scale) return;
+        
+        if (newScale === 1) {
+          handleResetView();
+          return;
+        }
+    
+        const rect = imageContainerRef.current.getBoundingClientRect();
+        const mouseX = (clientX ?? (rect.left + rect.width / 2)) - rect.left;
+        const mouseY = (clientY ?? (rect.top + rect.height / 2)) - rect.top;
+        
+        const newPosX = mouseX - ((mouseX - position.x) / scale) * newScale;
+        const newPosY = mouseY - ((mouseY - position.y) / scale) * newScale;
+        
+        setScale(newScale);
+        setClampedPosition({ x: newPosX, y: newPosY }, newScale);
+    };
+  
+    const handleWheel = (e: React.WheelEvent) => {
+        if (!isZoomEnabled) return;
+        e.preventDefault();
+        handleZoom(-e.deltaY * 0.005, e.clientX, e.clientY);
+    };
+  
+    const handleMouseDown = (e: React.MouseEvent) => {
+        if (!isZoomEnabled || scale <= 1) return;
+        e.preventDefault();
+        setIsDragging(true);
+        setDragStart({ x: e.clientX - position.x, y: e.clientY - position.y });
+    };
+  
+    const handleMouseMove = (e: React.MouseEvent) => {
+        if (!isDragging || !isZoomEnabled || scale <= 1) return;
+        e.preventDefault();
+        const newPos = { x: e.clientX - dragStart.x, y: e.clientY - dragStart.y };
+        setClampedPosition(newPos, scale);
+    };
+
+    const handleMouseUpOrLeave = () => {
+        setIsDragging(false);
+    };
+
+    const currentImageIndex = useMemo(() => {
+        if (!zoomedImage) return -1;
+        return images.findIndex(img => img.id === zoomedImage.id);
+    }, [zoomedImage, images]);
+
+    const handleNextImage = () => {
+        if (currentImageIndex < images.length - 1) {
+            setZoomedImage(images[currentImageIndex + 1]);
+        }
+    };
+    
+    const handlePrevImage = () => {
+        if (currentImageIndex > 0) {
+            setZoomedImage(images[currentImageIndex - 1]);
+        }
+    };
+
+    const openZoomedView = (image: LookbookImage) => {
+        setZoomedImage(image);
+    };
+
+    const handleDownloadSingle = async (format: ImageFormat) => {
+        if (!zoomedImage) return;
+        setIsDownloading(true);
+        try {
+            const { blob, extension } = await convertImage(zoomedImage.url, format);
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = `Artisan_Batik_Lookbook_${style.replace(/\s/g, '_')}.${extension}`;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(link.href);
+        } catch (e) {
+            console.error("Gagal mengunduh gambar:", e);
+        } finally {
+            setIsDownloading(false);
+        }
+    };
+
+    const handleDownloadAll = async (format: ImageFormat) => {
+        setIsDownloading(true);
+        const zip = new JSZip();
+        
+        const downloadPromises = images.map(async (image, index) => {
+            try {
+                const { blob, extension } = await convertImage(image.url, format);
+                zip.file(`Artisan_Batik_Lookbook_${style.replace(/\s/g, '_')}_${index + 1}.${extension}`, blob);
+            } catch (e) {
+                 console.error(`Gagal mengonversi gambar ${index+1} untuk di-zip:`, e);
+            }
+        });
+        
+        await Promise.all(downloadPromises);
+
+        zip.generateAsync({ type: 'blob' }).then(content => {
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(content);
+            link.download = `Artisan_Batik_Lookbook_${style.replace(/\s/g, '_')}.zip`;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(link.href);
+            setIsDownloading(false);
+        });
+    };
+    
+    const handleConfirmDownload = (format: ImageFormat) => {
+        setIsFormatModalOpen(false);
+        if (downloadType === 'single') {
+            handleDownloadSingle(format);
+        } else if (downloadType === 'all') {
+            handleDownloadAll(format);
+        }
+    };
+
+    const handleConfirmRegen = (prompt: string) => {
+        if (zoomedImage) {
+            onRegenerate(zoomedImage, prompt);
+        }
+        setShowRegenPrompt(false);
+    };
+
+    const handleClose = () => {
+        setZoomedImage(null);
+        onClose();
+    }
+
+    const content = () => {
+        if (zoomedImage) {
+            const isRegenerating = regeneratingImageId === zoomedImage.id;
+            return (
+                <div className="w-full h-full flex flex-col relative">
+                    <AnimatePresence>
+                        {showRegenPrompt && <RegeneratePrompt onCancel={() => setShowRegenPrompt(false)} onConfirm={handleConfirmRegen} />}
+                    </AnimatePresence>
+                    <div className="flex-shrink-0 p-4 flex items-center justify-between border-b">
+                        <button onClick={() => setZoomedImage(null)} className="flex items-center gap-2 text-sm font-semibold text-stone-700 hover:text-stone-900">
+                           <ChevronLeftIcon className="w-5 h-5" /> Kembali ke Galeri
+                        </button>
+                    </div>
+                    <div 
+                        ref={imageContainerRef}
+                        className="flex-grow flex items-center justify-center p-4 relative bg-stone-100 overflow-hidden group/zoom"
+                        style={{ cursor: isZoomEnabled && scale > 1 ? (isDragging ? 'grabbing' : 'grab') : 'default' }}
+                        onMouseDown={handleMouseDown}
+                        onMouseMove={handleMouseMove}
+                        onMouseUp={handleMouseUpOrLeave}
+                        onMouseLeave={handleMouseUpOrLeave}
+                        onWheel={handleWheel}
+                    >
+                        <AnimatePresence>
+                            {isRegenerating && (
+                                <motion.div
+                                    initial={{ opacity: 0 }}
+                                    animate={{ opacity: 1 }}
+                                    exit={{ opacity: 0 }}
+                                    className="absolute inset-0 bg-white/80 z-10 flex flex-col items-center justify-center"
+                                >
+                                    <Spinner />
+                                    <p className="mt-4 font-serif text-stone-700">Membuat variasi baru...</p>
+                                </motion.div>
+                            )}
+                        </AnimatePresence>
+                         <div
+                            key={zoomedImage.id}
+                            style={{
+                                backgroundImage: `url(${zoomedImage.url})`,
+                                backgroundSize: 'contain',
+                                backgroundPosition: 'center',
+                                backgroundRepeat: 'no-repeat',
+                                width: '100%',
+                                height: '100%',
+                                transform: `translate(${position.x}px, ${position.y}px) scale(${scale})`,
+                                transition: isDragging ? 'none' : 'transform 0.1s ease-out',
+                                transformOrigin: '0 0',
+                            }}
+                            draggable={false}
+                         />
+
+                        {/* Kontrol Navigasi & Zoom */}
+                        {currentImageIndex > 0 && (
+                            <button onClick={handlePrevImage} className={cn("absolute left-4 top-1/2 -translate-y-1/2 z-30 p-2 bg-black/30 text-white rounded-full hover:bg-black/50 transition-opacity", isMobile ? "opacity-100" : "opacity-0 group-hover/zoom:opacity-100")} aria-label="Gambar sebelumnya">
+                                <ChevronLeftIcon className="w-6 h-6" />
+                            </button>
+                        )}
+                        {currentImageIndex < images.length - 1 && (
+                             <button onClick={handleNextImage} className={cn("absolute right-4 top-1/2 -translate-y-1/2 z-30 p-2 bg-black/30 text-white rounded-full hover:bg-black/50 transition-opacity", isMobile ? "opacity-100" : "opacity-0 group-hover/zoom:opacity-100")} aria-label="Gambar berikutnya">
+                                <ChevronRightIcon className="w-6 h-6" />
+                            </button>
+                        )}
+                        <div className="absolute right-4 bottom-24 z-30 flex flex-col items-center gap-1 bg-white/80 rounded-full p-1.5 border border-stone-300/80 shadow-md">
+                            <button
+                                onClick={() => setIsZoomEnabled(!isZoomEnabled)}
+                                className={cn("p-2 rounded-full text-stone-700 transition-colors", isZoomEnabled ? "bg-stone-800 text-white" : "hover:bg-stone-200/60")}
+                                aria-label={isZoomEnabled ? "Nonaktifkan Zoom" : "Aktifkan Zoom"}
+                            >
+                                <ZoomInIcon className="w-5 h-5" />
+                            </button>
+                            <AnimatePresence>
+                            {isZoomEnabled && (
+                                <motion.div
+                                    initial={{ opacity: 0, height: 0, marginTop: 0 }}
+                                    animate={{ opacity: 1, height: 'auto', marginTop: '0.25rem' }}
+                                    exit={{ opacity: 0, height: 0, marginTop: 0 }}
+                                    className="flex flex-col items-center gap-1 overflow-hidden"
+                                >
+                                    <div className="w-5 h-px bg-stone-300/80"></div>
+                                    <button onClick={() => handleZoom(0.25)} disabled={scale >= MAX_SCALE} className="p-2 rounded-full text-stone-700 hover:bg-stone-200/60 disabled:text-stone-400 disabled:bg-transparent disabled:cursor-not-allowed transition-colors" aria-label="Perbesar">
+                                        <ZoomInIcon className="w-5 h-5" />
+                                    </button>
+                                    <div className="w-5 h-px bg-stone-300/80"></div>
+                                    <button onClick={() => handleZoom(-0.25)} disabled={scale <= MIN_SCALE} className="p-2 rounded-full text-stone-700 hover:bg-stone-200/60 disabled:text-stone-400 disabled:bg-transparent disabled:cursor-not-allowed transition-colors" aria-label="Perkecil">
+                                        <ZoomOutIcon className="w-5 h-5" />
+                                    </button>
+                                    <div className="w-5 h-px bg-stone-300/80 my-1"></div>
+                                    <button onClick={handleResetView} disabled={scale === 1 && position.x === 0 && position.y === 0} className="p-2 rounded-full text-stone-700 hover:bg-stone-200/60 disabled:text-stone-400 disabled:bg-transparent disabled:cursor-not-allowed transition-colors" aria-label="Atur Ulang Tampilan">
+                                        <MaximizeIcon className="w-5 h-5" />
+                                    </button>
+                                </motion.div>
+                            )}
+                            </AnimatePresence>
+                        </div>
+                    </div>
+                     <div className="flex-shrink-0 p-4 flex items-center justify-end gap-3 border-t bg-white">
+                        <button 
+                            onClick={() => { setDownloadType('single'); setIsFormatModalOpen(true); }}
+                            disabled={isDownloading && downloadType === 'single'}
+                            className="flex items-center gap-2 px-4 py-2 text-sm font-semibold text-stone-700 bg-stone-200 rounded-md hover:bg-stone-300 disabled:opacity-50"
+                        >
+                            {isDownloading && downloadType === 'single' ? <Spinner className="w-4 h-4"/> : <DownloadIcon className="w-4 h-4"/>} 
+                            {isDownloading && downloadType === 'single' ? 'Mengunduh...' : 'Unduh'}
+                        </button>
+                        <button 
+                            onClick={() => setShowRegenPrompt(true)}
+                            disabled={isRegenerating}
+                            className="flex items-center gap-2 px-4 py-2 text-sm font-semibold text-white bg-amber-700 rounded-md hover:bg-amber-800 disabled:opacity-50"
+                        >
+                            <WandSparklesIcon className="w-4 h-4" /> {isRegenerating ? 'Membuat...' : 'Buat Ulang'}
+                        </button>
+                    </div>
+                </div>
+            );
+        }
+
+        return (
+            <div className="flex flex-col h-full">
+                <div className="flex items-center justify-between p-4 border-b">
+                    <h2 className="text-2xl font-serif tracking-wider text-stone-800">Lookbook: <span className="font-semibold">{style}</span></h2>
+                    <button onClick={handleClose} className="p-1 rounded-full text-stone-500 hover:bg-stone-100" aria-label="Tutup">
+                        <XIcon className="w-6 h-6" />
+                    </button>
+                </div>
+                 <div className="p-6 flex-grow overflow-y-auto">
+                    {isLoading && (
+                        <div className="flex flex-col items-center justify-center h-full">
+                            <Spinner />
+                            <p className="text-lg font-serif text-stone-700 mt-4">Membuat gambar OOTD...</p>
+                            <p className="text-sm text-stone-500 mt-2">Ini mungkin memakan waktu hingga satu menit.</p>
+                        </div>
+                    )}
+                    {error && !isLoading && (
+                        <div className="text-center">
+                            <p className="text-lg font-semibold text-red-600">Gagal Membuat</p>
+                            <p className="text-sm text-stone-600 mt-2 max-w-md mx-auto">{error}</p>
+                        </div>
+                    )}
+                    {!isLoading && !error && images.length > 0 && (
+                        <div className="grid grid-cols-2 md:grid-cols-2 gap-4">
+                            {images.map((image) => {
+                                const isRegenerating = regeneratingImageId === image.id;
+                                return (
+                                    <div key={image.id} className={cn("relative group rounded-lg overflow-hidden border", `aspect-[${aspectRatio.replace(':', '/')}]`)}>
+                                        <img src={image.url} alt={`Lookbook image for ${style}`} className="w-full h-full object-cover"/>
+                                        <AnimatePresence>
+                                        {isRegenerating && (
+                                            <motion.div
+                                                initial={{ opacity: 0 }}
+                                                animate={{ opacity: 1 }}
+                                                exit={{ opacity: 0 }}
+                                                className="absolute inset-0 bg-white/80 z-10 flex flex-col items-center justify-center"
+                                            >
+                                                <Spinner className="w-6 h-6"/>
+                                            </motion.div>
+                                        )}
+                                        </AnimatePresence>
+                                        <div className={cn(
+                                            "absolute inset-0 bg-black/50 flex items-center justify-center gap-2 p-2",
+                                            isMobile ? "opacity-100 bg-transparent" : "opacity-0 group-hover:opacity-100 transition-opacity"
+                                        )}>
+                                            <button 
+                                                onClick={() => openZoomedView(image)} 
+                                                className="p-2 bg-white/80 rounded-full text-stone-800 hover:bg-white"
+                                                aria-label="Perbesar gambar"
+                                            >
+                                                <ZoomInIcon className="w-5 h-5"/>
+                                            </button>
+                                            <button 
+                                                onClick={() => { openZoomedView(image); setShowRegenPrompt(true); }}
+                                                disabled={!!regeneratingImageId}
+                                                className="p-2 bg-white/80 rounded-full text-stone-800 hover:bg-white disabled:opacity-50"
+                                                aria-label="Buat ulang gambar"
+                                            >
+                                                <WandSparklesIcon className="w-5 h-5"/>
+                                            </button>
+                                        </div>
+                                    </div>
+                                );
+                            })}
+                        </div>
+                    )}
+                </div>
+                 <div className="flex justify-between items-center p-4 border-t bg-white">
+                    <button onClick={handleClose} className="px-4 py-2 text-sm font-semibold text-stone-700 bg-stone-200 rounded-md hover:bg-stone-300">Tutup</button>
+                     {!isLoading && !error && images.length > 0 && (
+                        <div className="flex items-center gap-3">
+                            <button
+                                onClick={onSave}
+                                disabled={isSaved}
+                                className="flex items-center gap-2 px-4 py-2 text-sm font-semibold text-stone-700 bg-stone-200 rounded-md hover:bg-stone-300 disabled:opacity-50"
+                            >
+                                <SaveIcon className="w-4 h-4" /> {isSaved ? 'Tersimpan' : 'Simpan Lookbook'}
+                            </button>
+                            <button
+                                onClick={() => { setDownloadType('all'); setIsFormatModalOpen(true); }}
+                                disabled={isDownloading && downloadType === 'all'}
+                                className="px-5 py-2 font-semibold text-white bg-stone-900 rounded-md hover:bg-stone-700 disabled:opacity-50 flex items-center gap-2"
+                            >
+                            {(isDownloading && downloadType === 'all') ? <Spinner className="w-5 h-5"/> : <DownloadIcon className="w-5 h-5" />}
+                            {(isDownloading && downloadType === 'all') ? 'Menyiapkan...' : 'Unduh Semua'}
+                            </button>
+                        </div>
+                    )}
+                </div>
+            </div>
+        );
+    };
+
+  return (
+    <AnimatePresence>
+      {isOpen && (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4"
+          onClick={(e) => {
+              if (!zoomedImage && !showRegenPrompt) {
+                handleClose();
+              }
+          }}
+        >
+          <motion.div
+            initial={{ scale: 0.95, y: 20 }}
+            animate={{ scale: 1, y: 0 }}
+            exit={{ scale: 0.95, y: 20 }}
+            onClick={(e) => e.stopPropagation()}
+            className={cn(
+                "relative bg-white rounded-2xl w-full flex flex-col shadow-xl transition-all duration-300 ease-in-out",
+                zoomedImage ? "max-w-4xl h-[90vh]" : "max-w-xl max-h-[90vh]"
+            )}
+          >
+            {content()}
+          </motion.div>
+        </motion.div>
+      )}
+       <DownloadFormatModal
+        isOpen={isFormatModalOpen}
+        onClose={() => setIsFormatModalOpen(false)}
+        onConfirm={handleConfirmDownload}
+        isProcessing={isDownloading}
+       />
+    </AnimatePresence>
+  );
+};
+
+export default LookbookModal;
