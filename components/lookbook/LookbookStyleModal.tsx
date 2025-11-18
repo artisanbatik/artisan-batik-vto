@@ -60,7 +60,7 @@ const LookbookStyleModal: React.FC<LookbookStyleModalProps> = ({ isOpen, onClose
                     <XIcon className="w-6 h-6" />
                 </button>
             </div>
-            <div className="p-4 sm:p-6 flex-grow overflow-y-auto">
+            <div className="p-4 sm:p-6 flex-grow overflow-y-auto min-h-0">
                 <div className="mb-4">
                     <label htmlFor="aspect-ratio-select" className="block text-sm font-semibold text-stone-700 dark:text-stone-300 mb-2">Aspek Rasio</label>
                     <select

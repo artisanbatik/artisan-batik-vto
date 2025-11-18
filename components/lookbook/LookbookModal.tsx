@@ -383,14 +383,14 @@ const LookbookModal: React.FC<LookbookModalProps> = ({ isOpen, onClose, isLoadin
         }
 
         return (
-            <div className="flex flex-col h-full">
-                <div className="flex items-center justify-between p-4 border-b border-stone-200 dark:border-stone-800">
+            <>
+                <div className="flex items-center justify-between p-4 border-b border-stone-200 dark:border-stone-800 flex-shrink-0">
                     <h2 className="text-2xl font-serif tracking-wider text-stone-800 dark:text-stone-200">Lookbook: <span className="font-semibold">{style}</span></h2>
                     <button onClick={handleClose} className="p-1 rounded-full text-stone-500 dark:text-stone-400 hover:bg-stone-100 dark:hover:bg-stone-800" aria-label="Tutup">
                         <XIcon className="w-6 h-6" />
                     </button>
                 </div>
-                 <div className="p-4 sm:p-6 flex-grow overflow-y-auto">
+                 <div className="p-4 sm:p-6 flex-grow overflow-y-auto min-h-0">
                     {isLoading && (
                         <div className="flex flex-col items-center justify-center h-full min-h-64">
                             <Spinner />
@@ -449,7 +449,7 @@ const LookbookModal: React.FC<LookbookModalProps> = ({ isOpen, onClose, isLoadin
                         </div>
                     )}
                 </div>
-                 <div className="flex flex-col-reverse sm:flex-row sm:justify-between items-center gap-3 p-4 border-t bg-white dark:bg-stone-900 border-stone-200 dark:border-stone-800">
+                 <div className="flex flex-col-reverse sm:flex-row sm:justify-between items-center gap-3 p-4 border-t bg-white dark:bg-stone-900 border-stone-200 dark:border-stone-800 flex-shrink-0">
                     <button onClick={handleClose} className="w-full sm:w-auto px-4 py-2 text-sm font-semibold text-stone-700 dark:text-stone-200 bg-stone-200 dark:bg-stone-800 rounded-md hover:bg-stone-300 dark:hover:bg-stone-700">Tutup</button>
                      {!isLoading && !error && images.length > 0 && (
                         <div className="flex items-center gap-3 w-full sm:w-auto">
@@ -471,7 +471,7 @@ const LookbookModal: React.FC<LookbookModalProps> = ({ isOpen, onClose, isLoadin
                         </div>
                     )}
                 </div>
-            </div>
+            </>
         );
     };
 

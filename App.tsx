@@ -12,7 +12,7 @@ import OutfitStack from './components/OutfitStack';
 import SavedOutfitsPanel from './components/AdjustmentPanel';
 import { generateVirtualTryOnImage, generatePoseVariation, generateProductInformation, generateLookbookImages, regenerateLookbookImage, SHOT_TYPES } from './services/geminiService';
 import { OutfitLayer, WardrobeItem, SavedOutfit, WardrobeCategory, CustomModel, ProductInfoHistoryItem, LookbookImage, SavedLookbook } from './types';
-import { ChevronDownIcon, ChevronUpIcon, XIcon, DownloadIcon, PencilIcon, PlusCircleIcon, Trash2Icon, ChevronLeftIcon, ChevronRightIcon, FileTextIcon, CheckCircleIcon, SlidersIcon, ClockIcon, PackageIcon, LibraryIcon, BookOpenIcon } from './components/icons';
+import { ChevronDownIcon, ChevronUpIcon, XIcon, DownloadIcon, PencilIcon, PlusCircleIcon, Trash2Icon, ChevronLeftIcon, ChevronRightIcon, FileTextIcon, CheckCircleIcon, SlidersIcon, ClockIcon, PackageIcon, LibraryIcon, BookOpenIcon, WandSparklesIcon } from './components/icons';
 import { defaultWardrobe } from './wardrobe';
 import Footer from './components/Footer';
 import { getFriendlyErrorMessage, urlToFile, cn, appDB, dataUrlToBlob, resizeImage } from './lib/utils';
@@ -162,6 +162,7 @@ interface ProductInfoModalProps {
   isLoading: boolean;
   productInfoMarkdown: string | null;
   error: string | null;
+  onRegenerate: () => void;
 }
 
 interface ParsedProductInfo {
@@ -171,7 +172,7 @@ interface ParsedProductInfo {
     details: { attribute: string; value: string }[];
 }
 
-const ProductInfoModal: React.FC<ProductInfoModalProps> = ({ isOpen, onClose, isLoading, productInfoMarkdown, error }) => {
+const ProductInfoModal: React.FC<ProductInfoModalProps> = ({ isOpen, onClose, isLoading, productInfoMarkdown, error, onRegenerate }) => {
     const [copiedStates, setCopiedStates] = useState<Record<string, boolean>>({});
 
     const parsedInfo = useMemo<ParsedProductInfo | null>(() => {
@@ -317,12 +318,22 @@ const ProductInfoModal: React.FC<ProductInfoModalProps> = ({ isOpen, onClose, is
                             )}
                         </div>
                         <div className="flex justify-between items-center p-4 border-t border-stone-200 dark:border-stone-800">
-                            <button onClick={onClose} className="px-4 py-2 text-sm font-semibold text-stone-700 dark:text-stone-200 bg-stone-200 dark:bg-stone-700 rounded-md hover:bg-stone-300 dark:hover:bg-stone-600">Tutup</button>
-                            {!isLoading && !error && productInfoMarkdown && (
-                                <button onClick={copyAll} className="px-5 py-2 font-semibold text-white bg-stone-900 dark:bg-stone-100 dark:text-stone-900 rounded-md hover:bg-stone-700 dark:hover:bg-stone-300">
-                                    {copiedStates['all'] ? 'Disalin Semua!' : 'Salin Semua Teks'}
-                                </button>
-                            )}
+                            <button
+                                onClick={onRegenerate}
+                                disabled={isLoading}
+                                className="flex items-center gap-2 px-4 py-2 text-sm font-semibold text-stone-700 dark:text-stone-200 bg-stone-200 dark:bg-stone-700 rounded-md hover:bg-stone-300 dark:hover:bg-stone-600 disabled:opacity-50"
+                            >
+                                <WandSparklesIcon className="w-4 h-4" />
+                                Buat Ulang
+                            </button>
+                            <div className="flex items-center gap-3">
+                                <button onClick={onClose} className="px-4 py-2 text-sm font-semibold text-stone-700 dark:text-stone-200 bg-stone-200 dark:bg-stone-700 rounded-md hover:bg-stone-300 dark:hover:bg-stone-600">Tutup</button>
+                                {!isLoading && !error && productInfoMarkdown && (
+                                    <button onClick={copyAll} className="px-5 py-2 font-semibold text-white bg-stone-900 dark:bg-stone-100 dark:text-stone-900 rounded-md hover:bg-stone-700 dark:hover:bg-stone-300">
+                                        {copiedStates['all'] ? 'Disalin Semua!' : 'Salin Semua Teks'}
+                                    </button>
+                                )}
+                            </div>
                         </div>
                     </motion.div>
                 </motion.div>
@@ -388,6 +399,7 @@ const App: React.FC = () => {
   const [productInfoMarkdown, setProductInfoMarkdown] = useState<string | null>(null);
   const [productInfoError, setProductInfoError] = useState<string | null>(null);
   const [productInfoHistory, setProductInfoHistory] = useState<ProductInfoHistoryItem[]>([]);
+  const [productInfoForOutfitKey, setProductInfoForOutfitKey] = useState<string | null>(null);
 
   // Lookbook
   const [savedLookbooks, setSavedLookbooks] = useState<SavedLookbook[]>([]);
@@ -880,9 +892,24 @@ const App: React.FC = () => {
       }
   };
   
+    const getOutfitKey = (layers: OutfitLayer[]): string => {
+        return layers
+            .slice(1) // Skip base model
+            .map(l => `${l.garment?.id ?? 'none'}:${l.texture ?? 'default'}`)
+            .join('|');
+    };
+
     // --- Product Info Logic ---
-  const handleGenerateProductInfo = async () => {
+  const handleGenerateProductInfo = async (forceRegenerate = false) => {
     if (activeOutfitLayers.length <= 1) return;
+
+    const currentOutfitKey = getOutfitKey(activeOutfitLayers);
+
+    // If we have info for this outfit and we are not forcing a regeneration, just show it.
+    if (!forceRegenerate && productInfoMarkdown && productInfoForOutfitKey === currentOutfitKey) {
+        setIsProductInfoModalOpen(true);
+        return;
+    }
     
     setIsProductInfoModalOpen(true);
     setIsProductInfoLoading(true);
@@ -894,6 +921,7 @@ const App: React.FC = () => {
     try {
         const markdown = await generateProductInformation(baseImageUrl, activeOutfitLayers);
         setProductInfoMarkdown(markdown);
+        setProductInfoForOutfitKey(currentOutfitKey); // Associate the info with the current outfit
         
         const resizedThumbnailUrl = await resizeImage(baseImageUrl, 200, 267);
 
@@ -1253,6 +1281,7 @@ const App: React.FC = () => {
         isLoading={isProductInfoLoading}
         productInfoMarkdown={productInfoMarkdown}
         error={productInfoError}
+        onRegenerate={() => handleGenerateProductInfo(true)}
       />
 
       <LookbookStyleModal
