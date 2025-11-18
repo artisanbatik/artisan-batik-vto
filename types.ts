@@ -57,4 +57,5 @@ export interface ProductInfoHistoryItem {
   info: string;
   thumbnailUrl: string;
   title: string;
+  outfitKey: string;
 }

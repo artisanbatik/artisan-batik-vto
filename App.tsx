@@ -256,9 +256,25 @@ const ProductInfoModal: React.FC<ProductInfoModalProps> = ({ isOpen, onClose, is
                                 </div>
                             )}
                             {error && !isLoading && (
-                                <div className="text-center">
+                                <div className="text-center min-h-64 flex flex-col items-center justify-center">
                                     <p className="text-lg font-semibold text-red-600">Gagal Membuat</p>
                                     <p className="text-sm text-stone-600 dark:text-stone-400 mt-2 max-w-md mx-auto">{error}</p>
+                                </div>
+                            )}
+                            {!isLoading && !error && !productInfoMarkdown && (
+                                <div className="flex flex-col items-center justify-center h-full min-h-64 text-center">
+                                    <FileTextIcon className="w-16 h-16 text-stone-400 dark:text-stone-600 mb-4" />
+                                    <h3 className="text-xl font-serif text-stone-800 dark:text-stone-200">Siap Membuat Informasi Produk?</h3>
+                                    <p className="text-stone-600 dark:text-stone-400 mt-2 max-w-sm">
+                                        Buat nama produk yang menarik, deskripsi, dan detail untuk koleksi Anda saat ini.
+                                    </p>
+                                    <button
+                                        onClick={onRegenerate}
+                                        className="mt-6 flex items-center gap-2 px-5 py-2.5 font-semibold text-white bg-stone-900 dark:bg-stone-100 dark:text-stone-900 rounded-md hover:bg-stone-700 dark:hover:bg-stone-300"
+                                    >
+                                        <WandSparklesIcon className="w-5 h-5" />
+                                        Buat Sekarang
+                                    </button>
                                 </div>
                             )}
                             {parsedInfo && !isLoading && !error && (
@@ -318,14 +334,18 @@ const ProductInfoModal: React.FC<ProductInfoModalProps> = ({ isOpen, onClose, is
                             )}
                         </div>
                         <div className="flex justify-between items-center p-4 border-t border-stone-200 dark:border-stone-800">
-                            <button
-                                onClick={onRegenerate}
-                                disabled={isLoading}
-                                className="flex items-center gap-2 px-4 py-2 text-sm font-semibold text-stone-700 dark:text-stone-200 bg-stone-200 dark:bg-stone-700 rounded-md hover:bg-stone-300 dark:hover:bg-stone-600 disabled:opacity-50"
-                            >
-                                <WandSparklesIcon className="w-4 h-4" />
-                                Buat Ulang
-                            </button>
+                            <div>
+                                {(productInfoMarkdown || error) && (
+                                    <button
+                                        onClick={onRegenerate}
+                                        disabled={isLoading}
+                                        className="flex items-center gap-2 px-4 py-2 text-sm font-semibold text-stone-700 dark:text-stone-200 bg-stone-200 dark:bg-stone-700 rounded-md hover:bg-stone-300 dark:hover:bg-stone-600 disabled:opacity-50"
+                                    >
+                                        <WandSparklesIcon className="w-4 h-4" />
+                                        Buat Ulang
+                                    </button>
+                                )}
+                            </div>
                             <div className="flex items-center gap-3">
                                 <button onClick={onClose} className="px-4 py-2 text-sm font-semibold text-stone-700 dark:text-stone-200 bg-stone-200 dark:bg-stone-700 rounded-md hover:bg-stone-300 dark:hover:bg-stone-600">Tutup</button>
                                 {!isLoading && !error && productInfoMarkdown && (
@@ -900,48 +920,73 @@ const App: React.FC = () => {
     };
 
     // --- Product Info Logic ---
-  const handleGenerateProductInfo = async (forceRegenerate = false) => {
-    if (activeOutfitLayers.length <= 1) return;
-
-    const currentOutfitKey = getOutfitKey(activeOutfitLayers);
-
-    // If we have info for this outfit and we are not forcing a regeneration, just show it.
-    if (!forceRegenerate && productInfoMarkdown && productInfoForOutfitKey === currentOutfitKey) {
+    const handleGenerateProductInfo = async (forceRegenerate = false) => {
+      if (activeOutfitLayers.length <= 1) return;
+  
+      const currentOutfitKey = getOutfitKey(activeOutfitLayers);
+  
+      // If forcing regeneration, go straight to the generation logic.
+      // This is called by "Regenerate" or the initial "Generate" button in the modal.
+      if (forceRegenerate) {
+          setIsProductInfoModalOpen(true);
+          setIsProductInfoLoading(true);
+          setProductInfoError(null);
+          setProductInfoMarkdown(null);
+  
+          const baseImageUrl = currentOutfit.poseImages[POSE_INSTRUCTIONS[0]];
+  
+          try {
+              const markdown = await generateProductInformation(baseImageUrl, activeOutfitLayers);
+              setProductInfoMarkdown(markdown);
+              setProductInfoForOutfitKey(currentOutfitKey);
+              
+              const resizedThumbnailUrl = await resizeImage(baseImageUrl, 200, 267);
+  
+              const newInfo: ProductInfoHistoryItem = {
+                  id: `prodinfo-${Date.now()}`,
+                  timestamp: Date.now(),
+                  info: markdown,
+                  thumbnailUrl: resizedThumbnailUrl,
+                  title: markdown.split('\n')[2]?.replace(/`/g, '').trim() || `Produk ${new Date().toLocaleTimeString()}`,
+                  outfitKey: currentOutfitKey,
+              };
+              await appDB.saveItem('productInfoHistory', newInfo);
+              setProductInfoHistory(prev => [newInfo, ...prev].sort((a, b) => b.timestamp - a.timestamp));
+  
+          } catch (err) {
+              console.error("Gagal membuat info produk:", err);
+              setProductInfoError(getFriendlyErrorMessage(err instanceof Error ? err.message : String(err), 'Gagal membuat info produk.'));
+          } finally {
+              setIsProductInfoLoading(false);
+          }
+          return;
+      }
+  
+      // This path is for the main "Info Produk" button click. It only checks caches.
+      // Check state cache first.
+      if (productInfoMarkdown && productInfoForOutfitKey === currentOutfitKey) {
         setIsProductInfoModalOpen(true);
         return;
-    }
-    
-    setIsProductInfoModalOpen(true);
-    setIsProductInfoLoading(true);
-    setProductInfoError(null);
-    setProductInfoMarkdown(null);
-    
-    const baseImageUrl = currentOutfit.poseImages[POSE_INSTRUCTIONS[0]];
-    
-    try {
-        const markdown = await generateProductInformation(baseImageUrl, activeOutfitLayers);
-        setProductInfoMarkdown(markdown);
-        setProductInfoForOutfitKey(currentOutfitKey); // Associate the info with the current outfit
-        
-        const resizedThumbnailUrl = await resizeImage(baseImageUrl, 200, 267);
-
-        const newInfo: ProductInfoHistoryItem = {
-            id: `prodinfo-${Date.now()}`,
-            timestamp: Date.now(),
-            info: markdown,
-            thumbnailUrl: resizedThumbnailUrl,
-            title: markdown.split('\n')[2]?.replace(/`/g, '').trim() || `Produk ${new Date().toLocaleTimeString()}`,
-        };
-        await appDB.saveItem('productInfoHistory', newInfo);
-        setProductInfoHistory(prev => [newInfo, ...prev].sort((a, b) => b.timestamp - a.timestamp));
-
-    } catch (err) {
-        console.error("Gagal membuat info produk:", err);
-        setProductInfoError(getFriendlyErrorMessage(err instanceof Error ? err.message : String(err), 'Gagal membuat info produk.'));
-    } finally {
-        setIsProductInfoLoading(false);
-    }
-  };
+      }
+  
+      // If not in state cache, check the persistent history from IndexedDB.
+      const existingInfo = productInfoHistory.find(item => item.outfitKey === currentOutfitKey);
+      if (existingInfo) {
+          setProductInfoMarkdown(existingInfo.info);
+          setProductInfoForOutfitKey(existingInfo.outfitKey);
+          setProductInfoError(null);
+          setIsProductInfoLoading(false);
+          setIsProductInfoModalOpen(true);
+          return;
+      }
+      
+      // If not found anywhere, open modal in an empty state without generating.
+      setIsProductInfoModalOpen(true);
+      setIsProductInfoLoading(false);
+      setProductInfoError(null);
+      setProductInfoMarkdown(null);
+      setProductInfoForOutfitKey(currentOutfitKey);
+    };
 
   // --- Lookbook Logic ---
   const handleGenerateLookbook = async (style: string, aspectRatio: string, customPrompt?: string) => {
@@ -1191,7 +1236,7 @@ const App: React.FC = () => {
                   </div>
 
                   <div className="p-4">
-                      {activeRightPanelTab === 'outfit' && ( <OutfitStack outfitHistory={history.slice(0, currentIndex + 1)} onUndo={handleUndo} onSaveOutfit={handleSaveOutfit} isLoading={isLoading} onAddGarment={() => setIsWardrobeOpen(true)} onGenerateProductInfo={handleGenerateProductInfo} onGenerateLookbook={() => setIsLookbookStyleModalOpen(true)} /> )}
+                      {activeRightPanelTab === 'outfit' && ( <OutfitStack outfitHistory={history.slice(0, currentIndex + 1)} onUndo={handleUndo} onSaveOutfit={handleSaveOutfit} isLoading={isLoading} onAddGarment={() => setIsWardrobeOpen(true)} onGenerateProductInfo={() => handleGenerateProductInfo(false)} onGenerateLookbook={() => setIsLookbookStyleModalOpen(true)} /> )}
                       {activeRightPanelTab === 'saved' && ( <SavedOutfitsPanel savedOutfits={savedOutfits} onLoadOutfit={handleLoadOutfit} onDeleteOutfit={handleDeleteOutfit} onRenameOutfit={handleRenameOutfit} isLoading={isLoading} /> )}
                       {activeRightPanelTab === 'lookbooks' && ( <SavedLookbooksPanel savedLookbooks={savedLookbooks} onDeleteLookbook={handleDeleteLookbook} onRenameLookbook={handleRenameLookbook} onViewLookbook={handleViewLookbook} isLoading={isLoading} /> )}
                       {activeRightPanelTab === 'history' && ( <HistoryPanel history={history} currentIndex={currentIndex} onJumpToState={handleJumpToState} isLoading={isLoading} /> )}
@@ -1224,7 +1269,7 @@ const App: React.FC = () => {
                       <TabButton id="adjust" activeTab={activeRightPanelTab} setActiveTab={setActiveRightPanelTab} label="Sesuaikan" Icon={SlidersIcon} />
                   </div>
                    <div className="p-4">
-                      {activeRightPanelTab === 'outfit' && ( <OutfitStack outfitHistory={history.slice(0, currentIndex + 1)} onUndo={handleUndo} onSaveOutfit={handleSaveOutfit} isLoading={isLoading} onAddGarment={() => setIsWardrobeOpen(true)} onGenerateProductInfo={handleGenerateProductInfo} onGenerateLookbook={() => setIsLookbookStyleModalOpen(true)} /> )}
+                      {activeRightPanelTab === 'outfit' && ( <OutfitStack outfitHistory={history.slice(0, currentIndex + 1)} onUndo={handleUndo} onSaveOutfit={handleSaveOutfit} isLoading={isLoading} onAddGarment={() => setIsWardrobeOpen(true)} onGenerateProductInfo={() => handleGenerateProductInfo(false)} onGenerateLookbook={() => setIsLookbookStyleModalOpen(true)} /> )}
                       {activeRightPanelTab === 'saved' && ( <SavedOutfitsPanel savedOutfits={savedOutfits} onLoadOutfit={handleLoadOutfit} onDeleteOutfit={handleDeleteOutfit} onRenameOutfit={handleRenameOutfit} isLoading={isLoading} /> )}
                       {activeRightPanelTab === 'lookbooks' && ( <SavedLookbooksPanel savedLookbooks={savedLookbooks} onDeleteLookbook={handleDeleteLookbook} onRenameLookbook={handleRenameLookbook} onViewLookbook={handleViewLookbook} isLoading={isLoading} /> )}
                       {activeRightPanelTab === 'history' && ( <HistoryPanel history={history} currentIndex={currentIndex} onJumpToState={handleJumpToState} isLoading={isLoading} /> )}

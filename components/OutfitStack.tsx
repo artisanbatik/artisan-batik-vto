@@ -98,7 +98,7 @@ const OutfitStack: React.FC<OutfitStackProps> = ({ outfitHistory, onUndo, onSave
               Lookbook
           </button>
           <button
-            onClick={onGenerateProductInfo}
+            onClick={() => onGenerateProductInfo()}
             disabled={!isOutfitSavable || isLoading}
             className="w-full flex items-center justify-center text-center bg-sky-700 text-white font-semibold py-3 px-4 rounded-lg transition-all duration-200 ease-in-out hover:bg-sky-800 active:scale-95 text-base disabled:opacity-50 disabled:cursor-not-allowed"
             >
