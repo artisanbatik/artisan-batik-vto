@@ -50,29 +50,29 @@ const LookbookStyleModal: React.FC<LookbookStyleModalProps> = ({ isOpen, onClose
             animate={{ scale: 1, y: 0 }}
             exit={{ scale: 0.95, y: 20 }}
             onClick={(e) => e.stopPropagation()}
-            className="relative bg-white rounded-2xl w-full max-w-lg flex flex-col shadow-xl"
+            className="relative bg-white dark:bg-stone-900 rounded-2xl w-full max-w-md flex flex-col shadow-xl max-h-[90vh]"
           >
-            <div className="flex items-center justify-between p-4 border-b">
-                <h2 className="text-2xl font-serif tracking-wider text-stone-800">
+            <div className="flex items-center justify-between p-4 border-b dark:border-stone-800 flex-shrink-0">
+                <h2 className="text-2xl font-serif tracking-wider text-stone-800 dark:text-stone-200">
                     {view === 'presets' ? 'Pilih Gaya Lookbook' : 'Buat Foto Kustom'}
                 </h2>
-                <button onClick={onClose} className="p-1 rounded-full text-stone-500 hover:bg-stone-100" aria-label="Tutup">
+                <button onClick={onClose} className="p-1 rounded-full text-stone-500 dark:text-stone-400 hover:bg-stone-100 dark:hover:bg-stone-800" aria-label="Tutup">
                     <XIcon className="w-6 h-6" />
                 </button>
             </div>
-            <div className="p-6 flex-grow overflow-y-auto">
+            <div className="p-4 sm:p-6 flex-grow overflow-y-auto">
                 <div className="mb-4">
-                    <label htmlFor="aspect-ratio-select" className="block text-sm font-semibold text-stone-700 mb-2">Aspek Rasio</label>
+                    <label htmlFor="aspect-ratio-select" className="block text-sm font-semibold text-stone-700 dark:text-stone-300 mb-2">Aspek Rasio</label>
                     <select
                         id="aspect-ratio-select"
                         value={aspectRatio}
                         onChange={(e) => setAspectRatio(e.target.value)}
-                        className="w-full font-mono font-semibold text-stone-800 p-2.5 border-2 border-stone-300 rounded-lg hover:border-stone-400 transition-colors bg-white focus:outline-none focus:ring-2 focus:ring-amber-600"
+                        className="w-full font-mono font-semibold text-stone-800 dark:text-stone-200 p-2.5 border-2 border-stone-300 dark:border-stone-700 rounded-lg hover:border-stone-400 dark:hover:border-stone-500 transition-colors bg-white dark:bg-stone-800 focus:outline-none focus:ring-2 focus:ring-amber-600"
                     >
                         {ASPECT_RATIOS.map(ratio => <option key={ratio} value={ratio}>{ratio}</option>)}
                     </select>
                 </div>
-                <hr className="my-4 border-stone-200" />
+                <hr className="my-4 border-stone-200 dark:border-stone-800" />
                 <AnimatePresence mode="wait">
                     {view === 'presets' ? (
                         <motion.div
@@ -82,7 +82,7 @@ const LookbookStyleModal: React.FC<LookbookStyleModalProps> = ({ isOpen, onClose
                             exit={{ opacity: 0, x: 20 }}
                             transition={{ duration: 0.3, ease: 'easeInOut' }}
                         >
-                            <p className="text-stone-600 mb-4">Pilih konteks atau suasana untuk menghasilkan serangkaian gambar OOTD (Outfit of The Day) secara otomatis.</p>
+                            <p className="text-stone-600 dark:text-stone-400 mb-4">Pilih konteks atau suasana untuk menghasilkan serangkaian gambar OOTD (Outfit of The Day) secara otomatis.</p>
                             <div className="space-y-3">
                                 {Object.entries(SHOT_TYPES).map(([style, { description }]) => (
                                     <button
@@ -91,17 +91,17 @@ const LookbookStyleModal: React.FC<LookbookStyleModalProps> = ({ isOpen, onClose
                                         className={cn(
                                             'w-full text-left p-3 rounded-lg border-2 transition-all',
                                             selectedStyle === style
-                                                ? 'bg-amber-700/10 border-amber-700 ring-2 ring-amber-700/50'
-                                                : 'bg-white border-stone-300 hover:border-amber-600'
+                                                ? 'bg-amber-700/10 dark:bg-amber-700/20 border-amber-700 dark:border-amber-500 ring-2 ring-amber-700/50 dark:ring-amber-500/50'
+                                                : 'bg-white dark:bg-stone-800 border-stone-300 dark:border-stone-700 hover:border-amber-600 dark:hover:border-amber-500'
                                         )}
                                     >
-                                        <p className="font-semibold text-stone-800">{style}</p>
-                                        <p className="text-sm text-stone-600">{description}</p>
+                                        <p className="font-semibold text-stone-800 dark:text-stone-200">{style}</p>
+                                        <p className="text-sm text-stone-600 dark:text-stone-400">{description}</p>
                                     </button>
                                 ))}
                             </div>
                              <div className="mt-4 text-center">
-                                <button onClick={() => setView('custom')} className="text-sm font-semibold text-amber-700 hover:text-amber-800 transition-colors">
+                                <button onClick={() => setView('custom')} className="text-sm font-semibold text-amber-700 dark:text-amber-500 hover:text-amber-800 dark:hover:text-amber-400 transition-colors">
                                     Atau, buat dengan prompt kustom &rarr;
                                 </button>
                             </div>
@@ -114,16 +114,16 @@ const LookbookStyleModal: React.FC<LookbookStyleModalProps> = ({ isOpen, onClose
                             exit={{ opacity: 0, x: -20 }}
                             transition={{ duration: 0.3, ease: 'easeInOut' }}
                         >
-                             <p className="text-stone-600 mb-2">Jelaskan foto OOTD spesifik yang ingin Anda buat. Model dan pakaian Anda akan ditempatkan dalam adegan ini.</p>
+                             <p className="text-stone-600 dark:text-stone-400 mb-2">Jelaskan foto OOTD spesifik yang ingin Anda buat. Model dan pakaian Anda akan ditempatkan dalam adegan ini.</p>
                              <textarea
                                 value={customPrompt}
                                 onChange={(e) => setCustomPrompt(e.target.value)}
                                 placeholder='Contoh: "Seorang wanita tersenyum sambil memegang secangkir kopi di sebuah kafe bergaya di Bali, dengan cahaya pagi yang lembut."'
-                                className="w-full h-28 p-2 text-sm bg-white border border-stone-300 rounded-md focus:outline-none focus:ring-2 focus:ring-amber-600"
+                                className="w-full h-28 p-2 text-sm bg-white dark:bg-stone-800 text-stone-900 dark:text-stone-100 border border-stone-300 dark:border-stone-700 rounded-md focus:outline-none focus:ring-2 focus:ring-amber-600"
                              />
-                             <p className="text-xs text-stone-500 mt-1">Gaya yang dipilih di bawah ini (<span className="font-semibold">{selectedStyle}</span>) akan digunakan sebagai konteks umum.</p>
+                             <p className="text-xs text-stone-500 dark:text-stone-400 mt-1">Gaya yang dipilih di bawah ini (<span className="font-semibold">{selectedStyle}</span>) akan digunakan sebagai konteks umum.</p>
                              <div className="mt-4 text-center">
-                                <button onClick={() => setView('presets')} className="text-sm font-semibold text-amber-700 hover:text-amber-800 transition-colors">
+                                <button onClick={() => setView('presets')} className="text-sm font-semibold text-amber-700 dark:text-amber-500 hover:text-amber-800 dark:hover:text-amber-400 transition-colors">
                                     &larr; Kembali ke prasetel
                                 </button>
                             </div>
@@ -131,11 +131,11 @@ const LookbookStyleModal: React.FC<LookbookStyleModalProps> = ({ isOpen, onClose
                     )}
                 </AnimatePresence>
             </div>
-            <div className="flex justify-end p-4 bg-stone-50/70 border-t">
+            <div className="flex sm:justify-end p-4 bg-stone-50/70 dark:bg-stone-950/70 border-t dark:border-stone-800 flex-shrink-0">
                 <button
                     onClick={handleGenerate}
                     disabled={isLoading || (view === 'custom' && !customPrompt.trim())}
-                    className="flex items-center justify-center gap-2 w-full sm:w-auto px-5 py-2 font-semibold text-white bg-amber-700 rounded-md hover:bg-amber-800 disabled:opacity-50"
+                    className="flex items-center justify-center gap-2 w-full sm:w-auto px-5 py-3 sm:py-2 font-semibold text-white dark:text-stone-900 bg-amber-700 dark:bg-amber-200 rounded-md hover:bg-amber-800 dark:hover:bg-amber-300 disabled:opacity-50"
                 >
                     {isLoading ? <Spinner className="w-5 h-5" /> : <WandSparklesIcon className="w-5 h-5" />}
                     {isLoading ? 'Membuat...' : 'Buat Lookbook'}

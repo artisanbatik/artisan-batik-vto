@@ -47,18 +47,18 @@ const RegeneratePrompt: React.FC<{
                 animate={{ scale: 1, y: 0 }}
                 exit={{ scale: 0.9, y: 10 }}
                 onClick={(e) => e.stopPropagation()}
-                className="bg-white rounded-lg p-4 shadow-xl w-full max-w-sm"
+                className="bg-white dark:bg-stone-800 rounded-lg p-4 shadow-xl w-full max-w-sm"
             >
-                <h3 className="font-semibold text-stone-800">Sempurnakan Gambar</h3>
-                <p className="text-sm text-stone-600 mt-1 mb-3">Apa yang ingin Anda ubah atau perbaiki?</p>
+                <h3 className="font-semibold text-stone-800 dark:text-stone-200">Sempurnakan Gambar</h3>
+                <p className="text-sm text-stone-600 dark:text-stone-400 mt-1 mb-3">Apa yang ingin Anda ubah atau perbaiki?</p>
                 <textarea
                     value={prompt}
                     onChange={(e) => setPrompt(e.target.value)}
                     placeholder='Contoh: "buat pencahayaan lebih dramatis"'
-                    className="w-full h-20 p-2 text-sm bg-white border border-stone-300 rounded-md focus:outline-none focus:ring-2 focus:ring-amber-600"
+                    className="w-full h-20 p-2 text-sm bg-white dark:bg-stone-700 dark:text-stone-100 border border-stone-300 dark:border-stone-600 rounded-md focus:outline-none focus:ring-2 focus:ring-amber-600"
                 />
                 <div className="flex justify-end gap-2 mt-3">
-                    <button onClick={onCancel} className="px-3 py-1.5 text-sm font-semibold text-stone-700 bg-stone-200 rounded-md hover:bg-stone-300">Batal</button>
+                    <button onClick={onCancel} className="px-3 py-1.5 text-sm font-semibold text-stone-700 dark:text-stone-200 bg-stone-200 dark:bg-stone-600 rounded-md hover:bg-stone-300 dark:hover:bg-stone-500">Batal</button>
                     <button 
                         onClick={() => onConfirm(prompt)} 
                         disabled={!prompt.trim()}
@@ -268,14 +268,14 @@ const LookbookModal: React.FC<LookbookModalProps> = ({ isOpen, onClose, isLoadin
                     <AnimatePresence>
                         {showRegenPrompt && <RegeneratePrompt onCancel={() => setShowRegenPrompt(false)} onConfirm={handleConfirmRegen} />}
                     </AnimatePresence>
-                    <div className="flex-shrink-0 p-4 flex items-center justify-between border-b">
-                        <button onClick={() => setZoomedImage(null)} className="flex items-center gap-2 text-sm font-semibold text-stone-700 hover:text-stone-900">
+                    <div className="flex-shrink-0 p-4 flex items-center justify-between border-b border-stone-200 dark:border-stone-800">
+                        <button onClick={() => setZoomedImage(null)} className="flex items-center gap-2 text-sm font-semibold text-stone-700 dark:text-stone-300 hover:text-stone-900 dark:hover:text-stone-100">
                            <ChevronLeftIcon className="w-5 h-5" /> Kembali ke Galeri
                         </button>
                     </div>
                     <div 
                         ref={imageContainerRef}
-                        className="flex-grow flex items-center justify-center p-4 relative bg-stone-100 overflow-hidden group/zoom"
+                        className="flex-grow flex items-center justify-center p-2 sm:p-4 relative bg-stone-100 dark:bg-stone-950 overflow-hidden group/zoom"
                         style={{ cursor: isZoomEnabled && scale > 1 ? (isDragging ? 'grabbing' : 'grab') : 'default' }}
                         onMouseDown={handleMouseDown}
                         onMouseMove={handleMouseMove}
@@ -289,10 +289,10 @@ const LookbookModal: React.FC<LookbookModalProps> = ({ isOpen, onClose, isLoadin
                                     initial={{ opacity: 0 }}
                                     animate={{ opacity: 1 }}
                                     exit={{ opacity: 0 }}
-                                    className="absolute inset-0 bg-white/80 z-10 flex flex-col items-center justify-center"
+                                    className="absolute inset-0 bg-white/80 dark:bg-stone-950/80 z-10 flex flex-col items-center justify-center"
                                 >
                                     <Spinner />
-                                    <p className="mt-4 font-serif text-stone-700">Membuat variasi baru...</p>
+                                    <p className="mt-4 font-serif text-stone-700 dark:text-stone-300">Membuat variasi baru...</p>
                                 </motion.div>
                             )}
                         </AnimatePresence>
@@ -314,19 +314,24 @@ const LookbookModal: React.FC<LookbookModalProps> = ({ isOpen, onClose, isLoadin
 
                         {/* Kontrol Navigasi & Zoom */}
                         {currentImageIndex > 0 && (
-                            <button onClick={handlePrevImage} className={cn("absolute left-4 top-1/2 -translate-y-1/2 z-30 p-2 bg-black/30 text-white rounded-full hover:bg-black/50 transition-opacity", isMobile ? "opacity-100" : "opacity-0 group-hover/zoom:opacity-100")} aria-label="Gambar sebelumnya">
+                            <button onClick={handlePrevImage} className={cn("absolute left-2 sm:left-4 top-1/2 -translate-y-1/2 z-30 p-2 bg-black/30 text-white rounded-full hover:bg-black/50 transition-opacity", isMobile ? "opacity-100" : "opacity-0 group-hover/zoom:opacity-100")} aria-label="Gambar sebelumnya">
                                 <ChevronLeftIcon className="w-6 h-6" />
                             </button>
                         )}
                         {currentImageIndex < images.length - 1 && (
-                             <button onClick={handleNextImage} className={cn("absolute right-4 top-1/2 -translate-y-1/2 z-30 p-2 bg-black/30 text-white rounded-full hover:bg-black/50 transition-opacity", isMobile ? "opacity-100" : "opacity-0 group-hover/zoom:opacity-100")} aria-label="Gambar berikutnya">
+                             <button onClick={handleNextImage} className={cn("absolute right-2 sm:right-4 top-1/2 -translate-y-1/2 z-30 p-2 bg-black/30 text-white rounded-full hover:bg-black/50 transition-opacity", isMobile ? "opacity-100" : "opacity-0 group-hover/zoom:opacity-100")} aria-label="Gambar berikutnya">
                                 <ChevronRightIcon className="w-6 h-6" />
                             </button>
                         )}
-                        <div className="absolute right-4 bottom-24 z-30 flex flex-col items-center gap-1 bg-white/80 rounded-full p-1.5 border border-stone-300/80 shadow-md">
+                        <div className={cn(
+                            "absolute z-30 flex flex-col items-center gap-1 bg-white/80 dark:bg-stone-900/80 rounded-full p-1.5 border border-stone-300/80 dark:border-stone-700/80 shadow-md",
+                            isMobile 
+                                ? "bottom-20 left-4" 
+                                : "right-4 top-1/2 -translate-y-1/2 opacity-0 group-hover/zoom:opacity-100 transition-opacity"
+                        )}>
                             <button
                                 onClick={() => setIsZoomEnabled(!isZoomEnabled)}
-                                className={cn("p-2 rounded-full text-stone-700 transition-colors", isZoomEnabled ? "bg-stone-800 text-white" : "hover:bg-stone-200/60")}
+                                className={cn("p-2 rounded-full text-stone-700 dark:text-stone-200 transition-colors", isZoomEnabled ? "bg-stone-800 dark:bg-stone-200 text-white dark:text-stone-800" : "hover:bg-stone-200/60 dark:hover:bg-stone-800/60")}
                                 aria-label={isZoomEnabled ? "Nonaktifkan Zoom" : "Aktifkan Zoom"}
                             >
                                 <ZoomInIcon className="w-5 h-5" />
@@ -339,16 +344,16 @@ const LookbookModal: React.FC<LookbookModalProps> = ({ isOpen, onClose, isLoadin
                                     exit={{ opacity: 0, height: 0, marginTop: 0 }}
                                     className="flex flex-col items-center gap-1 overflow-hidden"
                                 >
-                                    <div className="w-5 h-px bg-stone-300/80"></div>
-                                    <button onClick={() => handleZoom(0.25)} disabled={scale >= MAX_SCALE} className="p-2 rounded-full text-stone-700 hover:bg-stone-200/60 disabled:text-stone-400 disabled:bg-transparent disabled:cursor-not-allowed transition-colors" aria-label="Perbesar">
+                                    <div className="w-5 h-px bg-stone-300/80 dark:bg-stone-700/80"></div>
+                                    <button onClick={() => handleZoom(0.25)} disabled={scale >= MAX_SCALE} className="p-2 rounded-full text-stone-700 dark:text-stone-200 hover:bg-stone-200/60 dark:hover:bg-stone-800/60 disabled:text-stone-400 dark:disabled:text-stone-500 disabled:bg-transparent disabled:cursor-not-allowed transition-colors" aria-label="Perbesar">
                                         <ZoomInIcon className="w-5 h-5" />
                                     </button>
-                                    <div className="w-5 h-px bg-stone-300/80"></div>
-                                    <button onClick={() => handleZoom(-0.25)} disabled={scale <= MIN_SCALE} className="p-2 rounded-full text-stone-700 hover:bg-stone-200/60 disabled:text-stone-400 disabled:bg-transparent disabled:cursor-not-allowed transition-colors" aria-label="Perkecil">
+                                    <div className="w-5 h-px bg-stone-300/80 dark:bg-stone-700/80"></div>
+                                    <button onClick={() => handleZoom(-0.25)} disabled={scale <= MIN_SCALE} className="p-2 rounded-full text-stone-700 dark:text-stone-200 hover:bg-stone-200/60 dark:hover:bg-stone-800/60 disabled:text-stone-400 dark:disabled:text-stone-500 disabled:bg-transparent disabled:cursor-not-allowed transition-colors" aria-label="Perkecil">
                                         <ZoomOutIcon className="w-5 h-5" />
                                     </button>
-                                    <div className="w-5 h-px bg-stone-300/80 my-1"></div>
-                                    <button onClick={handleResetView} disabled={scale === 1 && position.x === 0 && position.y === 0} className="p-2 rounded-full text-stone-700 hover:bg-stone-200/60 disabled:text-stone-400 disabled:bg-transparent disabled:cursor-not-allowed transition-colors" aria-label="Atur Ulang Tampilan">
+                                    <div className="w-5 h-px bg-stone-300/80 dark:bg-stone-700/80 my-1"></div>
+                                    <button onClick={handleResetView} disabled={scale === 1 && position.x === 0 && position.y === 0} className="p-2 rounded-full text-stone-700 dark:text-stone-200 hover:bg-stone-200/60 dark:hover:bg-stone-800/60 disabled:text-stone-400 dark:disabled:text-stone-500 disabled:bg-transparent disabled:cursor-not-allowed transition-colors" aria-label="Atur Ulang Tampilan">
                                         <MaximizeIcon className="w-5 h-5" />
                                     </button>
                                 </motion.div>
@@ -356,11 +361,11 @@ const LookbookModal: React.FC<LookbookModalProps> = ({ isOpen, onClose, isLoadin
                             </AnimatePresence>
                         </div>
                     </div>
-                     <div className="flex-shrink-0 p-4 flex items-center justify-end gap-3 border-t bg-white">
+                     <div className="flex-shrink-0 p-4 grid grid-cols-2 sm:flex sm:justify-end gap-3 border-t bg-white dark:bg-stone-900 border-stone-200 dark:border-stone-800">
                         <button 
                             onClick={() => { setDownloadType('single'); setIsFormatModalOpen(true); }}
                             disabled={isDownloading && downloadType === 'single'}
-                            className="flex items-center gap-2 px-4 py-2 text-sm font-semibold text-stone-700 bg-stone-200 rounded-md hover:bg-stone-300 disabled:opacity-50"
+                            className="flex items-center justify-center gap-2 px-4 py-3 sm:py-2 text-sm font-semibold text-stone-700 dark:text-stone-200 bg-stone-200 dark:bg-stone-800 rounded-md hover:bg-stone-300 dark:hover:bg-stone-700 disabled:opacity-50"
                         >
                             {isDownloading && downloadType === 'single' ? <Spinner className="w-4 h-4"/> : <DownloadIcon className="w-4 h-4"/>} 
                             {isDownloading && downloadType === 'single' ? 'Mengunduh...' : 'Unduh'}
@@ -368,7 +373,7 @@ const LookbookModal: React.FC<LookbookModalProps> = ({ isOpen, onClose, isLoadin
                         <button 
                             onClick={() => setShowRegenPrompt(true)}
                             disabled={isRegenerating}
-                            className="flex items-center gap-2 px-4 py-2 text-sm font-semibold text-white bg-amber-700 rounded-md hover:bg-amber-800 disabled:opacity-50"
+                            className="flex items-center justify-center gap-2 px-4 py-3 sm:py-2 text-sm font-semibold text-white bg-amber-700 rounded-md hover:bg-amber-800 disabled:opacity-50"
                         >
                             <WandSparklesIcon className="w-4 h-4" /> {isRegenerating ? 'Membuat...' : 'Buat Ulang'}
                         </button>
@@ -379,32 +384,32 @@ const LookbookModal: React.FC<LookbookModalProps> = ({ isOpen, onClose, isLoadin
 
         return (
             <div className="flex flex-col h-full">
-                <div className="flex items-center justify-between p-4 border-b">
-                    <h2 className="text-2xl font-serif tracking-wider text-stone-800">Lookbook: <span className="font-semibold">{style}</span></h2>
-                    <button onClick={handleClose} className="p-1 rounded-full text-stone-500 hover:bg-stone-100" aria-label="Tutup">
+                <div className="flex items-center justify-between p-4 border-b border-stone-200 dark:border-stone-800">
+                    <h2 className="text-2xl font-serif tracking-wider text-stone-800 dark:text-stone-200">Lookbook: <span className="font-semibold">{style}</span></h2>
+                    <button onClick={handleClose} className="p-1 rounded-full text-stone-500 dark:text-stone-400 hover:bg-stone-100 dark:hover:bg-stone-800" aria-label="Tutup">
                         <XIcon className="w-6 h-6" />
                     </button>
                 </div>
-                 <div className="p-6 flex-grow overflow-y-auto">
+                 <div className="p-4 sm:p-6 flex-grow overflow-y-auto">
                     {isLoading && (
-                        <div className="flex flex-col items-center justify-center h-full">
+                        <div className="flex flex-col items-center justify-center h-full min-h-64">
                             <Spinner />
-                            <p className="text-lg font-serif text-stone-700 mt-4">Membuat gambar OOTD...</p>
-                            <p className="text-sm text-stone-500 mt-2">Ini mungkin memakan waktu hingga satu menit.</p>
+                            <p className="text-lg font-serif text-stone-700 dark:text-stone-300 mt-4">Membuat gambar OOTD...</p>
+                            <p className="text-sm text-stone-500 dark:text-stone-400 mt-2">Ini mungkin memakan waktu hingga satu menit.</p>
                         </div>
                     )}
                     {error && !isLoading && (
-                        <div className="text-center">
+                        <div className="text-center min-h-64 flex flex-col items-center justify-center">
                             <p className="text-lg font-semibold text-red-600">Gagal Membuat</p>
-                            <p className="text-sm text-stone-600 mt-2 max-w-md mx-auto">{error}</p>
+                            <p className="text-sm text-stone-600 dark:text-stone-400 mt-2 max-w-md mx-auto">{error}</p>
                         </div>
                     )}
                     {!isLoading && !error && images.length > 0 && (
-                        <div className="grid grid-cols-2 md:grid-cols-2 gap-4">
+                        <div className="grid grid-cols-2 gap-2 sm:gap-4">
                             {images.map((image) => {
                                 const isRegenerating = regeneratingImageId === image.id;
                                 return (
-                                    <div key={image.id} className={cn("relative group rounded-lg overflow-hidden border", `aspect-[${aspectRatio.replace(':', '/')}]`)}>
+                                    <div key={image.id} className={cn("relative group rounded-lg overflow-hidden border border-stone-200 dark:border-stone-800", `aspect-[${aspectRatio.replace(':', '/')}]`)}>
                                         <img src={image.url} alt={`Lookbook image for ${style}`} className="w-full h-full object-cover"/>
                                         <AnimatePresence>
                                         {isRegenerating && (
@@ -412,7 +417,7 @@ const LookbookModal: React.FC<LookbookModalProps> = ({ isOpen, onClose, isLoadin
                                                 initial={{ opacity: 0 }}
                                                 animate={{ opacity: 1 }}
                                                 exit={{ opacity: 0 }}
-                                                className="absolute inset-0 bg-white/80 z-10 flex flex-col items-center justify-center"
+                                                className="absolute inset-0 bg-white/80 dark:bg-stone-950/80 z-10 flex flex-col items-center justify-center"
                                             >
                                                 <Spinner className="w-6 h-6"/>
                                             </motion.div>
@@ -420,11 +425,11 @@ const LookbookModal: React.FC<LookbookModalProps> = ({ isOpen, onClose, isLoadin
                                         </AnimatePresence>
                                         <div className={cn(
                                             "absolute inset-0 bg-black/50 flex items-center justify-center gap-2 p-2",
-                                            isMobile ? "opacity-100 bg-transparent" : "opacity-0 group-hover:opacity-100 transition-opacity"
+                                            "opacity-0 group-hover:opacity-100 transition-opacity"
                                         )}>
                                             <button 
                                                 onClick={() => openZoomedView(image)} 
-                                                className="p-2 bg-white/80 rounded-full text-stone-800 hover:bg-white"
+                                                className="p-2 bg-white/80 dark:bg-stone-900/80 rounded-full text-stone-800 dark:text-stone-200 hover:bg-white dark:hover:bg-stone-900"
                                                 aria-label="Perbesar gambar"
                                             >
                                                 <ZoomInIcon className="w-5 h-5"/>
@@ -432,7 +437,7 @@ const LookbookModal: React.FC<LookbookModalProps> = ({ isOpen, onClose, isLoadin
                                             <button 
                                                 onClick={() => { openZoomedView(image); setShowRegenPrompt(true); }}
                                                 disabled={!!regeneratingImageId}
-                                                className="p-2 bg-white/80 rounded-full text-stone-800 hover:bg-white disabled:opacity-50"
+                                                className="p-2 bg-white/80 dark:bg-stone-900/80 rounded-full text-stone-800 dark:text-stone-200 hover:bg-white dark:hover:bg-stone-900 disabled:opacity-50"
                                                 aria-label="Buat ulang gambar"
                                             >
                                                 <WandSparklesIcon className="w-5 h-5"/>
@@ -444,21 +449,21 @@ const LookbookModal: React.FC<LookbookModalProps> = ({ isOpen, onClose, isLoadin
                         </div>
                     )}
                 </div>
-                 <div className="flex justify-between items-center p-4 border-t bg-white">
-                    <button onClick={handleClose} className="px-4 py-2 text-sm font-semibold text-stone-700 bg-stone-200 rounded-md hover:bg-stone-300">Tutup</button>
+                 <div className="flex flex-col-reverse sm:flex-row sm:justify-between items-center gap-3 p-4 border-t bg-white dark:bg-stone-900 border-stone-200 dark:border-stone-800">
+                    <button onClick={handleClose} className="w-full sm:w-auto px-4 py-2 text-sm font-semibold text-stone-700 dark:text-stone-200 bg-stone-200 dark:bg-stone-800 rounded-md hover:bg-stone-300 dark:hover:bg-stone-700">Tutup</button>
                      {!isLoading && !error && images.length > 0 && (
-                        <div className="flex items-center gap-3">
+                        <div className="flex items-center gap-3 w-full sm:w-auto">
                             <button
                                 onClick={onSave}
                                 disabled={isSaved}
-                                className="flex items-center gap-2 px-4 py-2 text-sm font-semibold text-stone-700 bg-stone-200 rounded-md hover:bg-stone-300 disabled:opacity-50"
+                                className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 py-2 text-sm font-semibold text-stone-700 dark:text-stone-200 bg-stone-200 dark:bg-stone-800 rounded-md hover:bg-stone-300 dark:hover:bg-stone-700 disabled:opacity-50"
                             >
                                 <SaveIcon className="w-4 h-4" /> {isSaved ? 'Tersimpan' : 'Simpan Lookbook'}
                             </button>
                             <button
                                 onClick={() => { setDownloadType('all'); setIsFormatModalOpen(true); }}
                                 disabled={isDownloading && downloadType === 'all'}
-                                className="px-5 py-2 font-semibold text-white bg-stone-900 rounded-md hover:bg-stone-700 disabled:opacity-50 flex items-center gap-2"
+                                className="flex-1 sm:flex-none px-5 py-2 font-semibold text-white bg-stone-900 dark:bg-stone-100 dark:text-stone-900 rounded-md hover:bg-stone-700 dark:hover:bg-stone-300 disabled:opacity-50 flex items-center justify-center gap-2"
                             >
                             {(isDownloading && downloadType === 'all') ? <Spinner className="w-5 h-5"/> : <DownloadIcon className="w-5 h-5" />}
                             {(isDownloading && downloadType === 'all') ? 'Menyiapkan...' : 'Unduh Semua'}
@@ -477,7 +482,7 @@ const LookbookModal: React.FC<LookbookModalProps> = ({ isOpen, onClose, isLoadin
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4"
+          className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-0 sm:p-4"
           onClick={(e) => {
               if (!zoomedImage && !showRegenPrompt) {
                 handleClose();
@@ -490,8 +495,10 @@ const LookbookModal: React.FC<LookbookModalProps> = ({ isOpen, onClose, isLoadin
             exit={{ scale: 0.95, y: 20 }}
             onClick={(e) => e.stopPropagation()}
             className={cn(
-                "relative bg-white rounded-2xl w-full flex flex-col shadow-xl transition-all duration-300 ease-in-out",
-                zoomedImage ? "max-w-4xl h-[90vh]" : "max-w-xl max-h-[90vh]"
+                "relative bg-white dark:bg-stone-900 w-full flex flex-col shadow-xl transition-all duration-300 ease-in-out rounded-none sm:rounded-2xl",
+                zoomedImage
+                    ? "h-full sm:max-w-4xl sm:h-[90vh]"
+                    : "max-h-full h-full sm:max-h-[90vh] sm:h-auto max-w-md sm:max-w-xl"
             )}
           >
             {content()}
