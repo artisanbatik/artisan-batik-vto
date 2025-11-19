@@ -39,7 +39,7 @@ const StartScreen: React.FC<StartScreenProps> = ({ onAddModel, onSelectModel, on
   const [isDraggingOver, setIsDraggingOver] = useState(false);
   const [isCameraOpen, setIsCameraOpen] = useState(false);
   const [backgroundColor, setBackgroundColor] = useState('#f3f2ef');
-  const [aspectRatio, setAspectRatio] = useState('3:4');
+  const [aspectRatio, setAspectRatio] = useState('4:5');
   const [deletingModel, setDeletingModel] = useState<CustomModel | null>(null);
   const [view, setView] = useState<'gallery' | 'uploader'>(customModels.length > 0 || predefinedModels.length > 0 ? 'gallery' : 'uploader');
   
