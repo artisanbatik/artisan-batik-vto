@@ -165,6 +165,7 @@ export const generateModelImage = async (userImage: File, backgroundColor: strin
         const userImagePart = await fileToPart(userImage);
         const prompt = `**Tujuan Utama:** Buat foto model fesyen ¾ badan (dari kepala hingga sekitar lutut) yang fotorealistis untuk merek mewah Artisan Batik.
 **Subjek:** Gunakan orang dari gambar yang disediakan. Pertahankan identitas, fitur unik, dan tipe tubuh mereka.
+**Pakaian (PENTING):** Ubah pakaian yang dikenakan orang tersebut menjadi **pakaian dasar berwarna PUTIH POLOS** (seperti kaos putih polos dan celana/rok putih). Jangan ada pola, logo, atau warna lain pada pakaian.
 **Pose & Ekspresi:** Tempatkan mereka dalam pose model berdiri standar yang santai dan elegan dengan ekspresi netral yang percaya diri.
 **Latar Belakang:** Latar belakang HARUS berupa latar studio bersih berwarna solid menggunakan kode hex yang sama persis ini: ${backgroundColor}.
 **Aturan Penting:**
