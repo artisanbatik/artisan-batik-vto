@@ -5,6 +5,7 @@ import Spinner from '../../components/Spinner';
 import ConfirmationDialog from '../../components/AddProductModal';
 import { cn } from '../../lib/utils';
 import { CustomModel } from '../../types';
+import { Button } from '../../components/ui/button';
 
 interface GalleryViewProps {
   customModels: CustomModel[];
@@ -46,6 +47,10 @@ const GalleryView: React.FC<GalleryViewProps> = (props) => {
     }
   }, [props.renamingModelId]);
 
+  const handleImportClick = () => {
+     if(importFileRef.current) importFileRef.current.click();
+  }
+
 
   return (
     <>
@@ -71,13 +76,17 @@ const GalleryView: React.FC<GalleryViewProps> = (props) => {
             <h1 className="text-4xl md:text-5xl font-serif font-bold text-stone-900 dark:text-stone-100 leading-tight text-center">Pilih Model Anda</h1>
             <p className="mt-2 text-md text-stone-600 dark:text-stone-400 text-center">Pilih model siap pakai atau gunakan model kustom Anda.</p>
             <div className="mt-6 flex items-center justify-center gap-4">
-                <label htmlFor="model-import-input" className={cn(
-                    "flex items-center gap-2 px-4 py-2 text-sm font-semibold text-stone-700 dark:text-stone-200 bg-white dark:bg-stone-800 rounded-md border border-stone-300 dark:border-stone-700 hover:bg-stone-100 dark:hover:bg-stone-700 transition-colors",
-                    (props.isImporting || props.isExporting) ? "cursor-not-allowed opacity-50" : "cursor-pointer"
-                )}>
-                    {props.isImporting ? <Spinner className="w-4 h-4" /> : <FileUpIcon className="w-4 h-4" />}
+                <Button 
+                    onClick={handleImportClick}
+                    variant="outline"
+                    className="bg-white dark:bg-stone-800"
+                    disabled={props.isImporting || props.isExporting}
+                    isLoading={props.isImporting}
+                    leftIcon={!props.isImporting && <FileUpIcon className="w-4 h-4" />}
+                >
                     {props.isImporting ? 'Mengimpor...' : 'Impor Model'}
-                </label>
+                </Button>
+                
                 <input 
                     id="model-import-input"
                     type="file"
@@ -87,18 +96,21 @@ const GalleryView: React.FC<GalleryViewProps> = (props) => {
                     onChange={props.onImportFileChange}
                     disabled={props.isImporting || props.isExporting}
                 />
-                <button
+                
+                <Button
                     onClick={props.onExportModels}
+                    variant="outline"
+                    className="bg-white dark:bg-stone-800"
                     disabled={props.isImporting || props.isExporting || props.customModels.length === 0}
-                    className="flex items-center gap-2 px-4 py-2 text-sm font-semibold text-stone-700 dark:text-stone-200 bg-white dark:bg-stone-800 rounded-md border border-stone-300 dark:border-stone-700 hover:bg-stone-100 dark:hover:bg-stone-700 transition-colors disabled:cursor-not-allowed disabled:opacity-50"
+                    isLoading={props.isExporting}
+                    leftIcon={!props.isExporting && <DownloadIcon className="w-4 h-4" />}
                 >
-                    {props.isExporting ? <Spinner className="w-4 h-4" /> : <DownloadIcon className="w-4 h-4" />}
                     {props.isExporting ? 'Mengekspor...' : 'Ekspor Model'}
-                </button>
+                </Button>
             </div>
         </div>
         
-        <div className="w-full flex-grow overflow-y-auto mt-8 space-y-10 pr-2">
+        <div className="w-full flex-grow overflow-y-auto mt-8 space-y-10 pr-2 pb-10">
             {props.predefinedModels.length > 0 && (
                 <div className="w-full">
                     <h2 className="text-lg font-semibold text-stone-700 dark:text-stone-300 mb-4">Model Siap Pakai</h2>
@@ -108,9 +120,9 @@ const GalleryView: React.FC<GalleryViewProps> = (props) => {
                                 <div className={cn("relative overflow-hidden rounded-lg shadow-md", `aspect-[${model.aspectRatio.replace(':', '/')}]`)}>
                                     <img src={model.imageUrl} alt={model.name} className="w-full h-full object-cover" />
                                     <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center gap-3 p-4">
-                                        <button onClick={() => props.onSelectModel(model)} className="w-full px-4 py-2 text-base font-semibold text-black bg-white rounded-md hover:bg-stone-200 transition-colors">
-                                        Pilih
-                                        </button>
+                                        <Button onClick={() => props.onSelectModel(model)} variant="secondary" className="w-full bg-white text-black hover:bg-stone-200">
+                                            Pilih
+                                        </Button>
                                     </div>
                                 </div>
                                 <p className="text-center font-semibold text-stone-800 dark:text-stone-200 mt-2">{model.name}</p>
@@ -128,9 +140,9 @@ const GalleryView: React.FC<GalleryViewProps> = (props) => {
                             <div className={cn("relative overflow-hidden rounded-lg shadow-md", `aspect-[${model.aspectRatio.replace(':', '/')}]`)}>
                                 <img src={model.imageUrl} alt={model.name} className="w-full h-full object-cover" />
                                 <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center gap-3 p-4">
-                                    <button onClick={() => props.onSelectModel(model)} className="w-full px-4 py-2 text-base font-semibold text-black bg-white rounded-md hover:bg-stone-200 transition-colors">
-                                    Pilih
-                                    </button>
+                                    <Button onClick={() => props.onSelectModel(model)} variant="secondary" className="w-full bg-white text-black hover:bg-stone-200">
+                                        Pilih
+                                    </Button>
                                 </div>
                                 <div className="absolute top-2 right-2 z-10 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                                     <button 

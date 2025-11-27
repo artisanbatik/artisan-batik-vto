@@ -6,6 +6,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { SavedOutfit } from '../types';
 import { Trash2Icon, PencilIcon } from './icons';
+import { Button } from './ui/button';
 
 interface SavedOutfitsPanelProps {
   savedOutfits: SavedOutfit[];
@@ -75,29 +76,35 @@ const SavedOutfitsPanel: React.FC<SavedOutfitsPanelProps> = ({ savedOutfits, onL
                 )}
               </div>
               <div className="flex items-center gap-1 flex-shrink-0">
-                <button
+                <Button
                   onClick={() => onLoadOutfit(outfit)}
                   disabled={isLoading}
-                  className="text-sm font-semibold text-stone-700 dark:text-stone-300 hover:text-stone-900 dark:hover:text-stone-100 transition-colors px-3 py-1 rounded-md hover:bg-stone-200/70 dark:hover:bg-stone-800/70 disabled:opacity-50 disabled:cursor-not-allowed"
+                  variant="secondary"
+                  size="sm"
+                  className="bg-transparent hover:bg-stone-200/70 dark:hover:bg-stone-800/70 text-stone-700 dark:text-stone-300 h-8"
                 >
                   Muat
-                </button>
-                <button
+                </Button>
+                <Button
                   onClick={() => handleStartRename(outfit)}
                   disabled={isLoading}
-                  className="text-stone-500 dark:text-stone-400 hover:text-stone-800 dark:hover:text-stone-200 transition-colors p-2 rounded-md hover:bg-stone-200/70 dark:hover:bg-stone-800/70 disabled:opacity-50"
+                  variant="ghost"
+                  size="icon"
+                  className="text-stone-500 dark:text-stone-400 hover:text-stone-800 dark:hover:text-stone-200 hover:bg-stone-200/70 dark:hover:bg-stone-800/70 h-8 w-8"
                   aria-label={`Ubah nama ${outfit.name}`}
                 >
                   <PencilIcon className="w-4 h-4" />
-                </button>
-                <button
+                </Button>
+                <Button
                   onClick={() => onDeleteOutfit(outfit.id)}
                   disabled={isLoading}
-                  className="text-stone-500 dark:text-stone-400 hover:text-red-600 dark:hover:text-red-500 transition-colors p-2 rounded-md hover:bg-red-50 dark:hover:bg-red-900/30 disabled:opacity-50 disabled:cursor-not-allowed"
+                  variant="ghost"
+                  size="icon"
+                  className="text-stone-500 dark:text-stone-400 hover:text-red-600 dark:hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/30 h-8 w-8"
                   aria-label={`Hapus ${outfit.name}`}
                 >
                   <Trash2Icon className="w-4 h-4" />
-                </button>
+                </Button>
               </div>
             </div>
           ))}

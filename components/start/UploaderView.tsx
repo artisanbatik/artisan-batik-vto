@@ -6,6 +6,7 @@ import Spinner from '../../components/Spinner';
 import Camera from '../../components/Camera';
 import { cn } from '../../lib/utils';
 import { CustomModel } from '../../types';
+import { Button } from '../../components/ui/button';
 
 interface UploaderViewProps {
   userImageUrl: string | null;
@@ -51,7 +52,6 @@ const screenVariants = {
 const UploaderView: React.FC<UploaderViewProps> = (props) => {
   const importFileRef = useRef<HTMLInputElement>(null);
 
-  // Helper handler wrapper to reset input value after selection
   const handleImportClick = () => {
      if(importFileRef.current) importFileRef.current.click();
   }
@@ -95,7 +95,7 @@ const UploaderView: React.FC<UploaderViewProps> = (props) => {
                 Artisan Batik VTO
               </h1>
               <p className="mt-4 text-lg text-stone-600 dark:text-stone-400">
-                Setiap karya Artisan Batik adalah sebuah cerita. Lihat bagaimana cerita itu menyatu dengan gaya Anda. Unggah foto seluruh badan dan biarkan AI kami menciptakan model pribadi Anda, siap untuk mencoba warisan adiluhung dalam bentuk virtual.
+                Setiap karya Artisan Batik adalah sebuah cerita. Lihat bagaimana cerita itu menyatu dengan gaya Anda. Unggah foto seluruh badan dan biarkan AI kami menciptakan model pribadi Anda.
               </p>
               <hr className="my-8 border-stone-200 dark:border-stone-800" />
               <div className="flex flex-col items-center lg:items-start w-full gap-6">
@@ -127,14 +127,27 @@ const UploaderView: React.FC<UploaderViewProps> = (props) => {
                   </div>
                   <div className="flex flex-col items-center lg:items-start w-full gap-3">
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 w-full">
-                          <label htmlFor="image-upload-start" className="w-full relative flex items-center justify-center px-6 py-3 text-base font-semibold text-white dark:text-black bg-black dark:bg-white rounded-md cursor-pointer group hover:bg-stone-800 dark:hover:bg-stone-200 transition-colors">
-                          <UploadCloudIcon className="w-5 h-5 mr-3" />
-                          Unggah Foto
-                          </label>
-                          <button onClick={() => props.setIsCameraOpen(true)} className="w-full relative flex items-center justify-center px-6 py-3 text-base font-semibold text-stone-800 dark:text-stone-200 bg-stone-200 dark:bg-stone-800 rounded-md cursor-pointer group hover:bg-stone-300 dark:hover:bg-stone-700 transition-colors">
-                          <CameraIcon className="w-5 h-5 mr-3" />
-                          Gunakan Kamera
-                          </button>
+                          <Button
+                            asChild
+                            variant="default"
+                            size="lg"
+                            className="w-full cursor-pointer bg-black dark:bg-white text-white dark:text-black hover:bg-stone-800 dark:hover:bg-stone-200"
+                          >
+                            <label htmlFor="image-upload-start">
+                              <UploadCloudIcon className="w-5 h-5 mr-3" />
+                              Unggah Foto
+                            </label>
+                          </Button>
+                          
+                          <Button 
+                            onClick={() => props.setIsCameraOpen(true)}
+                            variant="secondary"
+                            size="lg"
+                            className="w-full"
+                          >
+                            <CameraIcon className="w-5 h-5 mr-3" />
+                            Gunakan Kamera
+                          </Button>
                       </div>
                       <input id="image-upload-start" type="file" className="hidden" accept="image/png, image/jpeg, image/webp, image/avif, image/heic, image/heif" onChange={props.onFileChange} />
                       <p className="text-stone-500 dark:text-stone-400 text-sm">Pilih foto seluruh badan yang jelas atau gunakan kamera Anda.</p>
@@ -142,13 +155,17 @@ const UploaderView: React.FC<UploaderViewProps> = (props) => {
                       <div className="w-full pt-4 mt-2 border-t border-stone-200 dark:border-stone-800">
                         <p className="text-sm font-semibold text-stone-700 dark:text-stone-300 mb-3 text-center lg:text-left">Atau kelola model Anda</p>
                         <div className="flex items-center justify-center lg:justify-start gap-3">
-                            <label htmlFor="model-import-input-uploader" className={cn(
-                                "flex items-center gap-2 px-4 py-2 text-sm font-semibold text-stone-800 dark:text-stone-200 bg-stone-200 dark:bg-stone-800 rounded-md border border-transparent hover:bg-stone-300 dark:hover:bg-stone-700 transition-colors",
-                                (props.isImporting || props.isExporting) ? "cursor-not-allowed opacity-50" : "cursor-pointer"
-                            )}>
-                                {props.isImporting ? <Spinner className="w-4 h-4" /> : <FileUpIcon className="w-4 h-4" />}
+                            <Button 
+                                onClick={handleImportClick}
+                                variant="secondary"
+                                size="sm"
+                                disabled={props.isImporting || props.isExporting}
+                                isLoading={props.isImporting}
+                                leftIcon={!props.isImporting && <FileUpIcon className="w-4 h-4" />}
+                            >
                                 {props.isImporting ? 'Mengimpor...' : 'Impor'}
-                            </label>
+                            </Button>
+                            
                             <input 
                                 id="model-import-input-uploader"
                                 type="file"
@@ -158,18 +175,26 @@ const UploaderView: React.FC<UploaderViewProps> = (props) => {
                                 onChange={props.onImportFileChange}
                                 disabled={props.isImporting || props.isExporting}
                             />
-                            <button
+                            
+                            <Button 
                                 onClick={props.onExportModels}
+                                variant="secondary"
+                                size="sm"
                                 disabled={props.isImporting || props.isExporting || props.customModels.length === 0}
-                                className="flex items-center gap-2 px-4 py-2 text-sm font-semibold text-stone-800 dark:text-stone-200 bg-stone-200 dark:bg-stone-800 rounded-md border border-transparent hover:bg-stone-300 dark:hover:bg-stone-700 transition-colors disabled:cursor-not-allowed disabled:opacity-50"
+                                isLoading={props.isExporting}
+                                leftIcon={!props.isExporting && <DownloadIcon className="w-4 h-4" />}
                             >
-                                {props.isExporting ? <Spinner className="w-4 h-4" /> : <DownloadIcon className="w-4 h-4" />}
                                 {props.isExporting ? 'Mengekspor...' : 'Ekspor'}
-                            </button>
+                            </Button>
                         </div>
                       </div>
 
-                      {(props.customModels.length > 0 || props.hasPredefinedModels) && <button onClick={props.onViewGallery} className="text-sm font-semibold text-stone-700 dark:text-stone-300 hover:underline">← Kembali ke galeri model</button>}
+                      {(props.customModels.length > 0 || props.hasPredefinedModels) && (
+                        <Button variant="link" onClick={props.onViewGallery} className="text-sm font-semibold text-stone-700 dark:text-stone-300">
+                           ← Kembali ke galeri model
+                        </Button>
+                      )}
+                      
                       {props.error && <p className="text-red-500 text-sm mt-2">{props.error}</p>}
                   </div>
               </div>
@@ -215,7 +240,7 @@ const UploaderView: React.FC<UploaderViewProps> = (props) => {
               <div className="text-center md:text-left text-red-600 max-w-md mt-6">
                 <p className="font-semibold">Operasi Gagal</p>
                 <p className="text-sm mb-4">{props.error}</p>
-                <button onClick={props.onResetUpload} className="text-sm font-semibold text-stone-700 dark:text-stone-300 hover:underline">Coba Lagi</button>
+                <Button variant="link" onClick={props.onResetUpload} className="text-stone-700 dark:text-stone-300">Coba Lagi</Button>
               </div>
             }
             
@@ -232,30 +257,46 @@ const UploaderView: React.FC<UploaderViewProps> = (props) => {
                     <h3 className="font-semibold text-stone-800 dark:text-stone-200 flex items-center gap-2"><WandSparklesIcon className="w-5 h-5 text-amber-600" /> Sempurnakan Model</h3>
                     <p className="text-sm text-stone-600 dark:text-stone-400 mt-1 mb-4">Tidak suka dengan hasilnya? Coba buat ulang pose atau ubah latar belakang.</p>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                      <button onClick={() => props.onRefineModel('pose')} disabled={props.isRefining} className="w-full flex items-center justify-center px-4 py-2 text-sm font-semibold text-stone-700 dark:text-stone-200 bg-white dark:bg-stone-800 rounded-md cursor-pointer border border-stone-300 dark:border-stone-700 hover:bg-stone-100 dark:hover:bg-stone-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
-                        {props.isRefining ? <Spinner className="w-5 h-5" /> : 'Buat Ulang Pose'}
-                      </button>
-                      <button onClick={() => props.onRefineModel('background')} disabled={props.isRefining} className="w-full flex items-center justify-center px-4 py-2 text-sm font-semibold text-stone-700 dark:text-stone-200 bg-white dark:bg-stone-800 rounded-md cursor-pointer border border-stone-300 dark:border-stone-700 hover:bg-stone-100 dark:hover:bg-stone-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
-                        {props.isRefining ? <Spinner className="w-5 h-5" /> : 'Ubah Latar'}
-                      </button>
+                      <Button 
+                        variant="outline" 
+                        onClick={() => props.onRefineModel('pose')} 
+                        isLoading={props.isRefining}
+                        disabled={props.isRefining}
+                        className="bg-white dark:bg-stone-800"
+                      >
+                        {props.isRefining ? 'Memproses...' : 'Buat Ulang Pose'}
+                      </Button>
+                      <Button 
+                        variant="outline" 
+                        onClick={() => props.onRefineModel('background')} 
+                        isLoading={props.isRefining}
+                        disabled={props.isRefining}
+                        className="bg-white dark:bg-stone-800"
+                      >
+                        {props.isRefining ? 'Memproses...' : 'Ubah Latar'}
+                      </Button>
                     </div>
                   </div>
                   
                   <div className="flex flex-col sm:flex-row items-center gap-4 mt-6">
-                    <button 
+                    <Button 
                       onClick={props.onResetUpload}
                       disabled={props.isRefining}
-                      className="w-full sm:w-auto px-6 py-3 text-base font-semibold text-stone-700 dark:text-stone-200 bg-stone-200 dark:bg-stone-800 rounded-md cursor-pointer hover:bg-stone-300 dark:hover:bg-stone-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                      variant="secondary"
+                      size="lg"
+                      className="w-full sm:w-auto"
                     >
                       Gunakan Foto Lain
-                    </button>
-                    <button 
+                    </Button>
+                    <Button 
                       onClick={props.onSaveAndStart}
                       disabled={props.isRefining}
-                      className="w-full sm:w-auto relative inline-flex items-center justify-center px-8 py-3 text-base font-semibold text-white dark:text-black bg-black dark:bg-white rounded-md cursor-pointer group hover:bg-stone-800 dark:hover:bg-stone-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                      variant="default"
+                      size="lg"
+                      className="w-full sm:w-auto bg-black dark:bg-white text-white dark:text-black"
                     >
-                      Simpan & Mulai Menata Gaya &rarr;
-                    </button>
+                      Simpan & Mulai &rarr;
+                    </Button>
                   </div>
                 </motion.div>
               )}
