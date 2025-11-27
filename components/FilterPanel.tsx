@@ -1,9 +1,11 @@
+
 /**
  * @license
  * SPDX-License-Identifier: Apache-2.0
 */
 import React from 'react';
 import { SlidersIcon } from './icons';
+import { Panel } from './ui/panel';
 
 interface FilterPanelProps {
   filters: {
@@ -49,22 +51,24 @@ const FilterSlider: React.FC<{
 
 
 const FilterPanel: React.FC<FilterPanelProps> = ({ filters, onFilterChange, onResetFilters, isDisabled }) => {
+  const resetButton = (
+    <button
+      onClick={onResetFilters}
+      disabled={isDisabled}
+      className="text-sm font-semibold text-stone-600 dark:text-stone-400 hover:text-stone-900 dark:hover:text-stone-100 transition-colors disabled:cursor-not-allowed"
+      aria-label="Atur ulang penyesuaian gambar"
+    >
+      Atur Ulang
+    </button>
+  );
+
   return (
-    <div className={`pt-6 border-t border-stone-400/50 dark:border-stone-700/50 transition-opacity duration-300 ${isDisabled ? 'opacity-50 pointer-events-none' : 'opacity-100'}`}>
-      <div className="flex items-center justify-between mb-3">
-        <h2 className="text-xl font-serif tracking-wider text-stone-800 dark:text-stone-200 flex items-center gap-3">
-          <SlidersIcon className="w-5 h-5 text-stone-600 dark:text-stone-400"/>
-          Penyesuaian
-        </h2>
-        <button
-          onClick={onResetFilters}
-          disabled={isDisabled}
-          className="text-sm font-semibold text-stone-600 dark:text-stone-400 hover:text-stone-900 dark:hover:text-stone-100 transition-colors disabled:cursor-not-allowed"
-          aria-label="Atur ulang penyesuaian gambar"
-        >
-          Atur Ulang
-        </button>
-      </div>
+    <Panel
+      title="Penyesuaian"
+      icon={<SlidersIcon className="w-5 h-5 text-stone-600 dark:text-stone-400"/>}
+      action={resetButton}
+      isDisabled={isDisabled}
+    >
       <div className="space-y-4">
         <FilterSlider
           label="Kecerahan"
@@ -103,7 +107,7 @@ const FilterPanel: React.FC<FilterPanelProps> = ({ filters, onFilterChange, onRe
           isDisabled={isDisabled}
         />
       </div>
-    </div>
+    </Panel>
   );
 };
 

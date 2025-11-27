@@ -1,3 +1,4 @@
+
 /**
  * @license
  * SPDX-License-Identifier: Apache-2.0
@@ -7,6 +8,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { SavedLookbook } from '../types';
 import { Trash2Icon, PencilIcon, BookOpenIcon } from './icons';
 import { Button } from './ui/button';
+import { Panel } from './ui/panel';
 
 interface SavedLookbooksPanelProps {
   savedLookbooks: SavedLookbook[];
@@ -51,11 +53,11 @@ const SavedLookbooksPanel: React.FC<SavedLookbooksPanelProps> = ({ savedLookbook
   };
 
   return (
-    <div className="pt-6 border-t border-stone-400/50 dark:border-stone-700/50">
-      <h2 className="text-xl font-serif tracking-wider text-stone-800 dark:text-stone-200 mb-3 flex items-center gap-3">
-        <BookOpenIcon className="w-5 h-5 text-stone-600 dark:text-stone-400" />
-        Lookbook Tersimpan
-      </h2>
+    <Panel 
+      title="Lookbook Tersimpan" 
+      icon={<BookOpenIcon className="w-5 h-5 text-stone-600 dark:text-stone-400" />}
+      isDisabled={isLoading}
+    >
       {savedLookbooks.length > 0 ? (
         <div className="space-y-3 max-h-48 overflow-y-auto pr-2">
           {savedLookbooks.map((lookbook) => (
@@ -118,7 +120,7 @@ const SavedLookbooksPanel: React.FC<SavedLookbooksPanelProps> = ({ savedLookbook
       ) : (
         <p className="text-center text-sm text-stone-500 dark:text-stone-400 pt-4">Lookbook yang Anda simpan akan muncul di sini.</p>
       )}
-    </div>
+    </Panel>
   );
 };
 

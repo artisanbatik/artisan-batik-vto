@@ -1,3 +1,4 @@
+
 /**
  * @license
  * SPDX-License-Identifier: Apache-2.0
@@ -7,6 +8,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { SavedOutfit } from '../types';
 import { Trash2Icon, PencilIcon } from './icons';
 import { Button } from './ui/button';
+import { Panel } from './ui/panel';
 
 interface SavedOutfitsPanelProps {
   savedOutfits: SavedOutfit[];
@@ -51,8 +53,7 @@ const SavedOutfitsPanel: React.FC<SavedOutfitsPanelProps> = ({ savedOutfits, onL
   };
 
   return (
-    <div className="pt-6 border-t border-stone-400/50 dark:border-stone-700/50">
-      <h2 className="text-xl font-serif tracking-wider text-stone-800 dark:text-stone-200 mb-3">Koleksi Tersimpan</h2>
+    <Panel title="Koleksi Tersimpan" isDisabled={isLoading}>
       {savedOutfits.length > 0 ? (
         <div className="space-y-3 max-h-48 overflow-y-auto pr-2">
           {savedOutfits.map((outfit) => (
@@ -112,7 +113,7 @@ const SavedOutfitsPanel: React.FC<SavedOutfitsPanelProps> = ({ savedOutfits, onL
       ) : (
         <p className="text-center text-sm text-stone-500 dark:text-stone-400 pt-4">Koleksi yang Anda simpan akan muncul di sini.</p>
       )}
-    </div>
+    </Panel>
   );
 };
 
