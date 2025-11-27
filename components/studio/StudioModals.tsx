@@ -1,16 +1,12 @@
+
 import React from 'react';
-import WardrobeModal from '../WardrobeSheet';
-import { TextureSelectionModal } from '../modals/TextureSelectionModal';
-import { CategorizeGarmentModal } from '../modals/CategorizeGarmentModal';
-import { EditGarmentModal } from '../modals/EditGarmentModal';
-import ConfirmationDialog from '../AddProductModal';
-import ProductInfoModal from '../modals/ProductInfoModal';
-import LookbookStyleModal from '../lookbook/LookbookStyleModal';
-import LookbookModal from '../lookbook/LookbookModal';
+import GarmentModals from './modals/GarmentModals';
+import LookbookModals from './modals/LookbookModals';
+import ProductInfoModals from './modals/ProductInfoModals';
 import { WardrobeItem, OutfitLayer, WardrobeCategory, LookbookImage } from '../../types';
 
 interface StudioModalsProps {
-    // Wardrobe Modal Props
+    // Garment Props
     isWardrobeOpen: boolean;
     setIsWardrobeOpen: (open: boolean) => void;
     handleGarmentSelect: (file: File, info: WardrobeItem) => void;
@@ -21,30 +17,26 @@ interface StudioModalsProps {
     handleEditGarment: (garment: WardrobeItem) => void;
     handleDeleteGarment: (garment: WardrobeItem) => void;
 
-    // Texture Modal Props
     isTextureModalOpen: boolean;
     setIsTextureModalOpen: (open: boolean) => void;
     handleTextureConfirm: (texture: string) => void;
     garmentForTexture: WardrobeItem | null;
 
-    // Categorize Modal Props
     isCategorizeModalOpen: boolean;
     setIsCategorizeModalOpen: (open: boolean) => void;
     handleCategorizeConfirm: (category: WardrobeCategory) => void;
     garmentToCategorize: File | null;
 
-    // Edit Garment Modal Props
     isEditGarmentModalOpen: boolean;
     setIsEditGarmentModalOpen: (open: boolean) => void;
     handleSaveGarmentEdit: (garment: WardrobeItem) => void;
     garmentToEdit: WardrobeItem | null;
 
-    // Confirmation Dialog Props
     deletingGarment: WardrobeItem | null;
     setDeletingGarment: (garment: WardrobeItem | null) => void;
     handleConfirmDeleteGarment: () => void;
 
-    // Product Info Modal Props
+    // Product Info Props
     isProductInfoModalOpen: boolean;
     setIsProductInfoModalOpen: (open: boolean) => void;
     isProductInfoLoading: boolean;
@@ -52,7 +44,7 @@ interface StudioModalsProps {
     productInfoError: string | null;
     handleGenerateProductInfo: (force: boolean) => void;
 
-    // Lookbook Modals Props
+    // Lookbook Props
     isLookbookStyleModalOpen: boolean;
     setIsLookbookStyleModalOpen: (open: boolean) => void;
     handleGenerateLookbook: (style: string, aspectRatio: string, customPrompt?: string) => void;
@@ -74,70 +66,57 @@ interface StudioModalsProps {
 const StudioModals: React.FC<StudioModalsProps> = (props) => {
     return (
         <>
-            <WardrobeModal
-                isOpen={props.isWardrobeOpen}
-                onClose={() => props.setIsWardrobeOpen(false)}
-                onGarmentSelect={props.handleGarmentSelect}
-                onFileUpload={props.handleFileUpload}
-                activeGarmentIds={props.activeOutfitLayers.map(l => l.garment?.id).filter((id): id is string => !!id)}
-                isLoading={props.isVTOLoading}
+            <GarmentModals 
+                isWardrobeOpen={props.isWardrobeOpen}
+                setIsWardrobeOpen={props.setIsWardrobeOpen}
+                handleGarmentSelect={props.handleGarmentSelect}
+                handleFileUpload={props.handleFileUpload}
+                activeOutfitLayers={props.activeOutfitLayers}
+                isVTOLoading={props.isVTOLoading}
                 wardrobe={props.wardrobe}
-                onEditGarment={props.handleEditGarment}
-                onDeleteGarment={props.handleDeleteGarment}
+                handleEditGarment={props.handleEditGarment}
+                handleDeleteGarment={props.handleDeleteGarment}
+                isTextureModalOpen={props.isTextureModalOpen}
+                setIsTextureModalOpen={props.setIsTextureModalOpen}
+                handleTextureConfirm={props.handleTextureConfirm}
+                garmentForTexture={props.garmentForTexture}
+                isCategorizeModalOpen={props.isCategorizeModalOpen}
+                setIsCategorizeModalOpen={props.setIsCategorizeModalOpen}
+                handleCategorizeConfirm={props.handleCategorizeConfirm}
+                garmentToCategorize={props.garmentToCategorize}
+                isEditGarmentModalOpen={props.isEditGarmentModalOpen}
+                setIsEditGarmentModalOpen={props.setIsEditGarmentModalOpen}
+                handleSaveGarmentEdit={props.handleSaveGarmentEdit}
+                garmentToEdit={props.garmentToEdit}
+                deletingGarment={props.deletingGarment}
+                setDeletingGarment={props.setDeletingGarment}
+                handleConfirmDeleteGarment={props.handleConfirmDeleteGarment}
             />
-            <TextureSelectionModal
-                isOpen={props.isTextureModalOpen}
-                onClose={() => props.setIsTextureModalOpen(false)}
-                onConfirm={props.handleTextureConfirm}
-                garment={props.garmentForTexture}
-            />
-            <CategorizeGarmentModal
-                isOpen={props.isCategorizeModalOpen}
-                onClose={() => props.setIsCategorizeModalOpen(false)}
-                onConfirm={props.handleCategorizeConfirm}
-                garmentPreviewUrl={props.garmentToCategorize ? URL.createObjectURL(props.garmentToCategorize) : null}
-            />
-            <EditGarmentModal
-                isOpen={props.isEditGarmentModalOpen}
-                onClose={() => props.setIsEditGarmentModalOpen(false)}
-                onSave={props.handleSaveGarmentEdit}
-                onDelete={props.handleDeleteGarment}
-                garment={props.garmentToEdit}
-            />
-            {props.deletingGarment && (
-                <ConfirmationDialog
-                    itemType="karya"
-                    itemName={props.deletingGarment.name}
-                    onConfirm={props.handleConfirmDeleteGarment}
-                    onCancel={() => props.setDeletingGarment(null)}
-                />
-            )}
-            <ProductInfoModal 
-                isOpen={props.isProductInfoModalOpen}
-                onClose={() => props.setIsProductInfoModalOpen(false)}
-                isLoading={props.isProductInfoLoading}
+
+            <ProductInfoModals 
+                isProductInfoModalOpen={props.isProductInfoModalOpen}
+                setIsProductInfoModalOpen={props.setIsProductInfoModalOpen}
+                isProductInfoLoading={props.isProductInfoLoading}
                 productInfoMarkdown={props.productInfoMarkdown}
-                error={props.productInfoError}
-                onRegenerate={() => props.handleGenerateProductInfo(true)}
+                productInfoError={props.productInfoError}
+                handleGenerateProductInfo={props.handleGenerateProductInfo}
             />
-            <LookbookStyleModal
-                isOpen={props.isLookbookStyleModalOpen}
-                onClose={() => props.setIsLookbookStyleModalOpen(false)}
-                onGenerate={props.handleGenerateLookbook}
-                isLoading={props.isLookbookLoading}
-            />
-            <LookbookModal
-                isOpen={props.isLookbookModalOpen}
-                onClose={() => props.setIsLookbookModalOpen(false)}
-                isLoading={props.isLookbookLoading}
-                images={props.lookbookImages}
-                error={props.lookbookError}
-                style={props.lookbookStyle}
-                aspectRatio={props.lookbookAspectRatio}
-                onRegenerate={props.handleRegenerateLookbookImage}
+
+            <LookbookModals 
+                isLookbookStyleModalOpen={props.isLookbookStyleModalOpen}
+                setIsLookbookStyleModalOpen={props.setIsLookbookStyleModalOpen}
+                handleGenerateLookbook={props.handleGenerateLookbook}
+                isLookbookLoading={props.isLookbookLoading}
+                isLookbookModalOpen={props.isLookbookModalOpen}
+                setIsLookbookModalOpen={props.setIsLookbookModalOpen}
+                lookbookImages={props.lookbookImages}
+                lookbookError={props.lookbookError}
+                lookbookStyle={props.lookbookStyle}
+                lookbookAspectRatio={props.lookbookAspectRatio}
+                handleRegenerateLookbookImage={props.handleRegenerateLookbookImage}
                 regeneratingImageId={props.regeneratingImageId}
-                onSave={props.handleSaveLookbook}
-                isSaved={props.isLookbookSaved}
+                handleSaveLookbook={props.handleSaveLookbook}
+                isLookbookSaved={props.isLookbookSaved}
                 isMobile={props.isMobile}
             />
         </>

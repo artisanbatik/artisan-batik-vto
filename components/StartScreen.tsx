@@ -1,14 +1,12 @@
+
 /**
  * @license
  * SPDX-License-Identifier: Apache-2.0
 */
 
-import React, { useState, useCallback, useRef } from 'react';
-import { generateModelImage, refineModelImage } from '../services/geminiService';
-import { getFriendlyErrorMessage, appDB, getMimeType } from '../lib/utils';
-import { CustomModel, StoredCustomModel } from '../types';
+import React, { useState } from 'react';
+import { CustomModel } from '../types';
 import { predefinedModels } from '../models';
-import JSZip from 'jszip';
 import { SunIcon, MoonIcon } from './icons';
 import UploaderView from './start/UploaderView';
 import GalleryView from './start/GalleryView';
@@ -25,25 +23,27 @@ interface StartScreenProps {
   onToggleTheme: () => void;
 }
 
-const StartScreen: React.FC<StartScreenProps> = ({ onAddModel, onSelectModel, onDeleteModel, onRenameModel, customModels, onModelsImported, setLoadingError, theme, onToggleTheme }) => {
-  const [userImageUrl, setUserImageUrl] = useState<string | null>(null);
-  const [generatedModelUrl, setGeneratedModelUrl] = useState<string | null>(null);
-  const [isGenerating, setIsGenerating] = useState(false);
-  const [isRefining, setIsRefining] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [isDraggingOver, setIsDraggingOver] = useState(false);
-  const [isCameraOpen, setIsCameraOpen] = useState(false);
-  const [backgroundColor, setBackgroundColor] = useState('#f3f2ef');
-  const [aspectRatio, setAspectRatio] = useState('4:5');
-  const [deletingModel, setDeletingModel] = useState<CustomModel | null>(null);
+const StartScreen: React.FC<StartScreenProps> = ({ 
+    onAddModel, 
+    onSelectModel, 
+    onDeleteModel, 
+    onRenameModel, 
+    customModels, 
+    onModelsImported, 
+    setLoadingError, 
+    theme, 
+    onToggleTheme 
+}) => {
   const [view, setView] = useState<'gallery' | 'uploader'>(customModels.length > 0 || predefinedModels.length > 0 ? 'gallery' : 'uploader');
   
+  // Gallery Logic State (Lifted here because GalleryView might unmount/remount)
   const [renamingModelId, setRenamingModelId] = useState<string | null>(null);
   const [renameInput, setRenameInput] = useState('');
-  const importFileRef = useRef<HTMLInputElement>(null);
-
+  const [deletingModel, setDeletingModel] = useState<CustomModel | null>(null);
   const [isImporting, setIsImporting] = useState(false);
   const [isExporting, setIsExporting] = useState(false);
+
+  // --- Handlers for Gallery Actions ---
 
   const handleStartRename = (model: CustomModel) => {
     setRenamingModelId(model.id);
@@ -68,119 +68,21 @@ const StartScreen: React.FC<StartScreenProps> = ({ onAddModel, onSelectModel, on
     }
   };
 
-  const handleFileSelect = useCallback(async (file: File) => {
-    if (!file.type.startsWith('image/')) {
-        setError('Silakan pilih file gambar.');
-        return;
-    }
-
-    const reader = new FileReader();
-    reader.onload = async (e) => {
-        const dataUrl = e.target?.result as string;
-        setUserImageUrl(dataUrl);
-        setIsGenerating(true);
-        setGeneratedModelUrl(null);
-        setError(null);
-        try {
-            const result = await generateModelImage(file, backgroundColor, aspectRatio);
-            setGeneratedModelUrl(result);
-        } catch (err) {
-            setError(getFriendlyErrorMessage(err instanceof Error ? err.message : String(err), 'Gagal membuat model'));
-            setUserImageUrl(null);
-        } finally {
-            setIsGenerating(false);
-        }
-    };
-    reader.readAsDataURL(file);
-  }, [backgroundColor, aspectRatio]);
-
-  const handleCapture = (file: File) => {
-    setIsCameraOpen(false);
-    handleFileSelect(file);
-  };
-  
-  const handleRefineModel = async (refinementType: 'pose' | 'background') => {
-      if (!generatedModelUrl) return;
-
-      setIsRefining(true);
-      setError(null);
-      let prompt = '';
-      if (refinementType === 'pose') {
-          prompt = `Gunakan gambar model yang disediakan sebagai referensi, buat ulang dengan pose berdiri yang sedikit berbeda namun tetap elegan. Pertahankan identitas, fitur wajah, tipe tubuh, dan latar belakang yang sama persis. Hanya variasikan posenya secara halus.`;
-      } else if (refinementType === 'background') {
-          prompt = `Gunakan gambar model yang disediakan sebagai referensi, buat ulang gambar tersebut dengan orang dan pose yang sama persis. SATU-SATUNYA perubahan adalah latar belakang, yang HARUS berupa warna studio solid dengan kode hex yang sama persis ini: ${backgroundColor}.`;
-      }
-
-      try {
-          const newUrl = await refineModelImage(generatedModelUrl, prompt, aspectRatio);
-          setGeneratedModelUrl(newUrl);
-      } catch (err) {
-          setError(getFriendlyErrorMessage(err instanceof Error ? err.message : String(err), 'Gagal menyempurnakan model'));
-      } finally {
-          setIsRefining(false);
-      }
-  };
-
-
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files[0]) {
-      handleFileSelect(e.target.files[0]);
-    }
-  };
-  
-  const handleDragEnter = (e: React.DragEvent<HTMLDivElement>) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setIsDraggingOver(true);
-  };
-
-  const handleDragLeave = (e: React.DragEvent<HTMLDivElement>) => {
-    e.preventDefault();
-    e.stopPropagation();
-    if (e.currentTarget.contains(e.relatedTarget as Node)) {
-        return;
-    }
-    setIsDraggingOver(false);
-  };
-  
-  const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
-    e.preventDefault();
-    e.stopPropagation();
-  };
-
-  const handleDrop = (e: React.DragEvent<HTMLDivElement>) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setIsDraggingOver(false);
-    if (e.dataTransfer.files && e.dataTransfer.files[0]) {
-        handleFileSelect(e.dataTransfer.files[0]);
-    }
-  };
-
-  const resetUpload = () => {
-    setUserImageUrl(null);
-    setGeneratedModelUrl(null);
-    setIsGenerating(false);
-    setError(null);
-    if (customModels.length > 0 || predefinedModels.length > 0) {
-      setView('gallery');
-    }
-  };
-  
   const handleConfirmDelete = () => {
     if(deletingModel) {
       onDeleteModel(deletingModel.id);
       setDeletingModel(null);
     }
   };
-  
-  const handleSaveAndStart = () => {
-    if (generatedModelUrl) {
-      onAddModel(generatedModelUrl, aspectRatio);
-    }
-  };
+
+  // --- Import/Export Handlers (Shared) ---
 
     const handleExportModels = async () => {
+        // Dynamic import to avoid loading heavy zip libs if not needed immediately
+        const JSZip = (await import('jszip')).default;
+        const { appDB } = await import('../lib/utils');
+        const { getFriendlyErrorMessage } = await import('../lib/utils');
+
         if (!customModels.length) {
             setLoadingError("Tidak ada model kustom untuk diekspor.");
             return;
@@ -189,7 +91,7 @@ const StartScreen: React.FC<StartScreenProps> = ({ onAddModel, onSelectModel, on
         setLoadingError(null);
         try {
             const zip = new JSZip();
-            const metadata: StoredCustomModel[] = [];
+            const metadata = [];
 
             for (const model of customModels) {
                 const modelMeta = { id: model.id, name: model.name, aspectRatio: model.aspectRatio };
@@ -222,6 +124,9 @@ const StartScreen: React.FC<StartScreenProps> = ({ onAddModel, onSelectModel, on
     };
 
     const handleImportFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const JSZip = (await import('jszip')).default;
+        const { appDB, getMimeType, getFriendlyErrorMessage } = await import('../lib/utils');
+
         const file = e.target.files?.[0];
         if (!file) return;
 
@@ -237,21 +142,20 @@ const StartScreen: React.FC<StartScreenProps> = ({ onAddModel, onSelectModel, on
             }
 
             const metadataContent = await metadataFile.async('string');
-            const metadata = JSON.parse(metadataContent) as StoredCustomModel[];
+            const metadata = JSON.parse(metadataContent);
             
-            if (!Array.isArray(metadata) || !metadata.every(m => m.id && m.name)) {
+            if (!Array.isArray(metadata)) {
                 throw new Error("Format 'metadata.json' tidak valid.");
             }
 
             for (const modelMeta of metadata) {
                 const imageFile = zip.file(new RegExp(`^${modelMeta.id}\\.(jpg|jpeg|png|webp|heic|heif|avif)$`))[0];
                 if (!imageFile) {
-                    console.warn(`File gambar untuk model '${modelMeta.name}' (ID: ${modelMeta.id}) tidak ditemukan di ZIP.`);
+                    console.warn(`File gambar untuk model '${modelMeta.name}' tidak ditemukan.`);
                     continue;
                 }
 
                 const imageBlob = await imageFile.async('blob');
-
                 const correctMimeType = getMimeType(imageFile.name, imageBlob.type);
                 const typedImageBlob = new Blob([imageBlob], { type: correctMimeType });
 
@@ -263,12 +167,10 @@ const StartScreen: React.FC<StartScreenProps> = ({ onAddModel, onSelectModel, on
 
         } catch (err) {
             console.error("Gagal mengimpor model:", err);
-            setLoadingError(getFriendlyErrorMessage(err instanceof Error ? err.message : String(err), "Gagal mengimpor model. Pastikan file ZIP valid."));
+            setLoadingError(getFriendlyErrorMessage(err instanceof Error ? err.message : String(err), "Gagal mengimpor model."));
         } finally {
             setIsImporting(false);
-            if(importFileRef.current) {
-                importFileRef.current.value = '';
-            }
+            e.target.value = ''; // Reset input
         }
     };
 
@@ -282,40 +184,22 @@ const StartScreen: React.FC<StartScreenProps> = ({ onAddModel, onSelectModel, on
       
       {view === 'uploader' ? (
         <UploaderView
-            userImageUrl={userImageUrl}
-            generatedModelUrl={generatedModelUrl}
-            isGenerating={isGenerating}
-            isRefining={isRefining}
-            error={error}
-            isDraggingOver={isDraggingOver}
-            backgroundColor={backgroundColor}
-            aspectRatio={aspectRatio}
-            isCameraOpen={isCameraOpen}
-            isImporting={isImporting}
-            isExporting={isExporting}
             customModels={customModels}
             hasPredefinedModels={predefinedModels.length > 0}
             
-            setBackgroundColor={setBackgroundColor}
-            setAspectRatio={setAspectRatio}
-            onFileChange={handleFileChange}
-            onDragEnter={handleDragEnter}
-            onDragLeave={handleDragLeave}
-            onDragOver={handleDragOver}
-            onDrop={handleDrop}
-            setIsCameraOpen={setIsCameraOpen}
-            onCapture={handleCapture}
+            isImporting={isImporting}
+            isExporting={isExporting}
+            
             onImportFileChange={handleImportFileChange}
             onExportModels={handleExportModels}
             onViewGallery={() => setView('gallery')}
-            onRefineModel={handleRefineModel}
-            onResetUpload={resetUpload}
-            onSaveAndStart={handleSaveAndStart}
+            onSaveAndStart={(url, ratio) => onAddModel(url, ratio)}
         />
       ) : (
         <GalleryView
             customModels={customModels}
             predefinedModels={predefinedModels}
+            
             isImporting={isImporting}
             isExporting={isExporting}
             renamingModelId={renamingModelId}
@@ -326,6 +210,7 @@ const StartScreen: React.FC<StartScreenProps> = ({ onAddModel, onSelectModel, on
             onImportFileChange={handleImportFileChange}
             onExportModels={handleExportModels}
             onSetViewUploader={() => setView('uploader')}
+            
             setDeletingModel={setDeletingModel}
             handleConfirmDelete={handleConfirmDelete}
             handleStartRename={handleStartRename}

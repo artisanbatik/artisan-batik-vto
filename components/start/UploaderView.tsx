@@ -1,329 +1,358 @@
-import React, { useRef } from 'react';
+
+import React, { useState, useCallback, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { UploadCloudIcon, CameraIcon, FileUpIcon, DownloadIcon, WandSparklesIcon } from '../../components/icons';
+import { UploadCloudIcon, CameraIcon, FileUpIcon, DownloadIcon, WandSparklesIcon, RotateCcwIcon, CheckCircleIcon, ArrowRightIcon } from '../../components/icons';
 import { Compare } from '../../components/ui/compare';
 import Spinner from '../../components/Spinner';
 import Camera from '../../components/Camera';
-import { cn } from '../../lib/utils';
+import { cn, getFriendlyErrorMessage } from '../../lib/utils';
 import { CustomModel } from '../../types';
 import { Button } from '../../components/ui/button';
+import { generateModelImage, refineModelImage } from '../../services/geminiService';
 
 interface UploaderViewProps {
-  userImageUrl: string | null;
-  generatedModelUrl: string | null;
-  isGenerating: boolean;
-  isRefining: boolean;
-  error: string | null;
-  isDraggingOver: boolean;
-  backgroundColor: string;
-  aspectRatio: string;
-  isCameraOpen: boolean;
-  isImporting: boolean;
-  isExporting: boolean;
   customModels: CustomModel[];
   hasPredefinedModels: boolean;
   
-  // Handlers
-  setBackgroundColor: (color: string) => void;
-  setAspectRatio: (ratio: string) => void;
-  onFileChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
-  onDragEnter: (e: React.DragEvent<HTMLDivElement>) => void;
-  onDragLeave: (e: React.DragEvent<HTMLDivElement>) => void;
-  onDragOver: (e: React.DragEvent<HTMLDivElement>) => void;
-  onDrop: (e: React.DragEvent<HTMLDivElement>) => void;
-  setIsCameraOpen: (isOpen: boolean) => void;
-  onCapture: (file: File) => void;
+  // Actions
   onImportFileChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
   onExportModels: () => void;
   onViewGallery: () => void;
-  onRefineModel: (type: 'pose' | 'background') => void;
-  onResetUpload: () => void;
-  onSaveAndStart: () => void;
+  onSaveAndStart: (modelUrl: string, aspectRatio: string) => void;
+  
+  // State for Import/Export loading from parent
+  isImporting: boolean;
+  isExporting: boolean;
 }
 
 const ASPECT_RATIOS = ['1:1', '2:3', '3:2', '3:4', '4:3', '4:5', '5:4', '9:16', '16:9', '21:9'];
 
-const screenVariants = {
-    initial: { opacity: 0, scale: 0.98 },
-    animate: { opacity: 1, scale: 1 },
-    exit: { opacity: 0, scale: 0.98 },
-};
-
 const UploaderView: React.FC<UploaderViewProps> = (props) => {
+  // Local State for Generation Process
+  const [userImageUrl, setUserImageUrl] = useState<string | null>(null);
+  const [generatedModelUrl, setGeneratedModelUrl] = useState<string | null>(null);
+  const [isGenerating, setIsGenerating] = useState(false);
+  const [isRefining, setIsRefining] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [isDraggingOver, setIsDraggingOver] = useState(false);
+  const [backgroundColor, setBackgroundColor] = useState('#f3f2ef');
+  const [aspectRatio, setAspectRatio] = useState('4:5');
+  const [isCameraOpen, setIsCameraOpen] = useState(false);
+
   const importFileRef = useRef<HTMLInputElement>(null);
 
   const handleImportClick = () => {
      if(importFileRef.current) importFileRef.current.click();
   }
 
+  const handleFileSelect = useCallback(async (file: File) => {
+    if (!file.type.startsWith('image/')) {
+        setError('Silakan pilih file gambar.');
+        return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = async (e) => {
+        const dataUrl = e.target?.result as string;
+        setUserImageUrl(dataUrl);
+        setIsGenerating(true);
+        setGeneratedModelUrl(null);
+        setError(null);
+        try {
+            const result = await generateModelImage(file, backgroundColor, aspectRatio);
+            setGeneratedModelUrl(result);
+        } catch (err) {
+            setError(getFriendlyErrorMessage(err instanceof Error ? err.message : String(err), 'Gagal membuat model'));
+            setUserImageUrl(null);
+        } finally {
+            setIsGenerating(false);
+        }
+    };
+    reader.readAsDataURL(file);
+  }, [backgroundColor, aspectRatio]);
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      handleFileSelect(e.target.files[0]);
+    }
+  };
+
+  const handleCapture = (file: File) => {
+    setIsCameraOpen(false);
+    handleFileSelect(file);
+  };
+
+  const handleRefineModel = async (refinementType: 'pose' | 'background') => {
+      if (!generatedModelUrl) return;
+
+      setIsRefining(true);
+      setError(null);
+      let prompt = '';
+      if (refinementType === 'pose') {
+          prompt = `Gunakan gambar model yang disediakan sebagai referensi, buat ulang dengan pose berdiri yang sedikit berbeda namun tetap elegan. Pertahankan identitas, fitur wajah, tipe tubuh, dan latar belakang yang sama persis. Hanya variasikan posenya secara halus.`;
+      } else if (refinementType === 'background') {
+          prompt = `Gunakan gambar model yang disediakan sebagai referensi, buat ulang gambar tersebut dengan orang dan pose yang sama persis. SATU-SATUNYA perubahan adalah latar belakang, yang HARUS berupa latar studio solid dengan kode hex yang sama persis ini: ${backgroundColor}.`;
+      }
+
+      try {
+          const newUrl = await refineModelImage(generatedModelUrl, prompt, aspectRatio);
+          setGeneratedModelUrl(newUrl);
+      } catch (err) {
+          setError(getFriendlyErrorMessage(err instanceof Error ? err.message : String(err), 'Gagal menyempurnakan model'));
+      } finally {
+          setIsRefining(false);
+      }
+  };
+
+  const resetUpload = () => {
+    setUserImageUrl(null);
+    setGeneratedModelUrl(null);
+    setIsGenerating(false);
+    setError(null);
+  };
+  
+  // Drag and Drop Handlers
+  const handleDragEnter = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault(); e.stopPropagation();
+    setIsDraggingOver(true);
+  };
+  const handleDragLeave = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault(); e.stopPropagation();
+    if (e.currentTarget.contains(e.relatedTarget as Node)) return;
+    setIsDraggingOver(false);
+  };
+  const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault(); e.stopPropagation();
+  };
+  const handleDrop = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault(); e.stopPropagation();
+    setIsDraggingOver(false);
+    if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+        handleFileSelect(e.dataTransfer.files[0]);
+    }
+  };
+
   return (
-    <>
-    <AnimatePresence mode="wait">
-      {!props.userImageUrl ? (
-        <motion.div
-          key="uploader"
-          className="relative w-full max-w-7xl mx-auto flex flex-col lg:flex-row items-center justify-center gap-8 lg:gap-12"
-          variants={screenVariants}
-          initial="initial"
-          animate="animate"
-          exit="exit"
-          transition={{ duration: 0.4, ease: "easeInOut" }}
-          onDragEnter={props.onDragEnter}
-          onDragLeave={props.onDragLeave}
-          onDragOver={props.onDragOver}
-          onDrop={props.onDrop}
-        >
-          <AnimatePresence>
-            {props.isDraggingOver && (
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                className="pointer-events-none absolute inset-0 bg-white/50 dark:bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center rounded-2xl"
-              >
-                <div className="w-[98%] h-[98%] flex items-center justify-center border-4 border-dashed border-stone-400 dark:border-stone-600 rounded-xl">
-                    <div className="text-center text-stone-700 dark:text-stone-300 font-semibold text-2xl font-serif">
-                      <p>Letakkan foto Anda di sini</p>
-                    </div>
+    <div className="flex flex-col items-center justify-center min-h-screen p-4 sm:p-8 animate-fade-in relative w-full max-w-5xl mx-auto">
+        
+        {/* Gallery & Import Controls (Top Right) */}
+        <div className="absolute top-0 right-0 p-4 z-20 flex gap-2">
+            {(props.customModels.length > 0 || props.hasPredefinedModels) && (
+                 <Button 
+                    onClick={props.onViewGallery}
+                    variant="outline"
+                    className="bg-white/80 dark:bg-stone-800/80 backdrop-blur-md"
+                 >
+                    Lihat Galeri
+                 </Button>
+            )}
+        </div>
+
+        <div className="w-full max-w-4xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 items-center">
+            {/* Left Column: Input Area */}
+            <div className="order-2 lg:order-1 flex flex-col items-center lg:items-start text-center lg:text-left space-y-6">
+                <div>
+                    <h1 className="text-4xl md:text-5xl font-serif font-bold text-stone-900 dark:text-stone-100 leading-tight">
+                        Studio Virtual<br /><span className="text-stone-500">Artisan Batik</span>
+                    </h1>
+                    <p className="mt-4 text-lg text-stone-600 dark:text-stone-400 max-w-md">
+                        Unggah foto diri Anda untuk membuat model virtual yang dipersonalisasi. Coba koleksi batik eksklusif kami secara instan.
+                    </p>
                 </div>
-              </motion.div>
-            )}
-          </AnimatePresence>
-          <div className="lg:w-1/2 flex flex-col items-center lg:items-start text-center lg:text-left">
-            <div className="max-w-lg">
-              <h1 className="text-5xl md:text-6xl font-serif font-bold text-stone-900 dark:text-stone-100 leading-tight">
-                Artisan Batik VTO
-              </h1>
-              <p className="mt-4 text-lg text-stone-600 dark:text-stone-400">
-                Setiap karya Artisan Batik adalah sebuah cerita. Lihat bagaimana cerita itu menyatu dengan gaya Anda. Unggah foto seluruh badan dan biarkan AI kami menciptakan model pribadi Anda.
-              </p>
-              <hr className="my-8 border-stone-200 dark:border-stone-800" />
-              <div className="flex flex-col items-center lg:items-start w-full gap-6">
-                  <div className="w-full flex flex-col sm:flex-row gap-6">
-                     <div className="w-full sm:w-1/2">
-                          <p className="text-sm font-semibold text-stone-700 dark:text-stone-300 mb-2 text-center lg:text-left">Warna Latar</p>
-                          <label htmlFor="bg-color-picker" className="flex items-center gap-3 cursor-pointer p-1.5 border-2 border-stone-300 dark:border-stone-700 rounded-lg hover:border-stone-400 dark:hover:border-stone-600 transition-colors">
-                              <div className="w-8 h-8 rounded-md border border-stone-200/50 dark:border-stone-800/50" style={{ backgroundColor: props.backgroundColor }} />
-                              <span className="font-mono font-semibold text-stone-800 dark:text-stone-200">{props.backgroundColor.toUpperCase()}</span>
-                              <input
-                                  id="bg-color-picker"
-                                  type="color"
-                                  value={props.backgroundColor}
-                                  onChange={(e) => props.setBackgroundColor(e.target.value)}
-                                  className="absolute w-0 h-0 opacity-0"
-                              />
-                          </label>
-                      </div>
-                      <div className="w-full sm:w-1/2">
-                          <p className="text-sm font-semibold text-stone-700 dark:text-stone-300 mb-2 text-center lg:text-left">Aspek Rasio</p>
-                            <select
-                                value={props.aspectRatio}
-                                onChange={(e) => props.setAspectRatio(e.target.value)}
-                                className="w-full font-mono font-semibold text-stone-800 dark:text-stone-200 p-2.5 border-2 border-stone-300 dark:border-stone-700 rounded-lg hover:border-stone-400 dark:hover:border-stone-600 transition-colors bg-stone-50 dark:bg-stone-950 focus:outline-none focus:ring-2 focus:ring-stone-500"
-                            >
-                                {ASPECT_RATIOS.map(ratio => <option key={ratio} value={ratio}>{ratio}</option>)}
-                            </select>
-                      </div>
-                  </div>
-                  <div className="flex flex-col items-center lg:items-start w-full gap-3">
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 w-full">
-                          <Button
-                            variant="default"
-                            size="lg"
-                            className="w-full cursor-pointer bg-black dark:bg-white text-white dark:text-black hover:bg-stone-800 dark:hover:bg-stone-200"
-                            onClick={() => document.getElementById('image-upload-start')?.click()}
-                          >
-                            <UploadCloudIcon className="w-5 h-5 mr-3" />
-                            Unggah Foto
-                          </Button>
-                          
-                          <Button 
-                            onClick={() => props.setIsCameraOpen(true)}
-                            variant="secondary"
-                            size="lg"
-                            className="w-full"
-                          >
-                            <CameraIcon className="w-5 h-5 mr-3" />
-                            Gunakan Kamera
-                          </Button>
-                      </div>
-                      <input id="image-upload-start" type="file" className="hidden" accept="image/png, image/jpeg, image/webp, image/avif, image/heic, image/heif" onChange={props.onFileChange} />
-                      <p className="text-stone-500 dark:text-stone-400 text-sm">Pilih foto seluruh badan yang jelas atau gunakan kamera Anda.</p>
-                      
-                      <div className="w-full pt-4 mt-2 border-t border-stone-200 dark:border-stone-800">
-                        <p className="text-sm font-semibold text-stone-700 dark:text-stone-300 mb-3 text-center lg:text-left">Atau kelola model Anda</p>
-                        <div className="flex items-center justify-center lg:justify-start gap-3">
-                            <Button 
-                                onClick={handleImportClick}
-                                variant="secondary"
-                                size="sm"
-                                disabled={props.isImporting || props.isExporting}
-                                isLoading={props.isImporting}
-                                leftIcon={!props.isImporting && <FileUpIcon className="w-4 h-4" />}
-                            >
-                                {props.isImporting ? 'Mengimpor...' : 'Impor'}
-                            </Button>
-                            
+
+                {!userImageUrl ? (
+                    <div className="w-full max-w-sm space-y-4">
+                        <div 
+                            className={cn(
+                                "border-2 border-dashed rounded-xl p-8 transition-all duration-200 flex flex-col items-center justify-center cursor-pointer group",
+                                isDraggingOver 
+                                    ? "border-stone-800 bg-stone-100 dark:border-stone-200 dark:bg-stone-800" 
+                                    : "border-stone-300 dark:border-stone-700 hover:border-stone-500 dark:hover:border-stone-500 hover:bg-stone-50 dark:hover:bg-stone-900"
+                            )}
+                            onDragEnter={handleDragEnter}
+                            onDragLeave={handleDragLeave}
+                            onDragOver={handleDragOver}
+                            onDrop={handleDrop}
+                            onClick={() => document.getElementById('file-upload')?.click()}
+                        >
+                            <div className="w-16 h-16 bg-stone-200 dark:bg-stone-800 rounded-full flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+                                <UploadCloudIcon className="w-8 h-8 text-stone-600 dark:text-stone-400" />
+                            </div>
+                            <p className="text-sm font-semibold text-stone-900 dark:text-stone-100">Klik untuk unggah atau seret foto</p>
+                            <p className="text-xs text-stone-500 dark:text-stone-400 mt-1">PNG, JPG, WEBP hingga 10MB</p>
                             <input 
-                                id="model-import-input-uploader"
-                                type="file"
-                                className="hidden"
-                                accept=".zip"
-                                ref={importFileRef}
-                                onChange={props.onImportFileChange}
-                                disabled={props.isImporting || props.isExporting}
+                                id="file-upload" 
+                                type="file" 
+                                className="hidden" 
+                                accept="image/png, image/jpeg, image/webp, image/avif, image/heic, image/heif" 
+                                onChange={handleFileChange} 
                             />
-                            
-                            <Button 
-                                onClick={props.onExportModels}
-                                variant="secondary"
-                                size="sm"
-                                disabled={props.isImporting || props.isExporting || props.customModels.length === 0}
-                                isLoading={props.isExporting}
-                                leftIcon={!props.isExporting && <DownloadIcon className="w-4 h-4" />}
-                            >
-                                {props.isExporting ? 'Mengekspor...' : 'Ekspor'}
-                            </Button>
                         </div>
-                      </div>
+                        
+                        <div className="flex items-center gap-3">
+                            <div className="h-px bg-stone-300 dark:bg-stone-700 flex-grow"></div>
+                            <span className="text-xs text-stone-400 font-medium uppercase">Atau</span>
+                            <div className="h-px bg-stone-300 dark:bg-stone-700 flex-grow"></div>
+                        </div>
 
-                      {(props.customModels.length > 0 || props.hasPredefinedModels) && (
-                        <Button variant="link" onClick={props.onViewGallery} className="text-sm font-semibold text-stone-700 dark:text-stone-300">
-                           ← Kembali ke galeri model
+                        <Button 
+                            onClick={() => setIsCameraOpen(true)}
+                            variant="outline"
+                            className="w-full py-6"
+                            leftIcon={<CameraIcon className="w-5 h-5" />}
+                        >
+                            Ambil Foto
                         </Button>
-                      )}
-                      
-                      {props.error && <p className="text-red-500 text-sm mt-2">{props.error}</p>}
-                  </div>
-              </div>
-            </div>
-          </div>
-          <div className="w-full lg:w-1/2 flex flex-col items-center justify-center">
-            <Compare
-              firstImage="https://artisanbatik.com/wp-content/uploads/2025/10/before.webp"
-              secondImage="https://artisanbatik.com/wp-content/uploads/2025/10/after.webp"
-              slideMode="drag"
-              className={cn("w-full max-w-sm rounded-2xl bg-stone-200 dark:bg-stone-800", `aspect-[${props.aspectRatio.replace(':', '/')}]`)}
-            />
-          </div>
-        </motion.div>
-      ) : (
-        <motion.div
-          key="compare"
-          className="w-full max-w-6xl mx-auto h-full flex flex-col md:flex-row items-center justify-center gap-8 md:gap-12"
-          variants={screenVariants}
-          initial="initial"
-          animate="animate"
-          exit="exit"
-          transition={{ duration: 0.4, ease: "easeInOut" }}
-        >
-          <div className="md:w-1/2 flex-shrink-0 flex flex-col items-center md:items-start">
-            <div className="text-center md:text-left">
-              <h1 className="text-4xl md:text-5xl font-serif font-bold text-stone-900 dark:text-stone-100 leading-tight">
-                Model Anda Telah Siap
-              </h1>
-              <p className="mt-2 text-md text-stone-600 dark:text-stone-400">
-                Seret penggeser untuk melihat perbandingannya. Jika Anda puas, simpan modelnya, atau Anda dapat menyempurnakannya.
-              </p>
-            </div>
-            
-            {props.isGenerating && (
-              <div className="flex items-center gap-3 text-lg text-stone-700 dark:text-stone-300 font-serif mt-6">
-                <Spinner />
-                <span>Membuat model Anda...</span>
-              </div>
-            )}
 
-            {props.error && 
-              <div className="text-center md:text-left text-red-600 max-w-md mt-6">
-                <p className="font-semibold">Operasi Gagal</p>
-                <p className="text-sm mb-4">{props.error}</p>
-                <Button variant="link" onClick={props.onResetUpload} className="text-stone-700 dark:text-stone-300">Coba Lagi</Button>
-              </div>
-            }
-            
-            <AnimatePresence>
-              {props.generatedModelUrl && !props.isGenerating && !props.error && (
-                <motion.div
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: 10 }}
-                  transition={{ duration: 0.5 }}
-                  className="w-full mt-8"
-                >
-                  <div className="p-4 border border-stone-200 dark:border-stone-800 bg-stone-50/80 dark:bg-stone-900/80 rounded-lg">
-                    <h3 className="font-semibold text-stone-800 dark:text-stone-200 flex items-center gap-2"><WandSparklesIcon className="w-5 h-5 text-amber-600" /> Sempurnakan Model</h3>
-                    <p className="text-sm text-stone-600 dark:text-stone-400 mt-1 mb-4">Tidak suka dengan hasilnya? Coba buat ulang pose atau ubah latar belakang.</p>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                      <Button 
-                        variant="outline" 
-                        onClick={() => props.onRefineModel('pose')} 
-                        isLoading={props.isRefining}
-                        disabled={props.isRefining}
-                        className="bg-white dark:bg-stone-800"
-                      >
-                        {props.isRefining ? 'Memproses...' : 'Buat Ulang Pose'}
-                      </Button>
-                      <Button 
-                        variant="outline" 
-                        onClick={() => props.onRefineModel('background')} 
-                        isLoading={props.isRefining}
-                        disabled={props.isRefining}
-                        className="bg-white dark:bg-stone-800"
-                      >
-                        {props.isRefining ? 'Memproses...' : 'Ubah Latar'}
-                      </Button>
+                         {/* Settings (only visible before upload) */}
+                         <div className="grid grid-cols-2 gap-4 pt-2">
+                             <div>
+                                <label className="block text-xs font-semibold text-stone-500 mb-1">Rasio Aspek</label>
+                                <select 
+                                    value={aspectRatio}
+                                    onChange={(e) => setAspectRatio(e.target.value)}
+                                    className="w-full text-sm p-2 rounded-md border border-stone-300 dark:border-stone-700 bg-white dark:bg-stone-800"
+                                >
+                                    {ASPECT_RATIOS.map(r => <option key={r} value={r}>{r}</option>)}
+                                </select>
+                             </div>
+                             <div>
+                                <label className="block text-xs font-semibold text-stone-500 mb-1">Warna Latar</label>
+                                <div className="flex items-center gap-2">
+                                    <input 
+                                        type="color" 
+                                        value={backgroundColor}
+                                        onChange={(e) => setBackgroundColor(e.target.value)}
+                                        className="h-9 w-9 p-0 border-0 rounded-md cursor-pointer"
+                                    />
+                                    <span className="text-xs font-mono text-stone-500">{backgroundColor}</span>
+                                </div>
+                             </div>
+                         </div>
                     </div>
-                  </div>
-                  
-                  <div className="flex flex-col sm:flex-row items-center gap-4 mt-6">
-                    <Button 
-                      onClick={props.onResetUpload}
-                      disabled={props.isRefining}
-                      variant="secondary"
-                      size="lg"
-                      className="w-full sm:w-auto"
-                    >
-                      Gunakan Foto Lain
-                    </Button>
-                    <Button 
-                      onClick={props.onSaveAndStart}
-                      disabled={props.isRefining}
-                      variant="default"
-                      size="lg"
-                      className="w-full sm:w-auto bg-black dark:bg-white text-white dark:text-black"
-                    >
-                      Simpan & Mulai &rarr;
-                    </Button>
-                  </div>
-                </motion.div>
-              )}
-            </AnimatePresence>
-          </div>
-          <div className="md:w-1/2 w-full flex items-center justify-center">
-            <div 
-              className={`relative rounded-[1.25rem] transition-all duration-700 ease-in-out ${props.isGenerating || props.isRefining ? 'border border-stone-300 dark:border-stone-700 animate-pulse' : 'border border-transparent'}`}
-            >
-              <Compare
-                firstImage={props.userImageUrl}
-                secondImage={props.generatedModelUrl ?? props.userImageUrl}
-                slideMode="drag"
-                className={cn("w-full max-w-[280px] sm:max-w-[320px] lg:max-w-[400px] rounded-2xl bg-stone-200 dark:bg-stone-800", `aspect-[${props.aspectRatio.replace(':', '/')}]`)}
-              />
+                ) : (
+                    <div className="w-full max-w-sm space-y-3">
+                        {/* Action Buttons for Result Phase */}
+                        <div className="grid grid-cols-2 gap-3">
+                             <Button
+                                onClick={() => handleRefineModel('pose')}
+                                disabled={isRefining || !generatedModelUrl}
+                                variant="secondary"
+                                className="w-full"
+                                leftIcon={<WandSparklesIcon className="w-4 h-4"/>}
+                             >
+                                 Ubah Pose
+                             </Button>
+                             <Button
+                                onClick={() => handleRefineModel('background')}
+                                disabled={isRefining || !generatedModelUrl}
+                                variant="secondary"
+                                className="w-full"
+                                leftIcon={<WandSparklesIcon className="w-4 h-4"/>}
+                             >
+                                 Ubah Latar
+                             </Button>
+                        </div>
+                        
+                        <Button
+                            onClick={() => generatedModelUrl && props.onSaveAndStart(generatedModelUrl, aspectRatio)}
+                            disabled={!generatedModelUrl || isRefining}
+                            className="w-full py-6 text-lg bg-amber-700 hover:bg-amber-800 dark:bg-amber-600 dark:hover:bg-amber-700 text-white border-none"
+                        >
+                            {isGenerating || isRefining ? 'Sedang Memproses...' : 'Mulai Mencoba Pakaian'} <ArrowRightIcon className="ml-2 w-5 h-5" />
+                        </Button>
+                        
+                        <Button
+                            onClick={resetUpload}
+                            variant="ghost"
+                            className="w-full text-stone-500 hover:text-red-600"
+                            leftIcon={<RotateCcwIcon className="w-4 h-4"/>}
+                        >
+                            Mulai Ulang
+                        </Button>
+                    </div>
+                )}
+                
+                {/* Advanced Options / Import Export */}
+                 <div className="flex gap-4 pt-8 text-sm text-stone-500">
+                    <button onClick={handleImportClick} className="hover:text-stone-800 dark:hover:text-stone-300 underline underline-offset-4 flex items-center gap-1">
+                        <FileUpIcon className="w-3 h-3"/> Impor
+                    </button>
+                    <input 
+                        ref={importFileRef}
+                        type="file" 
+                        accept=".zip" 
+                        className="hidden" 
+                        onChange={props.onImportFileChange}
+                    />
+                    <button onClick={props.onExportModels} className="hover:text-stone-800 dark:hover:text-stone-300 underline underline-offset-4 flex items-center gap-1">
+                         <DownloadIcon className="w-3 h-3"/> Ekspor
+                    </button>
+                </div>
             </div>
-          </div>
-        </motion.div>
-      )}
-    </AnimatePresence>
-    <AnimatePresence>
-      {props.isCameraOpen && (
-        <Camera
-          onCapture={props.onCapture}
-          onClose={() => props.setIsCameraOpen(false)}
-        />
-      )}
-    </AnimatePresence>
-    </>
+
+            {/* Right Column: Preview / Result Area */}
+            <div className="order-1 lg:order-2 flex justify-center w-full">
+                <div className={cn(
+                    "relative w-full max-w-md aspect-[3/4] bg-stone-100 dark:bg-stone-800 rounded-2xl overflow-hidden shadow-2xl border border-stone-200 dark:border-stone-700",
+                    !userImageUrl && "border-dashed"
+                )}>
+                    {!userImageUrl ? (
+                        <div className="absolute inset-0 flex flex-col items-center justify-center text-stone-400">
+                             <div className="w-32 h-48 bg-stone-200 dark:bg-stone-700 rounded-lg mb-4 animate-pulse"></div>
+                             <p>Pratinjau Model</p>
+                        </div>
+                    ) : (
+                        <>
+                             {generatedModelUrl ? (
+                                <Compare
+                                    firstImage={userImageUrl}
+                                    secondImage={generatedModelUrl}
+                                    firstImageClassName="object-contain bg-stone-100"
+                                    secondImageClassname="object-contain bg-stone-100"
+                                    className="h-full w-full"
+                                    slideMode="hover"
+                                />
+                             ) : (
+                                <img src={userImageUrl} alt="Upload User" className="w-full h-full object-contain" />
+                             )}
+
+                             <AnimatePresence>
+                                {(isGenerating || isRefining) && (
+                                    <motion.div
+                                        initial={{ opacity: 0 }}
+                                        animate={{ opacity: 1 }}
+                                        exit={{ opacity: 0 }}
+                                        className="absolute inset-0 bg-white/80 dark:bg-stone-900/80 backdrop-blur-sm z-10 flex flex-col items-center justify-center text-center p-6"
+                                    >
+                                        <Spinner className="w-10 h-10 mb-4" />
+                                        <h3 className="text-xl font-serif text-stone-900 dark:text-stone-100 font-semibold">
+                                            {isRefining ? 'Menyempurnakan...' : 'Sedang Membuat Model'}
+                                        </h3>
+                                        <p className="text-stone-600 dark:text-stone-400 mt-2">
+                                            {isRefining ? 'Sedang menyesuaikan pose atau latar belakang.' : 'AI sedang mengubah foto Anda menjadi model studio profesional.'}
+                                        </p>
+                                    </motion.div>
+                                )}
+                             </AnimatePresence>
+                             
+                             {error && (
+                                 <div className="absolute bottom-4 left-4 right-4 bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400 p-3 rounded-lg text-sm text-center border border-red-200 dark:border-red-800">
+                                     {error}
+                                 </div>
+                             )}
+                        </>
+                    )}
+                </div>
+            </div>
+        </div>
+
+        <AnimatePresence>
+            {isCameraOpen && (
+                <Camera onCapture={handleCapture} onClose={() => setIsCameraOpen(false)} />
+            )}
+        </AnimatePresence>
+    </div>
   );
 };
 

@@ -38,7 +38,8 @@ import {
   Sun, 
   Moon, 
   RefreshCcw,
-  ShoppingBag
+  ShoppingBag,
+  ArrowRight
 } from 'lucide-react';
 
 // Re-export Lucide icons with mapped names to match existing app usage
@@ -76,6 +77,7 @@ export const SunIcon = Sun;
 export const MoonIcon = Moon;
 export const SwitchCameraIcon = RefreshCcw;
 export const ShoppingBagIcon = ShoppingBag;
+export const ArrowRightIcon = ArrowRight;
 
 // Custom Icons for specific garments where Lucide doesn't have an exact match
 // Keeping these consistent with the app's visual language
