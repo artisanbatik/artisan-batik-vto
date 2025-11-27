@@ -128,15 +128,13 @@ const UploaderView: React.FC<UploaderViewProps> = (props) => {
                   <div className="flex flex-col items-center lg:items-start w-full gap-3">
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 w-full">
                           <Button
-                            asChild
                             variant="default"
                             size="lg"
                             className="w-full cursor-pointer bg-black dark:bg-white text-white dark:text-black hover:bg-stone-800 dark:hover:bg-stone-200"
+                            onClick={() => document.getElementById('image-upload-start')?.click()}
                           >
-                            <label htmlFor="image-upload-start">
-                              <UploadCloudIcon className="w-5 h-5 mr-3" />
-                              Unggah Foto
-                            </label>
+                            <UploadCloudIcon className="w-5 h-5 mr-3" />
+                            Unggah Foto
                           </Button>
                           
                           <Button 

@@ -4,18 +4,26 @@
 */
 
 import React, { useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { cn, getFriendlyErrorMessage, resizeImage } from '../lib/utils';
+import { resizeImage, getFriendlyErrorMessage } from '../lib/utils';
 import { OutfitLayer, WardrobeItem, SavedOutfit, WardrobeCategory, LookbookImage, SavedLookbook } from '../types';
 import { generateProductInformation, generateLookbookImages, regenerateLookbookImage, SHOT_TYPES } from '../services/geminiService';
 
+// Icons
+import { PackageIcon, LibraryIcon, BookOpenIcon, ClockIcon, SlidersIcon } from './icons';
+
 // Components
 import Canvas from './Canvas';
-import SidePanel from './SidePanel';
-import BottomSheet from './ui/BottomSheet';
+import SidePanel, { SidePanelTab } from './SidePanel';
+import StudioLayout from './studio/StudioLayout';
 import StudioModals from './studio/StudioModals';
 import Footer from './Footer';
-import { ChevronRightIcon, ChevronLeftIcon, SlidersIcon, XIcon } from './icons';
+
+// Panel Contents
+import OutfitStack from './OutfitStack';
+import SavedOutfitsPanel from './AdjustmentPanel';
+import SavedLookbooksPanel from './SavedLookbooksPanel';
+import HistoryPanel from './HistoryPanel';
+import FilterPanel from './FilterPanel';
 
 interface StudioScreenProps {
     // State from hooks
@@ -49,12 +57,12 @@ interface StudioScreenProps {
     onSelectPose: (index: number) => void;
     onGenerateCommonPoses: () => void;
     
-    // Complex Actions (Passed from App because they use hook-specific logic)
+    // Complex Actions
     handleGenerateVTO: (garmentFile: File, garmentInfo: WardrobeItem, texture: string) => Promise<void>;
     handleSaveOutfit: () => void;
     handleLoadOutfit: (outfit: SavedOutfit) => void;
     
-    persistenceActions: any; // Ideally strictly typed, but for refactoring speed using any based on App.tsx usage
+    persistenceActions: any; 
 
     // Theme
     theme: 'light' | 'dark';
@@ -93,7 +101,7 @@ const StudioScreen: React.FC<StudioScreenProps> = ({
     const [filters, setFilters] = useState({ brightness: 100, contrast: 100, saturation: 100, hue: 0, sepia: 0 });
     
     // Layout State
-    const [isRightPanelOpen, setIsRightPanelOpen] = useState(window.innerWidth > 768);
+    const [isPanelOpen, setIsPanelOpen] = useState(window.innerWidth > 768);
     const isMobile = window.innerWidth <= 768;
 
     // Selection State
@@ -191,7 +199,6 @@ const StudioScreen: React.FC<StudioScreenProps> = ({
         setIsWardrobeOpen(true);
     };
 
-    // --- Product Info Logic ---
     const getOutfitKey = (layers: OutfitLayer[]): string => {
         return layers.slice(1).map(l => `${l.garment?.id ?? 'none'}:${l.texture ?? 'default'}`).join('|');
     };
@@ -200,7 +207,6 @@ const StudioScreen: React.FC<StudioScreenProps> = ({
       if (activeOutfitLayers.length <= 1) return;
       const currentOutfitKey = getOutfitKey(activeOutfitLayers);
       
-      // Check cache first if not forced
       if (!forceRegenerate) {
           if (productInfoMarkdown && productInfoForOutfitKey === currentOutfitKey) {
             setIsProductInfoModalOpen(true);
@@ -244,7 +250,6 @@ const StudioScreen: React.FC<StudioScreenProps> = ({
       }
     };
 
-    // --- Lookbook Logic ---
     const handleGenerateLookbook = async (style: string, aspectRatio: string, customPrompt?: string) => {
         if (!currentOutfit) return;
         setIsLookbookStyleModalOpen(false);
@@ -340,15 +345,94 @@ const StudioScreen: React.FC<StudioScreenProps> = ({
         setIsLookbookModalOpen(true);
     };
 
-
     const handleStartOverLocal = () => {
         setFilters({ brightness: 100, contrast: 100, saturation: 100, hue: 0, sepia: 0 });
         onStartOver();
     }
 
+    // --- Configure Tabs ---
+    const sidePanelTabs: SidePanelTab[] = [
+        {
+            id: 'outfit',
+            label: 'Koleksi',
+            icon: PackageIcon,
+            content: (
+                <OutfitStack 
+                    outfitHistory={history.slice(0, currentIndex + 1)} 
+                    onUndo={() => undo((id) => persistenceActions.deleteWardrobeItem(id))} 
+                    onSaveOutfit={handleSaveOutfit} 
+                    isLoading={isVTOLoading} 
+                    onAddGarment={() => setIsWardrobeOpen(true)} 
+                    onGenerateProductInfo={() => handleGenerateProductInfo(false)} 
+                    onGenerateLookbook={() => setIsLookbookStyleModalOpen(true)} 
+                />
+            )
+        },
+        {
+            id: 'saved',
+            label: 'Tersimpan',
+            icon: LibraryIcon,
+            content: (
+                <SavedOutfitsPanel 
+                    savedOutfits={savedOutfits} 
+                    onLoadOutfit={handleLoadOutfit} 
+                    onDeleteOutfit={persistenceActions.deleteOutfit} 
+                    onRenameOutfit={persistenceActions.renameOutfit} 
+                    isLoading={isVTOLoading} 
+                />
+            )
+        },
+        {
+            id: 'lookbooks',
+            label: 'Lookbook',
+            icon: BookOpenIcon,
+            content: (
+                <SavedLookbooksPanel 
+                    savedLookbooks={savedLookbooks} 
+                    onDeleteLookbook={persistenceActions.deleteLookbook} 
+                    onRenameLookbook={persistenceActions.renameLookbook} 
+                    onViewLookbook={handleViewLookbook} 
+                    isLoading={isVTOLoading} 
+                />
+            )
+        },
+        {
+            id: 'history',
+            label: 'Riwayat',
+            icon: ClockIcon,
+            content: (
+                <HistoryPanel 
+                    history={history} 
+                    currentIndex={currentIndex} 
+                    onJumpToState={jumpToState} 
+                    isLoading={isVTOLoading} 
+                />
+            )
+        },
+        {
+            id: 'adjust',
+            label: 'Sesuaikan',
+            icon: SlidersIcon,
+            content: (
+                <FilterPanel 
+                    filters={filters} 
+                    onFilterChange={(newFilters) => setFilters(f => ({ ...f, ...newFilters }))} 
+                    onResetFilters={() => setFilters({ brightness: 100, contrast: 100, saturation: 100, hue: 0, sepia: 0 })}
+                    isDisabled={isVTOLoading} 
+                />
+            )
+        }
+    ];
+
     return (
-        <div className="w-screen h-screen bg-stone-200 dark:bg-stone-900 flex flex-col md:flex-row font-sans relative overflow-hidden">
-            <main className="flex-grow h-full w-full relative">
+        <StudioLayout
+            isMobile={isMobile}
+            isPanelOpen={isPanelOpen}
+            setIsPanelOpen={setIsPanelOpen}
+            error={vtoError || loadingError}
+            onErrorDismiss={() => { setVtoError(null); setLoadingError(null); }}
+            
+            canvas={
                 <Canvas
                     displayImageUrl={currentOutfit?.poseImages[POSE_INSTRUCTIONS[currentPoseIndex]] ?? null}
                     onStartOver={handleStartOverLocal}
@@ -368,155 +452,68 @@ const StudioScreen: React.FC<StudioScreenProps> = ({
                     theme={theme}
                     onToggleTheme={onToggleTheme}
                 />
-                
-                {/* Mobile Toggle Studio Button */}
-                {isMobile && !isRightPanelOpen && (
-                    <button onClick={() => setIsRightPanelOpen(true)} className="fixed bottom-20 right-4 z-30 bg-stone-900 dark:bg-stone-50 text-white dark:text-stone-900 font-semibold py-3 px-5 rounded-full shadow-lg flex items-center gap-2 animate-fade-in">
-                        <SlidersIcon className="w-5 h-5" /> Studio
-                    </button>
-                )}
-
-                {/* Error Toast */}
-                {(vtoError || loadingError) && (
-                  <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="absolute bottom-20 left-1/2 -translate-x-1/2 bg-red-600 text-white px-4 py-2 rounded-lg shadow-lg text-sm z-50">
-                    {vtoError || loadingError}
-                    <button onClick={() => { setVtoError(null); setLoadingError(null); }} className="ml-4 font-bold">X</button>
-                  </motion.div>
-                )}
-            </main>
-
-            {/* Desktop Side Panel */}
-            {!isMobile && (
-                <aside className={cn("bg-stone-100 dark:bg-stone-950 font-sans flex flex-col z-50 transition-all duration-300 ease-in-out relative border-l border-stone-300/80 dark:border-stone-800/80", isRightPanelOpen ? 'w-1/4 min-w-[320px] max-w-[420px]' : 'w-16')}>
-                    <div className="p-4 flex-shrink-0 flex items-center justify-between border-b border-stone-300/50 dark:border-stone-800/50">
-                        <AnimatePresence>{isRightPanelOpen && (<motion.h2 initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -10 }} className="text-2xl font-serif tracking-widest text-stone-800 dark:text-stone-200">Koleksi Anda</motion.h2>)}</AnimatePresence>
-                        <button onClick={() => setIsRightPanelOpen(!isRightPanelOpen)} className="p-2 rounded-full text-stone-600 dark:text-stone-400 hover:bg-stone-200 dark:hover:bg-stone-800 transition-colors">
-                            {isRightPanelOpen ? <ChevronRightIcon className="w-5 h-5" /> : <ChevronLeftIcon className="w-5 h-5" />}
-                        </button>
-                    </div>
-                    <AnimatePresence>
-                        {isRightPanelOpen && (
-                            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="flex-grow overflow-y-auto h-full">
-                                <SidePanel 
-                                    history={history}
-                                    currentIndex={currentIndex}
-                                    savedOutfits={savedOutfits}
-                                    savedLookbooks={savedLookbooks}
-                                    filters={filters}
-                                    isVTOLoading={isVTOLoading}
-                                    onUndo={() => undo((id) => persistenceActions.deleteWardrobeItem(id))}
-                                    onSaveOutfit={handleSaveOutfit}
-                                    onAddGarment={() => setIsWardrobeOpen(true)}
-                                    onGenerateProductInfo={() => handleGenerateProductInfo(false)}
-                                    onGenerateLookbook={() => setIsLookbookStyleModalOpen(true)}
-                                    onLoadOutfit={handleLoadOutfit}
-                                    onDeleteOutfit={persistenceActions.deleteOutfit}
-                                    onRenameOutfit={persistenceActions.renameOutfit}
-                                    onViewLookbook={handleViewLookbook}
-                                    onDeleteLookbook={persistenceActions.deleteLookbook}
-                                    onRenameLookbook={persistenceActions.renameLookbook}
-                                    onJumpToState={jumpToState}
-                                    onFilterChange={(newFilters) => setFilters(f => ({ ...f, ...newFilters }))}
-                                    onResetFilters={() => setFilters({ brightness: 100, contrast: 100, saturation: 100, hue: 0, sepia: 0 })}
-                                />
-                            </motion.div>
-                        )}
-                    </AnimatePresence>
-                </aside>
-            )}
-
-            {/* Mobile Bottom Sheet */}
-            {isMobile && (
-                <BottomSheet isOpen={isRightPanelOpen} onClose={() => setIsRightPanelOpen(false)}>
-                    <div className="pt-8 p-4 flex-shrink-0 flex items-center justify-between border-b border-stone-300/50 dark:border-stone-800/50">
-                        <h2 className="text-2xl font-serif tracking-widest text-stone-800 dark:text-stone-200">Studio Anda</h2>
-                        <button onClick={() => setIsRightPanelOpen(false)} className="p-2 rounded-full text-stone-600 dark:text-stone-400 hover:bg-stone-200 dark:hover:bg-stone-800 transition-colors"><XIcon className="w-5 h-5" /></button>
-                    </div>
-                    <div className="flex-grow overflow-y-auto">
-                        <SidePanel 
-                            history={history}
-                            currentIndex={currentIndex}
-                            savedOutfits={savedOutfits}
-                            savedLookbooks={savedLookbooks}
-                            filters={filters}
-                            isVTOLoading={isVTOLoading}
-                            onUndo={() => undo((id) => persistenceActions.deleteWardrobeItem(id))}
-                            onSaveOutfit={handleSaveOutfit}
-                            onAddGarment={() => setIsWardrobeOpen(true)}
-                            onGenerateProductInfo={() => handleGenerateProductInfo(false)}
-                            onGenerateLookbook={() => setIsLookbookStyleModalOpen(true)}
-                            onLoadOutfit={handleLoadOutfit}
-                            onDeleteOutfit={persistenceActions.deleteOutfit}
-                            onRenameOutfit={persistenceActions.renameOutfit}
-                            onViewLookbook={handleViewLookbook}
-                            onDeleteLookbook={persistenceActions.deleteLookbook}
-                            onRenameLookbook={persistenceActions.renameLookbook}
-                            onJumpToState={jumpToState}
-                            onFilterChange={(newFilters) => setFilters(f => ({ ...f, ...newFilters }))}
-                            onResetFilters={() => setFilters({ brightness: 100, contrast: 100, saturation: 100, hue: 0, sepia: 0 })}
-                        />
-                    </div>
-                </BottomSheet>
-            )}
-
-            <Footer isOnDressingScreen />
-
-            {/* Modals Manager */}
-            <StudioModals
-                isWardrobeOpen={isWardrobeOpen}
-                setIsWardrobeOpen={setIsWardrobeOpen}
-                handleGarmentSelect={handleGarmentSelect}
-                handleFileUpload={handleFileUpload}
-                activeOutfitLayers={activeOutfitLayers}
-                isVTOLoading={isVTOLoading}
-                wardrobe={wardrobe}
-                handleEditGarment={handleEditGarment}
-                handleDeleteGarment={handleDeleteGarment}
-                
-                isTextureModalOpen={isTextureModalOpen}
-                setIsTextureModalOpen={setIsTextureModalOpen}
-                handleTextureConfirm={handleTextureConfirm}
-                garmentForTexture={garmentForTexture}
-                
-                isCategorizeModalOpen={isCategorizeModalOpen}
-                setIsCategorizeModalOpen={setIsCategorizeModalOpen}
-                handleCategorizeConfirm={handleCategorizeConfirm}
-                garmentToCategorize={garmentToCategorize}
-                
-                isEditGarmentModalOpen={isEditGarmentModalOpen}
-                setIsEditGarmentModalOpen={setIsEditGarmentModalOpen}
-                handleSaveGarmentEdit={handleSaveGarmentEdit}
-                garmentToEdit={garmentToEdit}
-                
-                deletingGarment={deletingGarment}
-                setDeletingGarment={setDeletingGarment}
-                handleConfirmDeleteGarment={handleConfirmDeleteGarment}
-                
-                isProductInfoModalOpen={isProductInfoModalOpen}
-                setIsProductInfoModalOpen={setIsProductInfoModalOpen}
-                isProductInfoLoading={isProductInfoLoading}
-                productInfoMarkdown={productInfoMarkdown}
-                productInfoError={productInfoError}
-                handleGenerateProductInfo={handleGenerateProductInfo}
-                
-                isLookbookStyleModalOpen={isLookbookStyleModalOpen}
-                setIsLookbookStyleModalOpen={setIsLookbookStyleModalOpen}
-                handleGenerateLookbook={handleGenerateLookbook}
-                isLookbookLoading={isLookbookLoading}
-                
-                isLookbookModalOpen={isLookbookModalOpen}
-                setIsLookbookModalOpen={setIsLookbookModalOpen}
-                lookbookImages={lookbookImages}
-                lookbookError={lookbookError}
-                lookbookStyle={lookbookStyle}
-                lookbookAspectRatio={lookbookAspectRatio}
-                handleRegenerateLookbookImage={handleRegenerateLookbookImage}
-                regeneratingImageId={regeneratingImageId}
-                handleSaveLookbook={handleSaveLookbook}
-                isLookbookSaved={isLookbookSaved}
-                isMobile={isMobile}
-            />
-        </div>
+            }
+            sidePanelContent={
+                <SidePanel tabs={sidePanelTabs} />
+            }
+            footer={<Footer isOnDressingScreen />}
+            modals={
+                <StudioModals
+                    isWardrobeOpen={isWardrobeOpen}
+                    setIsWardrobeOpen={setIsWardrobeOpen}
+                    handleGarmentSelect={handleGarmentSelect}
+                    handleFileUpload={handleFileUpload}
+                    activeOutfitLayers={activeOutfitLayers}
+                    isVTOLoading={isVTOLoading}
+                    wardrobe={wardrobe}
+                    handleEditGarment={handleEditGarment}
+                    handleDeleteGarment={handleDeleteGarment}
+                    
+                    isTextureModalOpen={isTextureModalOpen}
+                    setIsTextureModalOpen={setIsTextureModalOpen}
+                    handleTextureConfirm={handleTextureConfirm}
+                    garmentForTexture={garmentForTexture}
+                    
+                    isCategorizeModalOpen={isCategorizeModalOpen}
+                    setIsCategorizeModalOpen={setIsCategorizeModalOpen}
+                    handleCategorizeConfirm={handleCategorizeConfirm}
+                    garmentToCategorize={garmentToCategorize}
+                    
+                    isEditGarmentModalOpen={isEditGarmentModalOpen}
+                    setIsEditGarmentModalOpen={setIsEditGarmentModalOpen}
+                    handleSaveGarmentEdit={handleSaveGarmentEdit}
+                    garmentToEdit={garmentToEdit}
+                    
+                    deletingGarment={deletingGarment}
+                    setDeletingGarment={setDeletingGarment}
+                    handleConfirmDeleteGarment={handleConfirmDeleteGarment}
+                    
+                    isProductInfoModalOpen={isProductInfoModalOpen}
+                    setIsProductInfoModalOpen={setIsProductInfoModalOpen}
+                    isProductInfoLoading={isProductInfoLoading}
+                    productInfoMarkdown={productInfoMarkdown}
+                    productInfoError={productInfoError}
+                    handleGenerateProductInfo={handleGenerateProductInfo}
+                    
+                    isLookbookStyleModalOpen={isLookbookStyleModalOpen}
+                    setIsLookbookStyleModalOpen={setIsLookbookStyleModalOpen}
+                    handleGenerateLookbook={handleGenerateLookbook}
+                    isLookbookLoading={isLookbookLoading}
+                    
+                    isLookbookModalOpen={isLookbookModalOpen}
+                    setIsLookbookModalOpen={setIsLookbookModalOpen}
+                    lookbookImages={lookbookImages}
+                    lookbookError={lookbookError}
+                    lookbookStyle={lookbookStyle}
+                    lookbookAspectRatio={lookbookAspectRatio}
+                    handleRegenerateLookbookImage={handleRegenerateLookbookImage}
+                    regeneratingImageId={regeneratingImageId}
+                    handleSaveLookbook={handleSaveLookbook}
+                    isLookbookSaved={isLookbookSaved}
+                    isMobile={isMobile}
+                />
+            }
+        />
     );
 };
 
