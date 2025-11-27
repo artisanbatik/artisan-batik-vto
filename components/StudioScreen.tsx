@@ -1,4 +1,3 @@
-
 /**
  * @license
  * SPDX-License-Identifier: Apache-2.0
@@ -6,7 +5,7 @@
 
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { cn, getFriendlyErrorMessage, resizeImage, urlToFile } from '../lib/utils';
+import { cn, getFriendlyErrorMessage, resizeImage } from '../lib/utils';
 import { OutfitLayer, WardrobeItem, SavedOutfit, WardrobeCategory, LookbookImage, SavedLookbook } from '../types';
 import { generateProductInformation, generateLookbookImages, regenerateLookbookImage, SHOT_TYPES } from '../services/geminiService';
 
@@ -14,15 +13,8 @@ import { generateProductInformation, generateLookbookImages, regenerateLookbookI
 import Canvas from './Canvas';
 import SidePanel from './SidePanel';
 import BottomSheet from './ui/BottomSheet';
-import WardrobeModal from './WardrobeSheet';
-import { CategorizeGarmentModal } from './modals/CategorizeGarmentModal';
-import { EditGarmentModal } from './modals/EditGarmentModal';
-import { TextureSelectionModal } from './modals/TextureSelectionModal';
-import ProductInfoModal from './modals/ProductInfoModal'; // Ensure this path is correct based on previous file structure or assumption
-import LookbookStyleModal from './lookbook/LookbookStyleModal';
-import LookbookModal from './lookbook/LookbookModal';
+import StudioModals from './studio/StudioModals';
 import Footer from './Footer';
-import ConfirmationDialog from './AddProductModal';
 import { ChevronRightIcon, ChevronLeftIcon, SlidersIcon, XIcon } from './icons';
 
 interface StudioScreenProps {
@@ -470,76 +462,58 @@ const StudioScreen: React.FC<StudioScreenProps> = ({
             <Footer isOnDressingScreen />
 
             {/* Modals Manager */}
-            <WardrobeModal
-                isOpen={isWardrobeOpen}
-                onClose={() => setIsWardrobeOpen(false)}
-                onGarmentSelect={handleGarmentSelect}
-                onFileUpload={handleFileUpload}
-                activeGarmentIds={activeOutfitLayers.map(l => l.garment?.id).filter((id): id is string => !!id)}
-                isLoading={isVTOLoading}
+            <StudioModals
+                isWardrobeOpen={isWardrobeOpen}
+                setIsWardrobeOpen={setIsWardrobeOpen}
+                handleGarmentSelect={handleGarmentSelect}
+                handleFileUpload={handleFileUpload}
+                activeOutfitLayers={activeOutfitLayers}
+                isVTOLoading={isVTOLoading}
                 wardrobe={wardrobe}
-                onEditGarment={handleEditGarment}
-                onDeleteGarment={handleDeleteGarment}
-            />
-            <TextureSelectionModal
-                isOpen={isTextureModalOpen}
-                onClose={() => setIsTextureModalOpen(false)}
-                onConfirm={handleTextureConfirm}
-                garment={garmentForTexture}
-            />
-            <CategorizeGarmentModal
-                isOpen={isCategorizeModalOpen}
-                onClose={() => setIsCategorizeModalOpen(false)}
-                onConfirm={handleCategorizeConfirm}
-                garmentPreviewUrl={garmentToCategorize ? URL.createObjectURL(garmentToCategorize) : null}
-            />
-            <EditGarmentModal
-                isOpen={isEditGarmentModalOpen}
-                onClose={() => setIsEditGarmentModalOpen(false)}
-                onSave={handleSaveGarmentEdit}
-                onDelete={handleDeleteGarment}
-                garment={garmentToEdit}
-            />
-            {deletingGarment && (
-                <ConfirmationDialog
-                    itemType="karya"
-                    itemName={deletingGarment.name}
-                    onConfirm={handleConfirmDeleteGarment}
-                    onCancel={() => setDeletingGarment(null)}
-                />
-            )}
-            {/* Note: ProductInfoModal is imported assuming the file exists from previous context or needs to be created. 
-                Using the definition from App.tsx inline for now if not available as separate file, 
-                but ideally should be separate. Assuming separate for clean refactor. 
-            */}
-             <ProductInfoModal 
-                isOpen={isProductInfoModalOpen}
-                onClose={() => setIsProductInfoModalOpen(false)}
-                isLoading={isProductInfoLoading}
+                handleEditGarment={handleEditGarment}
+                handleDeleteGarment={handleDeleteGarment}
+                
+                isTextureModalOpen={isTextureModalOpen}
+                setIsTextureModalOpen={setIsTextureModalOpen}
+                handleTextureConfirm={handleTextureConfirm}
+                garmentForTexture={garmentForTexture}
+                
+                isCategorizeModalOpen={isCategorizeModalOpen}
+                setIsCategorizeModalOpen={setIsCategorizeModalOpen}
+                handleCategorizeConfirm={handleCategorizeConfirm}
+                garmentToCategorize={garmentToCategorize}
+                
+                isEditGarmentModalOpen={isEditGarmentModalOpen}
+                setIsEditGarmentModalOpen={setIsEditGarmentModalOpen}
+                handleSaveGarmentEdit={handleSaveGarmentEdit}
+                garmentToEdit={garmentToEdit}
+                
+                deletingGarment={deletingGarment}
+                setDeletingGarment={setDeletingGarment}
+                handleConfirmDeleteGarment={handleConfirmDeleteGarment}
+                
+                isProductInfoModalOpen={isProductInfoModalOpen}
+                setIsProductInfoModalOpen={setIsProductInfoModalOpen}
+                isProductInfoLoading={isProductInfoLoading}
                 productInfoMarkdown={productInfoMarkdown}
-                error={productInfoError}
-                onRegenerate={() => handleGenerateProductInfo(true)}
-            />
-
-            <LookbookStyleModal
-                isOpen={isLookbookStyleModalOpen}
-                onClose={() => setIsLookbookStyleModalOpen(false)}
-                onGenerate={handleGenerateLookbook}
-                isLoading={isLookbookLoading}
-            />
-
-            <LookbookModal
-                isOpen={isLookbookModalOpen}
-                onClose={() => setIsLookbookModalOpen(false)}
-                isLoading={isLookbookLoading}
-                images={lookbookImages}
-                error={lookbookError}
-                style={lookbookStyle}
-                aspectRatio={lookbookAspectRatio}
-                onRegenerate={handleRegenerateLookbookImage}
+                productInfoError={productInfoError}
+                handleGenerateProductInfo={handleGenerateProductInfo}
+                
+                isLookbookStyleModalOpen={isLookbookStyleModalOpen}
+                setIsLookbookStyleModalOpen={setIsLookbookStyleModalOpen}
+                handleGenerateLookbook={handleGenerateLookbook}
+                isLookbookLoading={isLookbookLoading}
+                
+                isLookbookModalOpen={isLookbookModalOpen}
+                setIsLookbookModalOpen={setIsLookbookModalOpen}
+                lookbookImages={lookbookImages}
+                lookbookError={lookbookError}
+                lookbookStyle={lookbookStyle}
+                lookbookAspectRatio={lookbookAspectRatio}
+                handleRegenerateLookbookImage={handleRegenerateLookbookImage}
                 regeneratingImageId={regeneratingImageId}
-                onSave={handleSaveLookbook}
-                isSaved={isLookbookSaved}
+                handleSaveLookbook={handleSaveLookbook}
+                isLookbookSaved={isLookbookSaved}
                 isMobile={isMobile}
             />
         </div>
