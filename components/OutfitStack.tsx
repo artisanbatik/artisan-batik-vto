@@ -1,3 +1,4 @@
+
 /**
  * @license
  * SPDX-License-Identifier: Apache-2.0
@@ -7,6 +8,7 @@ import React from 'react';
 import { OutfitLayer } from '../types';
 import { Trash2Icon, SaveIcon, PlusIcon, FileTextIcon, BookOpenIcon } from './icons';
 import Spinner from './Spinner';
+import { Button } from './ui/button';
 
 interface OutfitStackProps {
   outfitHistory: OutfitLayer[];
@@ -26,15 +28,16 @@ const OutfitStack: React.FC<OutfitStackProps> = ({ outfitHistory, onUndo, onSave
     <div className="flex flex-col">
       <div className="flex items-center justify-between border-b border-stone-400/50 dark:border-stone-700/50 pb-2 mb-3">
         <h2 className="text-xl font-serif tracking-wider text-stone-800 dark:text-stone-200">Koleksi Anda</h2>
-        <button
+        <Button
           onClick={onSaveOutfit}
           disabled={!isOutfitSavable || isLoading}
-          className="flex items-center gap-2 text-sm font-semibold text-stone-700 dark:text-stone-300 hover:text-stone-900 dark:hover:text-stone-100 transition-colors px-3 py-1.5 rounded-md hover:bg-stone-200/70 dark:hover:bg-stone-800/70 disabled:opacity-50 disabled:cursor-not-allowed"
-          aria-label="Simpan koleksi saat ini"
+          variant="ghost"
+          size="sm"
+          className="hover:bg-stone-200/70 dark:hover:bg-stone-800/70 h-8 text-stone-700 dark:text-stone-300"
+          leftIcon={<SaveIcon className="w-4 h-4" />}
         >
-          <SaveIcon className="w-4 h-4" />
-          <span>Simpan</span>
-        </button>
+          Simpan
+        </Button>
       </div>
       <div className="space-y-2">
         {outfitHistory.map((layer, index) => (
@@ -65,13 +68,15 @@ const OutfitStack: React.FC<OutfitStackProps> = ({ outfitHistory, onUndo, onSave
                 )}
             </div>
             {index > 0 && index === outfitHistory.length - 1 && !generatingLayerIndex && (
-               <button
+              <Button
                 onClick={onUndo}
-                className="flex-shrink-0 text-stone-500 dark:text-stone-400 hover:text-red-600 dark:hover:text-red-500 transition-colors p-2 rounded-md hover:bg-red-50 dark:hover:bg-red-900/30"
+                variant="ghost"
+                size="icon"
+                className="flex-shrink-0 text-stone-500 dark:text-stone-400 hover:text-red-600 dark:hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/30 h-8 w-8"
                 aria-label={`Hapus ${layer.garment?.name}`}
               >
-                <Trash2Icon className="w-5 h-5" />
-              </button>
+                <Trash2Icon className="w-4 h-4" />
+              </Button>
             )}
           </div>
         ))}
@@ -80,31 +85,32 @@ const OutfitStack: React.FC<OutfitStackProps> = ({ outfitHistory, onUndo, onSave
         )}
       </div>
        <div className="mt-4 grid grid-cols-1 gap-3">
-        <button 
+        <Button 
             onClick={onAddGarment}
             disabled={isLoading}
-            className="w-full flex items-center justify-center text-center bg-stone-900 dark:bg-stone-100 text-white dark:text-stone-900 font-semibold py-3 px-4 rounded-lg transition-colors duration-200 ease-in-out hover:bg-stone-700 dark:hover:bg-stone-300 active:scale-95 text-base disabled:opacity-50 disabled:cursor-not-allowed"
+            variant="default"
+            className="w-full text-base py-6"
+            leftIcon={<PlusIcon className="w-5 h-5" />}
         >
-            <PlusIcon className="w-5 h-5 mr-2" />
             Tambah Karya
-        </button>
+        </Button>
         <div className="grid grid-cols-2 gap-3">
-          <button
+          <Button
             onClick={onGenerateLookbook}
             disabled={!isOutfitSavable || isLoading}
-            className="w-full flex items-center justify-center text-center bg-amber-700 text-white font-semibold py-3 px-4 rounded-lg transition-all duration-200 ease-in-out hover:bg-amber-800 active:scale-95 text-base disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-full bg-amber-700 hover:bg-amber-800 text-white dark:bg-amber-800 dark:hover:bg-amber-700"
+            leftIcon={<BookOpenIcon className="w-4 h-4" />}
             >
-              <BookOpenIcon className="w-5 h-5 mr-2" />
               Lookbook
-          </button>
-          <button
+          </Button>
+          <Button
             onClick={() => onGenerateProductInfo()}
             disabled={!isOutfitSavable || isLoading}
-            className="w-full flex items-center justify-center text-center bg-sky-700 text-white font-semibold py-3 px-4 rounded-lg transition-all duration-200 ease-in-out hover:bg-sky-800 active:scale-95 text-base disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-full bg-sky-700 hover:bg-sky-800 text-white dark:bg-sky-800 dark:hover:bg-sky-700"
+            leftIcon={<FileTextIcon className="w-4 h-4" />}
             >
-              <FileTextIcon className="w-5 h-5 mr-2" />
               Info Produk
-          </button>
+          </Button>
         </div>
       </div>
     </div>

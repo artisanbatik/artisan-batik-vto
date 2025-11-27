@@ -1,3 +1,4 @@
+
 /**
  * @license
  * SPDX-License-Identifier: Apache-2.0
@@ -8,6 +9,7 @@ import { motion } from 'framer-motion';
 import { XIcon, SwitchCameraIcon } from './icons';
 import Spinner from './Spinner';
 import { cn } from '../lib/utils';
+import { Button } from './ui/button';
 
 interface CameraProps {
   onCapture: (file: File) => void;
@@ -186,9 +188,9 @@ const Camera: React.FC<CameraProps> = ({ onCapture, onClose }) => {
 
       <div className="absolute bottom-0 left-0 right-0 p-6 flex items-center justify-center z-20">
         {capturedImage ? (
-            <div className="flex items-center justify-around w-full max-w-sm">
-                <button onClick={handleRetake} className="text-white font-semibold px-6 py-3 rounded-full hover:bg-white/10 transition-colors">Ambil Ulang</button>
-                <button onClick={handleConfirmPhoto} className="text-black font-semibold bg-white px-6 py-3 rounded-full hover:bg-gray-200 transition-colors">Gunakan Foto</button>
+            <div className="flex items-center justify-around w-full max-w-sm gap-4">
+                <Button onClick={handleRetake} variant="secondary" className="rounded-full bg-white/10 text-white hover:bg-white/20 border-white/20 px-6">Ambil Ulang</Button>
+                <Button onClick={handleConfirmPhoto} variant="default" className="rounded-full bg-white text-black hover:bg-gray-200 px-6">Gunakan Foto</Button>
             </div>
         ) : (
             <div className="flex items-center justify-around w-full max-w-sm">
@@ -196,14 +198,14 @@ const Camera: React.FC<CameraProps> = ({ onCapture, onClose }) => {
                 <button 
                   onClick={handleTakePhoto}
                   disabled={isLoading || !!error}
-                  className="w-20 h-20 bg-white rounded-full flex items-center justify-center ring-4 ring-white/30 disabled:opacity-50"
+                  className="w-20 h-20 bg-white rounded-full flex items-center justify-center ring-4 ring-white/30 disabled:opacity-50 transition-transform active:scale-95"
                   aria-label="Ambil foto"
                 >
-                    <div className="w-[70px] h-[70px] bg-white rounded-full active:bg-gray-200"></div>
+                    <div className="w-[70px] h-[70px] bg-white rounded-full border-2 border-gray-300"></div>
                 </button>
                 {devices.length > 1 ? (
                   <button onClick={handleSwitchCamera} className="w-16 h-16 flex items-center justify-center" aria-label="Ganti kamera">
-                    <div className="p-3 bg-white/20 rounded-full text-white">
+                    <div className="p-3 bg-white/20 rounded-full text-white hover:bg-white/30 transition-colors">
                         <SwitchCameraIcon className="w-7 h-7" />
                     </div>
                   </button>

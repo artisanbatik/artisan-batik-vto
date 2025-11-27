@@ -6,6 +6,7 @@
 import React from 'react';
 import { SlidersIcon } from './icons';
 import { Panel } from './ui/panel';
+import { Button } from './ui/button';
 
 interface FilterPanelProps {
   filters: {
@@ -52,14 +53,15 @@ const FilterSlider: React.FC<{
 
 const FilterPanel: React.FC<FilterPanelProps> = ({ filters, onFilterChange, onResetFilters, isDisabled }) => {
   const resetButton = (
-    <button
+    <Button
       onClick={onResetFilters}
       disabled={isDisabled}
-      className="text-sm font-semibold text-stone-600 dark:text-stone-400 hover:text-stone-900 dark:hover:text-stone-100 transition-colors disabled:cursor-not-allowed"
-      aria-label="Atur ulang penyesuaian gambar"
+      variant="link"
+      size="sm"
+      className="text-stone-600 dark:text-stone-400 hover:text-stone-900 dark:hover:text-stone-100 px-0 h-auto"
     >
       Atur Ulang
-    </button>
+    </Button>
   );
 
   return (

@@ -1,3 +1,4 @@
+
 /**
  * @license
  * SPDX-License-Identifier: Apache-2.0
@@ -208,8 +209,9 @@ const Canvas: React.FC<CanvasProps> = ({ displayImageUrl, onStartOver, isLoading
         <Button 
             onClick={onStartOver}
             variant="outline"
-            className="bg-white/80 dark:bg-stone-900/80 border-stone-300/80 dark:border-stone-700/80 rounded-full hover:bg-white dark:hover:bg-stone-900"
-            leftIcon={<RotateCcwIcon className="w-4 h-4" />}
+            size="sm"
+            className="bg-white/80 dark:bg-stone-900/80 border-stone-300/80 dark:border-stone-700/80 rounded-full hover:bg-white dark:hover:bg-stone-900 shadow-sm backdrop-blur-sm"
+            leftIcon={<RotateCcwIcon className="w-3.5 h-3.5" />}
         >
             Mulai Ulang
         </Button>
@@ -218,13 +220,13 @@ const Canvas: React.FC<CanvasProps> = ({ displayImageUrl, onStartOver, isLoading
             onClick={onToggleTheme} 
             variant="outline"
             size="icon"
-            className="rounded-full bg-white/80 dark:bg-stone-900/80 border-stone-300/80 dark:border-stone-700/80 hover:bg-white dark:hover:bg-stone-900"
+            className="rounded-full bg-white/80 dark:bg-stone-900/80 border-stone-300/80 dark:border-stone-700/80 hover:bg-white dark:hover:bg-stone-900 shadow-sm backdrop-blur-sm"
         >
             {theme === 'light' ? <MoonIcon className="w-4 h-4" /> : <SunIcon className="w-4 h-4" />}
         </Button>
 
         {/* Undo/Redo Controls */}
-        <div className="flex items-center bg-white/80 dark:bg-stone-900/80 border border-stone-300/80 dark:border-stone-700/80 rounded-full p-1 shadow-sm">
+        <div className="flex items-center bg-white/80 dark:bg-stone-900/80 border border-stone-300/80 dark:border-stone-700/80 rounded-full p-1 shadow-sm backdrop-blur-sm">
             <Button
               onClick={onUndo}
               disabled={!canUndo || isLoading}
@@ -257,8 +259,9 @@ const Canvas: React.FC<CanvasProps> = ({ displayImageUrl, onStartOver, isLoading
               disabled={isDownloading}
               isLoading={isDownloading}
               variant="outline"
-              className="bg-white/80 dark:bg-stone-900/80 border-stone-300/80 dark:border-stone-700/80 rounded-full hover:bg-white dark:hover:bg-stone-900"
-              leftIcon={!isDownloading && <DownloadIcon className="w-4 h-4" />}
+              size="sm"
+              className="bg-white/80 dark:bg-stone-900/80 border-stone-300/80 dark:border-stone-700/80 rounded-full hover:bg-white dark:hover:bg-stone-900 shadow-sm backdrop-blur-sm"
+              leftIcon={!isDownloading && <DownloadIcon className="w-3.5 h-3.5" />}
           >
               {isDownloading ? 'Mengunduh...' : 'Unduh'}
           </Button>
@@ -325,7 +328,7 @@ const Canvas: React.FC<CanvasProps> = ({ displayImageUrl, onStartOver, isLoading
       {/* Zoom Controls */}
       {displayImageUrl && (
           <div className={cn(
-            "absolute z-30 flex flex-col items-center gap-1 bg-white/80 dark:bg-stone-900/80 rounded-full p-1.5 border border-stone-300/80 dark:border-stone-700/80 shadow-md",
+            "absolute z-30 flex flex-col items-center gap-1 bg-white/80 dark:bg-stone-900/80 rounded-full p-1.5 border border-stone-300/80 dark:border-stone-700/80 shadow-md backdrop-blur-sm",
             isMobile ? "bottom-4 left-4" : "right-4 top-1/2 -translate-y-1/2 md:opacity-0 md:group-hover:opacity-100 transition-opacity"
           )}>
               <Button onClick={() => handleZoom(0.2)} disabled={scale >= MAX_SCALE} variant="ghost" size="icon" className="rounded-full hover:bg-stone-200/60 dark:hover:bg-stone-800/60 h-8 w-8" aria-label="Perbesar">
@@ -373,7 +376,7 @@ const Canvas: React.FC<CanvasProps> = ({ displayImageUrl, onStartOver, isLoading
                           Buat 4 Pose Umum
                         </Button>
                       </div>
-                      <div className="grid grid-cols-2 gap-2">
+                      <div className="grid grid-cols-2 gap-2 max-h-60 overflow-y-auto">
                           {poseInstructions.map((pose, index) => {
                               const isGenerated = availablePoseKeys.includes(pose);
                               const isCurrent = index === currentPoseIndex;
@@ -383,15 +386,15 @@ const Canvas: React.FC<CanvasProps> = ({ displayImageUrl, onStartOver, isLoading
                                     key={pose}
                                     onClick={() => onSelectPose(index)}
                                     disabled={isLoading || isCurrent}
-                                    className="w-full flex items-center justify-between text-left text-sm font-medium text-stone-800 dark:text-stone-200 p-2 rounded-md hover:bg-stone-200/70 dark:hover:bg-stone-800/70 disabled:bg-stone-200/70 dark:disabled:bg-stone-800/70 disabled:font-bold disabled:cursor-not-allowed"
+                                    className="w-full flex items-center justify-between text-left text-xs font-medium text-stone-800 dark:text-stone-200 p-2 rounded-md hover:bg-stone-200/70 dark:hover:bg-stone-800/70 disabled:bg-stone-200/70 dark:disabled:bg-stone-800/70 disabled:font-bold disabled:cursor-not-allowed"
                                 >
                                     <span className="truncate pr-2">{pose}</span>
                                     {isCurrent ? (
-                                        <CheckCircleIcon className="w-4 h-4 text-stone-600 dark:text-stone-400 flex-shrink-0" />
+                                        <CheckCircleIcon className="w-3.5 h-3.5 text-stone-600 dark:text-stone-400 flex-shrink-0" />
                                     ) : isGenerated ? (
-                                        <CheckCircleIcon className="w-4 h-4 text-green-500 flex-shrink-0" />
+                                        <CheckCircleIcon className="w-3.5 h-3.5 text-green-500 flex-shrink-0" />
                                     ) : (
-                                        <WandSparklesIcon className="w-4 h-4 text-amber-500 flex-shrink-0" />
+                                        <WandSparklesIcon className="w-3.5 h-3.5 text-amber-500 flex-shrink-0" />
                                     )}
                                 </button>
                               )
@@ -403,19 +406,19 @@ const Canvas: React.FC<CanvasProps> = ({ displayImageUrl, onStartOver, isLoading
           
           <div 
             onClick={isMobile ? () => setIsPoseMenuOpen(prev => !prev) : undefined}
-            className="flex items-center justify-center gap-2 bg-white/90 dark:bg-stone-900/90 rounded-full p-2 border border-stone-300/50 dark:border-stone-700/50 shadow-md"
+            className="flex items-center justify-center gap-2 bg-white/90 dark:bg-stone-900/90 rounded-full p-1.5 border border-stone-300/50 dark:border-stone-700/50 shadow-md backdrop-blur-sm"
           >
             <Button 
               onClick={handlePreviousPose}
               aria-label="Pose sebelumnya"
               variant="ghost"
               size="icon"
-              className="rounded-full hover:bg-white/80 dark:hover:bg-black/20"
+              className="rounded-full hover:bg-stone-200/50 dark:hover:bg-stone-800/50 h-8 w-8"
               disabled={isLoading}
             >
               <ChevronLeftIcon className="w-5 h-5 text-stone-800 dark:text-stone-200" />
             </Button>
-            <span className="text-sm font-semibold text-stone-800 dark:text-stone-200 w-48 text-center truncate" title={poseInstructions[currentPoseIndex]}>
+            <span className="text-xs font-semibold text-stone-800 dark:text-stone-200 w-48 text-center truncate px-2 select-none" title={poseInstructions[currentPoseIndex]}>
               {poseInstructions[currentPoseIndex]}
             </span>
             <Button 
@@ -423,7 +426,7 @@ const Canvas: React.FC<CanvasProps> = ({ displayImageUrl, onStartOver, isLoading
               aria-label="Pose berikutnya"
               variant="ghost"
               size="icon"
-              className="rounded-full hover:bg-white/80 dark:hover:bg-black/20"
+              className="rounded-full hover:bg-stone-200/50 dark:hover:bg-stone-800/50 h-8 w-8"
               disabled={isLoading}
             >
               <ChevronRightIcon className="w-5 h-5 text-stone-800 dark:text-stone-200" />
