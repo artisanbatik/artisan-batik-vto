@@ -90,11 +90,9 @@ const Canvas: React.FC<CanvasProps> = ({ displayImageUrl, onStartOver, isLoading
         setIsDownloading(false);
     }
   };
-  
-  return (
-    <div className="w-full h-full flex items-center justify-center p-4 pb-18 relative animate-zoom-in group bg-stone-100 dark:bg-stone-800">
-      {/* Top Left Controls */}
-      <div className="absolute top-4 left-4 z-30 flex items-center gap-2">
+
+  const TopLeftControls = () => (
+    <div className="absolute top-4 left-4 z-30 flex items-center gap-2">
         <Button 
             onClick={onStartOver}
             variant="outline"
@@ -115,7 +113,7 @@ const Canvas: React.FC<CanvasProps> = ({ displayImageUrl, onStartOver, isLoading
         </Button>
 
         {/* Undo/Redo Controls */}
-        <div className="flex items-center bg-white/80 dark:bg-stone-900/80 border border-stone-300/80 dark:border-stone-700/80 rounded-full p-1 shadow-sm backdrop-blur-sm">
+        <div className="flex items-center bg-white/80 dark:bg-stone-900/80 border border-stone-300/80 dark:border-stone-700/80 rounded-full p-1 shadow-sm backdrop-blur-sm gap-1">
             <Button
               onClick={onUndo}
               disabled={!canUndo || isLoading}
@@ -126,7 +124,7 @@ const Canvas: React.FC<CanvasProps> = ({ displayImageUrl, onStartOver, isLoading
             >
               <UndoIcon className="w-4 h-4" />
             </Button>
-            <div className="w-px h-4 bg-stone-300/80 dark:bg-stone-700/80 mx-1"></div>
+            <div className="w-px h-4 bg-stone-300/80 dark:bg-stone-700/80"></div>
             <Button
               onClick={onRedo}
               disabled={!canRedo || isLoading}
@@ -139,9 +137,10 @@ const Canvas: React.FC<CanvasProps> = ({ displayImageUrl, onStartOver, isLoading
             </Button>
         </div>
       </div>
+  );
 
-      {/* Top Right Controls */}
-      {displayImageUrl && (
+  const TopRightControls = () => (
+      displayImageUrl ? (
         <div className="absolute top-4 right-4 z-30">
           <Button
               onClick={() => setIsFormatModalOpen(true)}
@@ -155,7 +154,34 @@ const Canvas: React.FC<CanvasProps> = ({ displayImageUrl, onStartOver, isLoading
               {isDownloading ? 'Mengunduh...' : 'Unduh'}
           </Button>
         </div>
-      )}
+      ) : null
+  );
+
+  const ZoomControls = () => (
+      displayImageUrl ? (
+          <div className={cn(
+            "absolute z-30 flex flex-col items-center gap-1 bg-white/80 dark:bg-stone-900/80 rounded-full p-1.5 border border-stone-300/80 dark:border-stone-700/80 shadow-md backdrop-blur-sm",
+            isMobile ? "bottom-4 left-4" : "right-4 top-1/2 -translate-y-1/2 md:opacity-0 md:group-hover:opacity-100 transition-opacity"
+          )}>
+              <Button onClick={zoomIn} disabled={!canZoomIn} variant="ghost" size="icon" className="rounded-full hover:bg-stone-200/60 dark:hover:bg-stone-800/60 h-8 w-8" aria-label="Perbesar">
+                  <ZoomInIcon className="w-5 h-5" />
+              </Button>
+              <div className="w-5 h-px bg-stone-300/80 dark:bg-stone-700/80"></div>
+              <Button onClick={zoomOut} disabled={!canZoomOut} variant="ghost" size="icon" className="rounded-full hover:bg-stone-200/60 dark:hover:bg-stone-800/60 h-8 w-8" aria-label="Perkecil">
+                  <ZoomOutIcon className="w-5 h-5" />
+              </Button>
+              <div className="w-5 h-px bg-stone-300/80 dark:bg-stone-700/80 my-1"></div>
+              <Button onClick={resetView} disabled={isDefaultView} variant="ghost" size="icon" className="rounded-full hover:bg-stone-200/60 dark:hover:bg-stone-800/60 h-8 w-8" aria-label="Atur Ulang Tampilan">
+                  <MaximizeIcon className="w-5 h-5" />
+              </Button>
+          </div>
+      ) : null
+  );
+  
+  return (
+    <div className="w-full h-full flex items-center justify-center p-4 pb-18 relative animate-zoom-in group bg-stone-100 dark:bg-stone-800">
+      <TopLeftControls />
+      <TopRightControls />
 
       {/* Image Display or Placeholder */}
       <div 
@@ -207,25 +233,7 @@ const Canvas: React.FC<CanvasProps> = ({ displayImageUrl, onStartOver, isLoading
         </AnimatePresence>
       </div>
       
-      {/* Zoom Controls */}
-      {displayImageUrl && (
-          <div className={cn(
-            "absolute z-30 flex flex-col items-center gap-1 bg-white/80 dark:bg-stone-900/80 rounded-full p-1.5 border border-stone-300/80 dark:border-stone-700/80 shadow-md backdrop-blur-sm",
-            isMobile ? "bottom-4 left-4" : "right-4 top-1/2 -translate-y-1/2 md:opacity-0 md:group-hover:opacity-100 transition-opacity"
-          )}>
-              <Button onClick={zoomIn} disabled={!canZoomIn} variant="ghost" size="icon" className="rounded-full hover:bg-stone-200/60 dark:hover:bg-stone-800/60 h-8 w-8" aria-label="Perbesar">
-                  <ZoomInIcon className="w-5 h-5" />
-              </Button>
-              <div className="w-5 h-px bg-stone-300/80 dark:bg-stone-700/80"></div>
-              <Button onClick={zoomOut} disabled={!canZoomOut} variant="ghost" size="icon" className="rounded-full hover:bg-stone-200/60 dark:hover:bg-stone-800/60 h-8 w-8" aria-label="Perkecil">
-                  <ZoomOutIcon className="w-5 h-5" />
-              </Button>
-              <div className="w-5 h-px bg-stone-300/80 dark:bg-stone-700/80 my-1"></div>
-              <Button onClick={resetView} disabled={isDefaultView} variant="ghost" size="icon" className="rounded-full hover:bg-stone-200/60 dark:hover:bg-stone-800/60 h-8 w-8" aria-label="Atur Ulang Tampilan">
-                  <MaximizeIcon className="w-5 h-5" />
-              </Button>
-          </div>
-      )}
+      <ZoomControls />
 
       {/* Pose Controls */}
       {displayImageUrl && !isLoading && (

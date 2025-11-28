@@ -8,6 +8,7 @@ import { ShirtIcon, PantsIcon, JacketIcon, DressIcon, ShoppingBagIcon } from '..
 import { WardrobeCategory } from '../../types';
 import { cn } from '../../lib/utils';
 import { ModalDialog } from '../ui/modal-dialog';
+import { Button } from '../ui/button';
 
 interface CategorizeGarmentModalProps {
   isOpen: boolean;
@@ -39,18 +40,17 @@ export const CategorizeGarmentModal: React.FC<CategorizeGarmentModalProps> = ({ 
 
   const footer = (
     <>
-        <button
-        onClick={onClose}
-        className="px-4 py-2 text-sm font-semibold text-stone-700 dark:text-stone-200 bg-stone-200/80 dark:bg-stone-700/80 rounded-md hover:bg-stone-300 dark:hover:bg-stone-600 transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-stone-400"
+        <Button
+            onClick={onClose}
+            variant="secondary"
         >
-        Batal
-        </button>
-        <button
-        onClick={handleConfirm}
-        className="px-4 py-2 text-sm font-semibold text-white dark:text-stone-900 bg-stone-900 dark:bg-stone-100 rounded-md hover:bg-stone-700 dark:hover:bg-stone-300 transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-stone-800"
+            Batal
+        </Button>
+        <Button
+            onClick={handleConfirm}
         >
-        Tambah ke Koleksi
-        </button>
+            Tambah ke Koleksi
+        </Button>
     </>
   );
 
@@ -72,19 +72,15 @@ export const CategorizeGarmentModal: React.FC<CategorizeGarmentModalProps> = ({ 
                 <p className="text-stone-600 dark:text-stone-400 mb-4">Pilih kategori untuk karya batik baru Anda.</p>
                 <div className="grid grid-cols-3 gap-3">
                     {CATEGORIES_FOR_MODAL.map(category => (
-                        <button
+                        <Button
                             key={category.id}
                             onClick={() => setSelectedCategory(category.id)}
-                            className={cn(
-                                'flex flex-col items-center justify-center gap-2 p-3 text-sm font-semibold rounded-lg transition-all border-2 aspect-square',
-                                selectedCategory === category.id
-                                    ? 'bg-stone-900 dark:bg-stone-100 text-white dark:text-stone-900 border-stone-900 dark:border-stone-100 ring-2 ring-offset-2 ring-stone-900 dark:ring-stone-100'
-                                    : 'bg-white dark:bg-stone-800 text-stone-700 dark:text-stone-200 border-stone-300 dark:border-stone-700 hover:border-stone-500 dark:hover:border-stone-400 hover:bg-stone-50 dark:hover:bg-stone-700'
-                            )}
+                            variant={selectedCategory === category.id ? 'default' : 'outline'}
+                            className="flex flex-col items-center justify-center gap-2 h-auto py-4 aspect-square"
                         >
                             <category.icon className="w-8 h-8"/>
                             <span>{category.name}</span>
-                        </button>
+                        </Button>
                     ))}
                 </div>
             </div>

@@ -8,6 +8,7 @@ import { WandSparklesIcon } from '../icons';
 import { WardrobeItem } from '../../types';
 import { cn } from '../../lib/utils';
 import { ModalDialog } from '../ui/modal-dialog';
+import { Button } from '../ui/button';
 
 interface TextureSelectionModalProps {
   isOpen: boolean;
@@ -39,20 +40,19 @@ export const TextureSelectionModal: React.FC<TextureSelectionModalProps> = ({ is
 
   const footer = (
     <>
-        <button
+        <Button
             onClick={onClose}
-            className="px-4 py-2 text-sm font-semibold text-stone-700 dark:text-stone-200 bg-stone-200/80 dark:bg-stone-700/80 rounded-md hover:bg-stone-300 dark:hover:bg-stone-600 transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-stone-400"
+            variant="secondary"
         >
             Batal
-        </button>
-        <button
+        </Button>
+        <Button
             onClick={handleConfirm}
             disabled={!selectedTexture}
-            className="flex items-center gap-2 px-4 py-2 text-sm font-semibold text-white dark:text-stone-900 bg-stone-900 dark:bg-stone-100 rounded-md hover:bg-stone-700 dark:hover:bg-stone-300 transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-stone-700 disabled:bg-stone-400 disabled:cursor-not-allowed"
+            leftIcon={<WandSparklesIcon className="w-4 h-4" />}
         >
-            <WandSparklesIcon className="w-4 h-4" />
             Terapkan Tekstur
-        </button>
+        </Button>
     </>
   );
 
@@ -73,18 +73,14 @@ export const TextureSelectionModal: React.FC<TextureSelectionModalProps> = ({ is
                 <p className="text-stone-600 dark:text-stone-400 mb-4">Pilih tekstur untuk diterapkan pada karya batik.</p>
                 <div className="grid grid-cols-2 gap-3">
                     {TEXTURES.map(texture => (
-                        <button
+                        <Button
                             key={texture}
                             onClick={() => setSelectedTexture(texture)}
-                            className={cn(
-                                'px-4 py-2 text-sm font-semibold rounded-md transition-all border-2',
-                                selectedTexture === texture
-                                    ? 'bg-stone-800 dark:bg-stone-200 text-white dark:text-stone-900 border-stone-800 dark:border-stone-200'
-                                    : 'bg-white dark:bg-stone-800 text-stone-700 dark:text-stone-200 border-stone-300 dark:border-stone-700 hover:border-stone-500 dark:hover:border-stone-500'
-                            )}
+                            variant={selectedTexture === texture ? 'default' : 'outline'}
+                            className="w-full justify-center"
                         >
                             {texture}
-                        </button>
+                        </Button>
                     ))}
                 </div>
             </div>

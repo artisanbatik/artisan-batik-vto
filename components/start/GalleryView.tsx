@@ -6,6 +6,7 @@ import ConfirmationDialog from '../../components/AddProductModal';
 import { cn } from '../../lib/utils';
 import { CustomModel } from '../../types';
 import { Button } from '../../components/ui/button';
+import { Input } from '../../components/ui/input';
 import { useInlineRename } from '../../hooks/useInlineRename';
 
 interface GalleryViewProps {
@@ -152,32 +153,36 @@ const GalleryView: React.FC<GalleryViewProps> = (props) => {
                                     </Button>
                                 </div>
                                 <div className="absolute top-2 right-2 z-10 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                                    <button 
-                                        onClick={() => startRename(model.id, model.name)} 
-                                        className="p-1.5 bg-black/40 text-white rounded-full hover:bg-black/60 transition-colors"
+                                    <Button
+                                        onClick={() => startRename(model.id, model.name)}
+                                        variant="secondary"
+                                        size="icon"
+                                        className="h-8 w-8 rounded-full bg-black/40 text-white hover:bg-black/60 border-none"
                                         aria-label={`Ubah nama ${model.name}`}
                                     >
                                         <PencilIcon className="w-4 h-4" />
-                                    </button>
-                                    <button 
+                                    </Button>
+                                    <Button 
                                         onClick={() => props.setDeletingModel(model)} 
-                                        className="p-1.5 bg-black/40 text-white rounded-full hover:bg-red-600 transition-colors"
+                                        variant="secondary"
+                                        size="icon"
+                                        className="h-8 w-8 rounded-full bg-black/40 text-white hover:bg-red-600 border-none"
                                         aria-label={`Hapus ${model.name}`}
                                     >
                                         <Trash2Icon className="w-4 h-4" />
-                                    </button>
+                                    </Button>
                                 </div>
                             </div>
                             <div className="text-center font-semibold text-stone-800 dark:text-stone-200 mt-2">
                             {renamingId === model.id ? (
-                                    <input
+                                    <Input
                                         ref={renameInputRef}
                                         type="text"
                                         value={inputValue}
                                         onChange={(e) => setInputValue(e.target.value)}
                                         onBlur={commitRename}
                                         onKeyDown={handleKeyDown}
-                                        className="w-full text-center bg-stone-100 dark:bg-stone-800 border border-stone-300 dark:border-stone-600 rounded-md px-2 py-1 -my-1 focus:outline-none focus:ring-1 focus:ring-stone-800 dark:focus:ring-stone-200"
+                                        className="w-full text-center h-8 px-2 py-1 -my-1"
                                     />
                             ) : (
                                 <p className="truncate" title={model.name}>{model.name}</p>
@@ -185,16 +190,17 @@ const GalleryView: React.FC<GalleryViewProps> = (props) => {
                             </div>
                         </div>
                     ))}
-                    <button 
+                    <Button 
                         onClick={props.onSetViewUploader} 
+                        variant="outline"
                         className={cn(
-                        "border-2 border-dashed border-stone-300 dark:border-stone-700 rounded-lg flex flex-col items-center justify-center text-stone-500 dark:text-stone-400 hover:border-stone-500 dark:hover:border-stone-500 hover:text-stone-700 dark:hover:text-stone-200 transition-colors",
+                        "h-auto flex-col border-dashed rounded-lg text-stone-500 dark:text-stone-400 hover:text-stone-700 dark:hover:text-stone-200",
                         'aspect-[3/4]'
                         )}
                     >
-                        <PlusIcon className="w-8 h-8" />
-                        <span className="mt-2 font-semibold">Tambah Model Baru</span>
-                    </button>
+                        <PlusIcon className="w-8 h-8 mb-2" />
+                        <span className="font-semibold">Tambah Model Baru</span>
+                    </Button>
                 </div>
             </div>
         </div>

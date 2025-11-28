@@ -8,6 +8,7 @@ import type { WardrobeItem, WardrobeCategory } from '../types';
 import { UploadCloudIcon, CheckCircleIcon, PencilIcon, Trash2Icon } from './icons';
 import { cn, urlToFile } from '../lib/utils';
 import { ModalDialog } from './ui/modal-dialog';
+import { Button } from './ui/button';
 
 interface WardrobeModalProps {
   isOpen: boolean;
@@ -110,19 +111,16 @@ const WardrobeModal: React.FC<WardrobeModalProps> = ({ isOpen, onClose, onGarmen
             <div className="flex-shrink-0 mb-4 overflow-x-auto -mx-6 px-6 pb-2">
                 <div className="flex items-center gap-2">
                     {CATEGORIES.map(category => (
-                        <button
+                        <Button
                             key={category.id}
                             onClick={() => setActiveCategory(category.id)}
-                            className={cn(
-                                'px-3 py-1.5 text-sm font-semibold whitespace-nowrap transition-colors rounded-full border',
-                                activeCategory === category.id
-                                    ? 'bg-stone-900 dark:bg-stone-100 text-white dark:text-stone-900 border-stone-900 dark:border-stone-100'
-                                    : 'bg-white dark:bg-stone-800 text-stone-600 dark:text-stone-400 border-stone-300 dark:border-stone-600 hover:border-stone-500 dark:hover:border-stone-400'
-                            )}
+                            variant={activeCategory === category.id ? 'default' : 'outline'}
+                            size="sm"
+                            className="rounded-full whitespace-nowrap"
                             disabled={isLoading}
                         >
                             {category.name}
-                        </button>
+                        </Button>
                     ))}
                 </div>
             </div>
@@ -154,33 +152,40 @@ const WardrobeModal: React.FC<WardrobeModalProps> = ({ isOpen, onClose, onGarmen
                             <button
                                 onClick={() => handleGarmentClick(item)}
                                 disabled={isLoading || isActive}
-                                className="w-full h-full border dark:border-stone-700 rounded-lg overflow-hidden focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-stone-800 dark:focus:ring-stone-200 disabled:opacity-60 disabled:cursor-not-allowed"
+                                className={cn(
+                                    "w-full h-full border dark:border-stone-700 rounded-lg overflow-hidden focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-stone-800 dark:focus:ring-stone-200 disabled:opacity-60 disabled:cursor-not-allowed transition-all",
+                                    isActive ? "ring-2 ring-stone-900 dark:ring-stone-100 ring-offset-2" : ""
+                                )}
                                 aria-label={`Select ${item.name}`}
                             >
                                 <img src={item.url} alt={item.name} className="w-full h-full object-cover" />
                                 {isActive && (
-                                    <div className="absolute inset-0 bg-stone-900/60 flex items-center justify-center">
-                                        <CheckCircleIcon className="w-8 h-8 text-white" />
+                                    <div className="absolute inset-0 bg-stone-900/40 flex items-center justify-center">
+                                        <CheckCircleIcon className="w-8 h-8 text-white drop-shadow-md" />
                                     </div>
                                 )}
                             </button>
                             <div className="absolute top-1 right-1 flex flex-col gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                                <button 
+                                <Button 
                                     onClick={(e) => { e.stopPropagation(); onEditGarment(item); }}
-                                    className="p-1.5 bg-white/90 dark:bg-stone-800/90 text-stone-700 dark:text-stone-200 rounded-full shadow-sm hover:bg-white dark:hover:bg-stone-800"
+                                    variant="secondary"
+                                    size="icon"
+                                    className="h-7 w-7 rounded-full shadow-sm bg-white/90 dark:bg-stone-800/90 hover:bg-white dark:hover:bg-stone-800"
                                     title="Ubah"
                                 >
-                                    <PencilIcon className="w-3 h-3" />
-                                </button>
-                                <button 
+                                    <PencilIcon className="w-3.5 h-3.5 text-stone-700 dark:text-stone-200" />
+                                </Button>
+                                <Button 
                                     onClick={(e) => { e.stopPropagation(); onDeleteGarment(item); }}
-                                    className="p-1.5 bg-white/90 dark:bg-stone-800/90 text-red-600 dark:text-red-400 rounded-full shadow-sm hover:bg-white dark:hover:bg-stone-800"
+                                    variant="secondary"
+                                    size="icon"
+                                    className="h-7 w-7 rounded-full shadow-sm bg-white/90 dark:bg-stone-800/90 hover:bg-white dark:hover:bg-stone-800"
                                     title="Hapus"
                                 >
-                                    <Trash2Icon className="w-3 h-3" />
-                                </button>
+                                    <Trash2Icon className="w-3.5 h-3.5 text-red-600 dark:text-red-400" />
+                                </Button>
                             </div>
-                            <div className="absolute bottom-0 left-0 right-0 p-1 bg-gradient-to-t from-black/70 to-transparent pointer-events-none">
+                            <div className="absolute bottom-0 left-0 right-0 p-1 bg-gradient-to-t from-black/70 to-transparent pointer-events-none rounded-b-lg">
                                 <p className="text-white text-xs font-semibold truncate text-center">{item.name}</p>
                             </div>
                         </div>
