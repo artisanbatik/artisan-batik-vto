@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: Apache-2.0
 */
 
-import { useState } from 'react';
+import React, { useState } from 'react';
 
 export const useInlineRename = (onRename: (id: string, newName: string) => void) => {
   const [renamingId, setRenamingId] = useState<string | null>(null);

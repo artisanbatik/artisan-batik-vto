@@ -39,7 +39,7 @@ const SavedLookbooksPanel: React.FC<SavedLookbooksPanelProps> = ({ savedLookbook
       <ResourceList
         items={savedLookbooks}
         emptyMessage="Lookbook yang Anda simpan akan muncul di sini."
-        renderItem={(lookbook) => (
+        renderItem={(lookbook: SavedLookbook) => (
           <ResourceItem
             key={lookbook.id}
             id={lookbook.id}

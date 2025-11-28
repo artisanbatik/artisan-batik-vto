@@ -26,7 +26,7 @@ const HistoryPanel: React.FC<HistoryPanelProps> = ({ history, currentIndex, onJu
       <ResourceList
         items={history}
         emptyMessage="Riwayat penataan gaya Anda akan muncul di sini."
-        renderItem={(layer) => {
+        renderItem={(layer: OutfitLayer) => {
           // Because History list logic relies on index, we map it slightly differently if possible,
           // but ResourceList expects items. We can find the index in the original array.
           const index = history.indexOf(layer); 

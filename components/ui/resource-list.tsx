@@ -7,6 +7,7 @@ interface ResourceItemProps {
   thumbnailUrl?: string;
   title: string;
   subtitle?: string;
+  prefix?: React.ReactNode; // New prop for content before thumbnail (e.g., numbers)
   isActive?: boolean;
   isDisabled?: boolean;
   
@@ -27,6 +28,7 @@ export const ResourceItem: React.FC<ResourceItemProps> = ({
   thumbnailUrl,
   title,
   subtitle,
+  prefix,
   isActive,
   isDisabled,
   onClick,
@@ -61,6 +63,12 @@ export const ResourceItem: React.FC<ResourceItemProps> = ({
         className={cn("flex items-center gap-3 flex-grow overflow-hidden", onClick && !isDisabled ? "cursor-pointer" : "")}
         onClick={!isDisabled ? onClick : undefined}
       >
+        {prefix && (
+            <div className="flex-shrink-0">
+                {prefix}
+            </div>
+        )}
+
         {thumbnailUrl && (
           <img 
             src={thumbnailUrl} 
@@ -106,7 +114,7 @@ export const ResourceItem: React.FC<ResourceItemProps> = ({
 
 interface ResourceListProps<T> {
   items: T[];
-  renderItem: (item: T) => React.ReactNode;
+  renderItem: (item: T, index: number) => React.ReactNode;
   emptyMessage?: string;
   className?: string;
   maxHeight?: string;
@@ -129,7 +137,7 @@ export const ResourceList = <T,>({
 
   return (
     <div className={cn("space-y-2 overflow-y-auto pr-2", maxHeight, className)}>
-      {items.map(renderItem)}
+      {items.map((item, index) => renderItem(item, index))}
     </div>
   );
 };

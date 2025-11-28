@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: Apache-2.0
 */
 
-import { useState, useRef, useCallback } from 'react';
+import React, { useState, useRef, useCallback } from 'react';
 
 const MIN_SCALE = 1;
 const MAX_SCALE = 5;
@@ -114,7 +114,7 @@ export const useCanvasInteraction = () => {
         }
     }, [handleZoom, isDragging, scale, dragStart, setClampedPosition]);
 
-    const handleTouchEnd = useCallback(() => {
+    const handleTouchEnd = useCallback((e: React.TouchEvent) => {
         setIsDragging(false);
         touchStartDistance.current = 0;
     }, []);

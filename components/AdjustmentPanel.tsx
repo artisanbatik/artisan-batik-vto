@@ -35,7 +35,7 @@ const SavedOutfitsPanel: React.FC<SavedOutfitsPanelProps> = ({ savedOutfits, onL
       <ResourceList
         items={savedOutfits}
         emptyMessage="Koleksi yang Anda simpan akan muncul di sini."
-        renderItem={(outfit) => (
+        renderItem={(outfit: SavedOutfit) => (
           <ResourceItem
             key={outfit.id}
             id={outfit.id}
