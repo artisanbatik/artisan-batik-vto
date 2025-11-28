@@ -1,14 +1,14 @@
 
-import React, { useState, useCallback, useRef } from 'react';
+import React, { useState, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { UploadCloudIcon, CameraIcon, FileUpIcon, DownloadIcon, WandSparklesIcon, RotateCcwIcon, CheckCircleIcon, ArrowRightIcon } from '../../components/icons';
 import { Compare } from '../../components/ui/compare';
 import Spinner from '../../components/Spinner';
 import Camera from '../../components/Camera';
-import { cn, getFriendlyErrorMessage } from '../../lib/utils';
+import { cn } from '../../lib/utils';
 import { CustomModel } from '../../types';
 import { Button } from '../../components/ui/button';
-import { generateModelImage, refineModelImage } from '../../services/geminiService';
+import { useModelGenerator } from '../../hooks/useModelGenerator';
 
 interface UploaderViewProps {
   customModels: CustomModel[];
@@ -28,16 +28,17 @@ interface UploaderViewProps {
 const ASPECT_RATIOS = ['1:1', '2:3', '3:2', '3:4', '4:3', '4:5', '5:4', '9:16', '16:9', '21:9'];
 
 const UploaderView: React.FC<UploaderViewProps> = (props) => {
-  // Local State for Generation Process
-  const [userImageUrl, setUserImageUrl] = useState<string | null>(null);
-  const [generatedModelUrl, setGeneratedModelUrl] = useState<string | null>(null);
-  const [isGenerating, setIsGenerating] = useState(false);
-  const [isRefining, setIsRefining] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  // Local State for UI preferences
   const [isDraggingOver, setIsDraggingOver] = useState(false);
   const [backgroundColor, setBackgroundColor] = useState('#f3f2ef');
   const [aspectRatio, setAspectRatio] = useState('4:5');
   const [isCameraOpen, setIsCameraOpen] = useState(false);
+
+  // Hook for Model Generation Logic
+  const { 
+      userImageUrl, generatedModelUrl, isGenerating, isRefining, error, 
+      generateModel, refineModel, reset 
+  } = useModelGenerator();
 
   const importFileRef = useRef<HTMLInputElement>(null);
 
@@ -45,72 +46,17 @@ const UploaderView: React.FC<UploaderViewProps> = (props) => {
      if(importFileRef.current) importFileRef.current.click();
   }
 
-  const handleFileSelect = useCallback(async (file: File) => {
-    if (!file.type.startsWith('image/')) {
-        setError('Silakan pilih file gambar.');
-        return;
-    }
-
-    const reader = new FileReader();
-    reader.onload = async (e) => {
-        const dataUrl = e.target?.result as string;
-        setUserImageUrl(dataUrl);
-        setIsGenerating(true);
-        setGeneratedModelUrl(null);
-        setError(null);
-        try {
-            const result = await generateModelImage(file, backgroundColor, aspectRatio);
-            setGeneratedModelUrl(result);
-        } catch (err) {
-            setError(getFriendlyErrorMessage(err instanceof Error ? err.message : String(err), 'Gagal membuat model'));
-            setUserImageUrl(null);
-        } finally {
-            setIsGenerating(false);
-        }
-    };
-    reader.readAsDataURL(file);
-  }, [backgroundColor, aspectRatio]);
-
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
-      handleFileSelect(e.target.files[0]);
+      generateModel(e.target.files[0], backgroundColor, aspectRatio);
     }
   };
 
   const handleCapture = (file: File) => {
     setIsCameraOpen(false);
-    handleFileSelect(file);
+    generateModel(file, backgroundColor, aspectRatio);
   };
 
-  const handleRefineModel = async (refinementType: 'pose' | 'background') => {
-      if (!generatedModelUrl) return;
-
-      setIsRefining(true);
-      setError(null);
-      let prompt = '';
-      if (refinementType === 'pose') {
-          prompt = `Gunakan gambar model yang disediakan sebagai referensi, buat ulang dengan pose berdiri yang sedikit berbeda namun tetap elegan. Pertahankan identitas, fitur wajah, tipe tubuh, dan latar belakang yang sama persis. Hanya variasikan posenya secara halus.`;
-      } else if (refinementType === 'background') {
-          prompt = `Gunakan gambar model yang disediakan sebagai referensi, buat ulang gambar tersebut dengan orang dan pose yang sama persis. SATU-SATUNYA perubahan adalah latar belakang, yang HARUS berupa latar studio solid dengan kode hex yang sama persis ini: ${backgroundColor}.`;
-      }
-
-      try {
-          const newUrl = await refineModelImage(generatedModelUrl, prompt, aspectRatio);
-          setGeneratedModelUrl(newUrl);
-      } catch (err) {
-          setError(getFriendlyErrorMessage(err instanceof Error ? err.message : String(err), 'Gagal menyempurnakan model'));
-      } finally {
-          setIsRefining(false);
-      }
-  };
-
-  const resetUpload = () => {
-    setUserImageUrl(null);
-    setGeneratedModelUrl(null);
-    setIsGenerating(false);
-    setError(null);
-  };
-  
   // Drag and Drop Handlers
   const handleDragEnter = (e: React.DragEvent<HTMLDivElement>) => {
     e.preventDefault(); e.stopPropagation();
@@ -128,7 +74,7 @@ const UploaderView: React.FC<UploaderViewProps> = (props) => {
     e.preventDefault(); e.stopPropagation();
     setIsDraggingOver(false);
     if (e.dataTransfer.files && e.dataTransfer.files[0]) {
-        handleFileSelect(e.dataTransfer.files[0]);
+        generateModel(e.dataTransfer.files[0], backgroundColor, aspectRatio);
     }
   };
 
@@ -235,7 +181,7 @@ const UploaderView: React.FC<UploaderViewProps> = (props) => {
                         {/* Action Buttons for Result Phase */}
                         <div className="grid grid-cols-2 gap-3">
                              <Button
-                                onClick={() => handleRefineModel('pose')}
+                                onClick={() => refineModel('pose', backgroundColor, aspectRatio)}
                                 disabled={isRefining || !generatedModelUrl}
                                 variant="secondary"
                                 className="w-full"
@@ -244,7 +190,7 @@ const UploaderView: React.FC<UploaderViewProps> = (props) => {
                                  Ubah Pose
                              </Button>
                              <Button
-                                onClick={() => handleRefineModel('background')}
+                                onClick={() => refineModel('background', backgroundColor, aspectRatio)}
                                 disabled={isRefining || !generatedModelUrl}
                                 variant="secondary"
                                 className="w-full"
@@ -263,7 +209,7 @@ const UploaderView: React.FC<UploaderViewProps> = (props) => {
                         </Button>
                         
                         <Button
-                            onClick={resetUpload}
+                            onClick={reset}
                             variant="ghost"
                             className="w-full text-stone-500 hover:text-red-600"
                             leftIcon={<RotateCcwIcon className="w-4 h-4"/>}

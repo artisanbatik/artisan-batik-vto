@@ -4,12 +4,13 @@
  * SPDX-License-Identifier: Apache-2.0
 */
 
-import React, { useState, useEffect, useRef } from 'react';
+import React from 'react';
 import { motion } from 'framer-motion';
 import { XIcon, SwitchCameraIcon } from './icons';
 import Spinner from './Spinner';
 import { cn } from '../lib/utils';
 import { Button } from './ui/button';
+import { useCamera } from '../hooks/useCamera';
 
 interface CameraProps {
   onCapture: (file: File) => void;
@@ -17,134 +18,19 @@ interface CameraProps {
 }
 
 const Camera: React.FC<CameraProps> = ({ onCapture, onClose }) => {
-  const videoRef = useRef<HTMLVideoElement>(null);
-  const canvasRef = useRef<HTMLCanvasElement>(null);
-  const [stream, setStream] = useState<MediaStream | null>(null);
-  const [capturedImage, setCapturedImage] = useState<string | null>(null);
-  const [devices, setDevices] = useState<MediaDeviceInfo[]>([]);
-  const [activeDeviceId, setActiveDeviceId] = useState<string | undefined>(undefined);
-  const [error, setError] = useState<string | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-
-  useEffect(() => {
-    let currentStream: MediaStream | null = null;
-    
-    const cleanup = () => {
-        if (currentStream) {
-            currentStream.getTracks().forEach(track => track.stop());
-        }
-        if (stream) {
-            stream.getTracks().forEach(track => track.stop());
-        }
-    };
-    
-    const startCamera = async (deviceId?: string) => {
-        setIsLoading(true);
-        setError(null);
-        cleanup();
-
-        try {
-            const constraints: MediaStreamConstraints = {
-                video: {
-                    deviceId: deviceId ? { exact: deviceId } : undefined,
-                    facingMode: 'user',
-                    width: { ideal: 1080 },
-                    height: { ideal: 1920 },
-                },
-                audio: false,
-            };
-            currentStream = await navigator.mediaDevices.getUserMedia(constraints);
-            setStream(currentStream);
-            if (videoRef.current) {
-                videoRef.current.srcObject = currentStream;
-            }
-        } catch (err) {
-            console.error("Error accessing camera:", err);
-            if (err instanceof Error) {
-                if (err.name === 'NotAllowedError' || err.name === 'PermissionDeniedError') {
-                    setError('Izin kamera ditolak. Harap aktifkan di pengaturan peramban Anda.');
-                } else {
-                    setError('Tidak dapat mengakses kamera. Pastikan kamera tidak sedang digunakan oleh aplikasi lain.');
-                }
-            }
-        } 
-    };
-    
-    const getDevicesAndStart = async () => {
-        try {
-            await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
-            const allDevices = await navigator.mediaDevices.enumerateDevices();
-            const videoDevices = allDevices.filter(device => device.kind === 'videoinput');
-            setDevices(videoDevices);
-            const initialDeviceId = activeDeviceId || videoDevices[0]?.deviceId;
-            setActiveDeviceId(initialDeviceId);
-            await startCamera(initialDeviceId);
-        } catch (err) {
-             console.error("Error getting devices or starting camera:", err);
-            if (err instanceof Error) {
-                if (err.name === 'NotAllowedError' || err.name === 'PermissionDeniedError') {
-                    setError('Izin kamera ditolak. Harap aktifkan di pengaturan peramban Anda.');
-                } else {
-                    setError('Tidak dapat mengakses kamera. Pastikan kamera tidak sedang digunakan oleh aplikasi lain.');
-                }
-            }
-        }
-    };
-
-    getDevicesAndStart();
-
-    return () => {
-        cleanup();
-    };
-  }, [activeDeviceId]);
-
-  const handleCanPlay = () => {
-    setIsLoading(false);
-  };
-  
-  const handleSwitchCamera = () => {
-    if (devices.length < 2) return;
-    const currentIndex = devices.findIndex(device => device.deviceId === activeDeviceId);
-    const nextIndex = (currentIndex + 1) % devices.length;
-    setActiveDeviceId(devices[nextIndex].deviceId);
-  };
-
-  const handleTakePhoto = () => {
-    if (!videoRef.current || !canvasRef.current) return;
-    const video = videoRef.current;
-    const canvas = canvasRef.current;
-    
-    canvas.width = video.videoWidth;
-    canvas.height = video.videoHeight;
-
-    const context = canvas.getContext('2d');
-    if (context) {
-        const trackSettings = stream?.getVideoTracks()[0]?.getSettings();
-        const isFrontCamera = trackSettings?.facingMode === 'user';
-        
-        if (isFrontCamera) {
-            context.translate(video.videoWidth, 0);
-            context.scale(-1, 1);
-        }
-        context.drawImage(video, 0, 0, video.videoWidth, video.videoHeight);
-        const dataUrl = canvas.toDataURL('image/jpeg', 0.9);
-        setCapturedImage(dataUrl);
-    }
-  };
-  
-  const handleRetake = () => {
-    setCapturedImage(null);
-  };
-
-  const handleConfirmPhoto = () => {
-    if (!capturedImage) return;
-    fetch(capturedImage)
-        .then(res => res.blob())
-        .then(blob => {
-            const file = new File([blob], `capture-${Date.now()}.jpg`, { type: 'image/jpeg' });
-            onCapture(file);
-        });
-  };
+  const {
+      videoRef,
+      canvasRef,
+      capturedImage,
+      error,
+      isLoading,
+      devices,
+      handleCanPlay,
+      switchCamera,
+      takePhoto,
+      retakePhoto,
+      confirmPhoto
+  } = useCamera();
 
   return (
     <motion.div
@@ -189,14 +75,14 @@ const Camera: React.FC<CameraProps> = ({ onCapture, onClose }) => {
       <div className="absolute bottom-0 left-0 right-0 p-6 flex items-center justify-center z-20">
         {capturedImage ? (
             <div className="flex items-center justify-around w-full max-w-sm gap-4">
-                <Button onClick={handleRetake} variant="secondary" className="rounded-full bg-white/10 text-white hover:bg-white/20 border-white/20 px-6">Ambil Ulang</Button>
-                <Button onClick={handleConfirmPhoto} variant="default" className="rounded-full bg-white text-black hover:bg-gray-200 px-6">Gunakan Foto</Button>
+                <Button onClick={retakePhoto} variant="secondary" className="rounded-full bg-white/10 text-white hover:bg-white/20 border-white/20 px-6">Ambil Ulang</Button>
+                <Button onClick={() => confirmPhoto(onCapture)} variant="default" className="rounded-full bg-white text-black hover:bg-gray-200 px-6">Gunakan Foto</Button>
             </div>
         ) : (
             <div className="flex items-center justify-around w-full max-w-sm">
                 <div className="w-16 h-16" /> {/* Spacer */}
                 <button 
-                  onClick={handleTakePhoto}
+                  onClick={takePhoto}
                   disabled={isLoading || !!error}
                   className="w-20 h-20 bg-white rounded-full flex items-center justify-center ring-4 ring-white/30 disabled:opacity-50 transition-transform active:scale-95"
                   aria-label="Ambil foto"
@@ -204,7 +90,7 @@ const Camera: React.FC<CameraProps> = ({ onCapture, onClose }) => {
                     <div className="w-[70px] h-[70px] bg-white rounded-full border-2 border-gray-300"></div>
                 </button>
                 {devices.length > 1 ? (
-                  <button onClick={handleSwitchCamera} className="w-16 h-16 flex items-center justify-center" aria-label="Ganti kamera">
+                  <button onClick={switchCamera} className="w-16 h-16 flex items-center justify-center" aria-label="Ganti kamera">
                     <div className="p-3 bg-white/20 rounded-full text-white hover:bg-white/30 transition-colors">
                         <SwitchCameraIcon className="w-7 h-7" />
                     </div>

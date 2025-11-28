@@ -1,9 +1,10 @@
+
 /**
  * @license
  * SPDX-License-Identifier: Apache-2.0
 */
 
-import React, { useState, useRef, useCallback, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { LookbookImage } from '../../types';
 import { XIcon, DownloadIcon, WandSparklesIcon, ZoomInIcon, ChevronLeftIcon, SaveIcon, ChevronRightIcon, ZoomOutIcon, MaximizeIcon } from '../icons';
@@ -11,7 +12,7 @@ import Spinner from '../Spinner';
 import { cn, ImageFormat, convertImage } from '../../lib/utils';
 import JSZip from 'jszip';
 import DownloadFormatModal from '../DownloadFormatModal';
-
+import { useCanvasInteraction } from '../../hooks/useCanvasInteraction';
 
 interface LookbookModalProps {
   isOpen: boolean;
@@ -72,10 +73,6 @@ const RegeneratePrompt: React.FC<{
     );
 };
 
-const MIN_SCALE = 1;
-const MAX_SCALE = 5;
-const clamp = (val: number, min: number, max: number) => Math.min(Math.max(val, min), max);
-
 const LookbookModal: React.FC<LookbookModalProps> = ({ isOpen, onClose, isLoading, images, error, style, onRegenerate, regeneratingImageId, onSave, isSaved, isMobile, aspectRatio }) => {
     const [zoomedImage, setZoomedImage] = useState<LookbookImage | null>(null);
     const [isDownloading, setIsDownloading] = useState(false);
@@ -83,94 +80,26 @@ const LookbookModal: React.FC<LookbookModalProps> = ({ isOpen, onClose, isLoadin
     const [isFormatModalOpen, setIsFormatModalOpen] = useState(false);
     const [downloadType, setDownloadType] = useState<'single' | 'all' | null>(null);
 
-    // --- State untuk zoom dan pan ---
+    // --- State & Hook untuk zoom dan pan ---
     const [isZoomEnabled, setIsZoomEnabled] = useState(false);
-    const [scale, setScale] = useState(1);
-    const [position, setPosition] = useState({ x: 0, y: 0 });
-    const [isDragging, setIsDragging] = useState(false);
-    const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
-    const imageContainerRef = useRef<HTMLDivElement>(null);
     
-    // --- Logika Zoom & Pan ---
-    const handleResetView = useCallback(() => {
-        setScale(1);
-        setPosition({ x: 0, y: 0 });
-    }, []);
+    // Reuse custom hook logic
+    const { 
+        scale, position, isDragging, containerRef, resetView, 
+        handlers, zoomIn, zoomOut, canZoomIn, canZoomOut 
+    } = useCanvasInteraction();
 
     useEffect(() => {
         if (!isZoomEnabled) {
-            handleResetView();
+            resetView();
         }
-    }, [isZoomEnabled, handleResetView]);
+    }, [isZoomEnabled, resetView]);
 
     useEffect(() => {
         setIsZoomEnabled(false);
-        handleResetView();
-    }, [zoomedImage, handleResetView]);
+        resetView();
+    }, [zoomedImage, resetView]);
 
-    const setClampedPosition = useCallback((newPos: { x: number; y: number }, currentScale: number) => {
-        if (!imageContainerRef.current) {
-          setPosition(newPos);
-          return;
-        }
-        
-        const container = imageContainerRef.current;
-        const containerRect = container.getBoundingClientRect();
-        
-        const minX = containerRect.width - containerRect.width * currentScale;
-        const minY = containerRect.height - containerRect.height * currentScale;
-        
-        const clampedX = clamp(newPos.x, minX, 0);
-        const clampedY = clamp(newPos.y, minY, 0);
-        
-        setPosition({ x: clampedX, y: clampedY });
-    }, []);
-
-    const handleZoom = (delta: number, clientX?: number, clientY?: number) => {
-        if (!isZoomEnabled || !imageContainerRef.current) return;
-    
-        const newScale = clamp(scale + delta, MIN_SCALE, MAX_SCALE);
-        if (newScale === scale) return;
-        
-        if (newScale === 1) {
-          handleResetView();
-          return;
-        }
-    
-        const rect = imageContainerRef.current.getBoundingClientRect();
-        const mouseX = (clientX ?? (rect.left + rect.width / 2)) - rect.left;
-        const mouseY = (clientY ?? (rect.top + rect.height / 2)) - rect.top;
-        
-        const newPosX = mouseX - ((mouseX - position.x) / scale) * newScale;
-        const newPosY = mouseY - ((mouseY - position.y) / scale) * newScale;
-        
-        setScale(newScale);
-        setClampedPosition({ x: newPosX, y: newPosY }, newScale);
-    };
-  
-    const handleWheel = (e: React.WheelEvent) => {
-        if (!isZoomEnabled) return;
-        e.preventDefault();
-        handleZoom(-e.deltaY * 0.005, e.clientX, e.clientY);
-    };
-  
-    const handleMouseDown = (e: React.MouseEvent) => {
-        if (!isZoomEnabled || scale <= 1) return;
-        e.preventDefault();
-        setIsDragging(true);
-        setDragStart({ x: e.clientX - position.x, y: e.clientY - position.y });
-    };
-  
-    const handleMouseMove = (e: React.MouseEvent) => {
-        if (!isDragging || !isZoomEnabled || scale <= 1) return;
-        e.preventDefault();
-        const newPos = { x: e.clientX - dragStart.x, y: e.clientY - dragStart.y };
-        setClampedPosition(newPos, scale);
-    };
-
-    const handleMouseUpOrLeave = () => {
-        setIsDragging(false);
-    };
 
     const currentImageIndex = useMemo(() => {
         if (!zoomedImage) return -1;
@@ -274,14 +203,10 @@ const LookbookModal: React.FC<LookbookModalProps> = ({ isOpen, onClose, isLoadin
                         </button>
                     </div>
                     <div 
-                        ref={imageContainerRef}
+                        ref={containerRef}
                         className="flex-grow flex items-center justify-center p-2 sm:p-4 relative bg-stone-100 dark:bg-stone-950 overflow-hidden group/zoom"
                         style={{ cursor: isZoomEnabled && scale > 1 ? (isDragging ? 'grabbing' : 'grab') : 'default' }}
-                        onMouseDown={handleMouseDown}
-                        onMouseMove={handleMouseMove}
-                        onMouseUp={handleMouseUpOrLeave}
-                        onMouseLeave={handleMouseUpOrLeave}
-                        onWheel={handleWheel}
+                        {...handlers}
                     >
                         <AnimatePresence>
                             {isRegenerating && (
@@ -345,15 +270,15 @@ const LookbookModal: React.FC<LookbookModalProps> = ({ isOpen, onClose, isLoadin
                                     className="flex flex-col items-center gap-1 overflow-hidden"
                                 >
                                     <div className="w-5 h-px bg-stone-300/80 dark:bg-stone-700/80"></div>
-                                    <button onClick={() => handleZoom(0.25)} disabled={scale >= MAX_SCALE} className="p-2 rounded-full text-stone-700 dark:text-stone-200 hover:bg-stone-200/60 dark:hover:bg-stone-800/60 disabled:text-stone-400 dark:disabled:text-stone-500 disabled:bg-transparent disabled:cursor-not-allowed transition-colors" aria-label="Perbesar">
+                                    <button onClick={zoomIn} disabled={!canZoomIn} className="p-2 rounded-full text-stone-700 dark:text-stone-200 hover:bg-stone-200/60 dark:hover:bg-stone-800/60 disabled:text-stone-400 dark:disabled:text-stone-500 disabled:bg-transparent disabled:cursor-not-allowed transition-colors" aria-label="Perbesar">
                                         <ZoomInIcon className="w-5 h-5" />
                                     </button>
                                     <div className="w-5 h-px bg-stone-300/80 dark:bg-stone-700/80"></div>
-                                    <button onClick={() => handleZoom(-0.25)} disabled={scale <= MIN_SCALE} className="p-2 rounded-full text-stone-700 dark:text-stone-200 hover:bg-stone-200/60 dark:hover:bg-stone-800/60 disabled:text-stone-400 dark:disabled:text-stone-500 disabled:bg-transparent disabled:cursor-not-allowed transition-colors" aria-label="Perkecil">
+                                    <button onClick={zoomOut} disabled={!canZoomOut} className="p-2 rounded-full text-stone-700 dark:text-stone-200 hover:bg-stone-200/60 dark:hover:bg-stone-800/60 disabled:text-stone-400 dark:disabled:text-stone-500 disabled:bg-transparent disabled:cursor-not-allowed transition-colors" aria-label="Perkecil">
                                         <ZoomOutIcon className="w-5 h-5" />
                                     </button>
                                     <div className="w-5 h-px bg-stone-300/80 dark:bg-stone-700/80 my-1"></div>
-                                    <button onClick={handleResetView} disabled={scale === 1 && position.x === 0 && position.y === 0} className="p-2 rounded-full text-stone-700 dark:text-stone-200 hover:bg-stone-200/60 dark:hover:bg-stone-800/60 disabled:text-stone-400 dark:disabled:text-stone-500 disabled:bg-transparent disabled:cursor-not-allowed transition-colors" aria-label="Atur Ulang Tampilan">
+                                    <button onClick={resetView} disabled={scale === 1 && position.x === 0 && position.y === 0} className="p-2 rounded-full text-stone-700 dark:text-stone-200 hover:bg-stone-200/60 dark:hover:bg-stone-800/60 disabled:text-stone-400 dark:disabled:text-stone-500 disabled:bg-transparent disabled:cursor-not-allowed transition-colors" aria-label="Atur Ulang Tampilan">
                                         <MaximizeIcon className="w-5 h-5" />
                                     </button>
                                 </motion.div>

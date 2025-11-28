@@ -4,9 +4,12 @@
  * SPDX-License-Identifier: Apache-2.0
 */
 
-import React, { useState } from 'react';
-import { OutfitLayer, WardrobeItem, SavedOutfit, SavedLookbook } from '../types';
+import React, { useEffect, useCallback } from 'react';
+import { OutfitLayer, WardrobeItem, SavedOutfit, SavedLookbook, CustomModel } from '../types';
 import { useStudioState, POSE_INSTRUCTIONS } from '../hooks/useStudioState';
+import { useHistory } from '../hooks/useHistory';
+import { useVTO } from '../hooks/useVTO';
+import { resizeImage, urlToFile } from '../lib/utils';
 
 // Components
 import Canvas from './Canvas';
@@ -16,43 +19,18 @@ import StudioSidePanel from './studio/StudioSidePanel';
 import Footer from './Footer';
 
 interface StudioScreenProps {
-    // State from hooks
-    history: OutfitLayer[];
-    currentIndex: number;
-    currentPoseIndex: number;
-    currentOutfit: OutfitLayer | undefined;
-    activeOutfitLayers: OutfitLayer[];
-    canUndo: boolean;
-    canRedo: boolean;
+    // Initial State
+    initialModel: CustomModel | null;
     
-    // VTO State
-    isVTOLoading: boolean;
-    loadingMessage: string;
-    vtoError: string | null;
-    setVtoError: (error: string | null) => void;
-    loadingError: string | null;
-    setLoadingError: (error: string | null) => void;
-
-    // Persistence Data
+    // Persistence Data (Passed down from App)
     wardrobe: WardrobeItem[];
     savedOutfits: SavedOutfit[];
     savedLookbooks: SavedLookbook[];
     productInfoHistory: any[];
+    persistenceActions: any;
 
-    // Actions
-    undo: (onRemoveGarment?: (id: string) => void) => void;
-    redo: () => void;
-    jumpToState: (index: number) => void;
+    // Navigation
     onStartOver: () => void;
-    onSelectPose: (index: number) => void;
-    onGenerateCommonPoses: () => void;
-    
-    // Complex Actions
-    handleGenerateVTO: (garmentFile: File, garmentInfo: WardrobeItem, texture: string) => Promise<void>;
-    handleSaveOutfit: () => void;
-    handleLoadOutfit: (outfit: SavedOutfit) => void;
-    
-    persistenceActions: any; 
 
     // Theme
     theme: 'light' | 'dark';
@@ -60,16 +38,144 @@ interface StudioScreenProps {
 }
 
 const StudioScreen: React.FC<StudioScreenProps> = ({
-    history, currentIndex, currentPoseIndex, currentOutfit, activeOutfitLayers, canUndo, canRedo,
-    isVTOLoading, loadingMessage, vtoError, setVtoError, loadingError, setLoadingError,
-    wardrobe, savedOutfits, savedLookbooks, productInfoHistory,
-    undo, redo, jumpToState, onStartOver, onSelectPose, onGenerateCommonPoses,
-    handleGenerateVTO, handleSaveOutfit, handleLoadOutfit, persistenceActions,
-    theme, onToggleTheme
+    initialModel,
+    wardrobe, savedOutfits, savedLookbooks, productInfoHistory, persistenceActions,
+    onStartOver, theme, onToggleTheme
 }) => {
-    // Layout State
-    const [isPanelOpen, setIsPanelOpen] = useState(window.innerWidth > 768);
+    // --- Internal State Management ---
+    // Moved from App.tsx to encapsulate Studio logic
+    const { 
+        history, currentIndex, currentPoseIndex, currentOutfit, activeOutfitLayers, 
+        canUndo, canRedo, updateHistory, undo, redo, jumpToState, setCurrentPoseIndex, updateCurrentLayerPoses, resetHistory, setHistory
+    } = useHistory();
+
+    const { 
+        isLoading: isVTOLoading, loadingMessage, error: vtoError, setError: setVtoError,
+        generateVTO, generatePose, generateCommonPoses 
+    } = useVTO();
+
+    const [loadingError, setLoadingError] = React.useState<string | null>(null);
+    const [isPanelOpen, setIsPanelOpen] = React.useState(window.innerWidth > 768);
     const isMobile = window.innerWidth <= 768;
+
+    // Initialize History with selected model
+    useEffect(() => {
+        if (initialModel) {
+            const baseLayer: OutfitLayer = {
+                garment: null,
+                poseImages: { [POSE_INSTRUCTIONS[0]]: initialModel.imageUrl }
+            };
+            resetHistory(baseLayer);
+        }
+    }, [initialModel]);
+
+    // --- Logic Handlers (Moved from App.tsx) ---
+
+    const handleGenerateVTO = useCallback(async (garmentFile: File, garmentInfo: WardrobeItem, texture: string) => {
+        if (!currentOutfit) return;
+        const baseImageUrl = currentOutfit.poseImages[POSE_INSTRUCTIONS[0]];
+        const newImageUrl = await generateVTO(baseImageUrl, garmentFile, garmentInfo, texture, POSE_INSTRUCTIONS[0]);
+        
+        if (newImageUrl) {
+            const newLayer: OutfitLayer = {
+                garment: garmentInfo,
+                texture,
+                poseImages: { [POSE_INSTRUCTIONS[0]]: newImageUrl },
+            };
+            updateHistory(newLayer);
+        }
+    }, [currentOutfit, generateVTO, updateHistory]);
+
+    const handleSelectPose = useCallback(async (index: number) => {
+        const poseInstruction = POSE_INSTRUCTIONS[index];
+        if (currentOutfit?.poseImages[poseInstruction]) {
+            setCurrentPoseIndex(index);
+            return;
+        }
+        if (!currentOutfit || isVTOLoading) return;
+        
+        const baseImageUrl = currentOutfit.poseImages[POSE_INSTRUCTIONS[0]];
+        const newImageUrl = await generatePose(baseImageUrl, poseInstruction, activeOutfitLayers);
+        
+        if (newImageUrl) {
+            updateCurrentLayerPoses({ [poseInstruction]: newImageUrl });
+            setCurrentPoseIndex(index);
+        }
+    }, [currentOutfit, isVTOLoading, generatePose, activeOutfitLayers, updateCurrentLayerPoses, setCurrentPoseIndex]);
+
+    const handleGenerateCommonPoses = useCallback(async () => {
+        if (!currentOutfit || isVTOLoading) return;
+        const posesToGenerate = ["Sedikit berputar, tampak 3/4", "Tampak dari samping", "Berjalan ke arah kamera"];
+        const baseImageUrl = currentOutfit.poseImages[POSE_INSTRUCTIONS[0]];
+        const currentPoseKeys = Object.keys(currentOutfit.poseImages);
+    
+        const results = await generateCommonPoses(baseImageUrl, currentPoseKeys, activeOutfitLayers, posesToGenerate);
+        if (results.length > 0) {
+            const newPoses = results.reduce((acc, curr) => ({ ...acc, [curr.pose]: curr.url }), {});
+            updateCurrentLayerPoses(newPoses);
+        }
+    }, [currentOutfit, isVTOLoading, generateCommonPoses, activeOutfitLayers, updateCurrentLayerPoses]);
+
+    const handleSaveOutfit = async () => {
+        if (activeOutfitLayers.length <= 1 || !currentOutfit) return;
+        try {
+            const thumbnailUrl = currentOutfit.poseImages[POSE_INSTRUCTIONS[0]];
+            const resizedThumbnailUrl = await resizeImage(thumbnailUrl, 200, 267);
+            const name = `Koleksi ${new Date().toLocaleString()}`;
+            const newSavedOutfit: SavedOutfit = {
+                id: `outfit-${Date.now()}`,
+                name,
+                thumbnailUrl: resizedThumbnailUrl,
+                layers: activeOutfitLayers.slice(1).map(layer => ({
+                    garmentId: layer.garment!.id,
+                    texture: layer.texture,
+                })),
+                poseInstruction: POSE_INSTRUCTIONS[0],
+            };
+            await persistenceActions.saveOutfit(newSavedOutfit);
+        } catch (error) {
+            console.error("Gagal menyimpan koleksi:", error);
+            setVtoError("Gagal menyimpan koleksi karena tidak dapat memproses gambar mini.");
+        }
+    };
+    
+    const handleLoadOutfit = (outfitToLoad: SavedOutfit) => {
+        const baseLayer = history[0];
+        if (!baseLayer) {
+            console.error("Tidak dapat memuat koleksi, lapisan dasar tidak ditemukan.");
+            return;
+        }
+        const loadLayers = async () => {
+            let currentHistory = [baseLayer];
+            
+            // Show loading state implicitly by maybe setting a message if we had a global loader, 
+            // but for now we rely on the VTO hook's loading state per item or just blocking UI.
+            // Since we are iterating, let's just do it. 
+            
+            for (const layerInfo of outfitToLoad.layers) {
+                const garment = wardrobe.find(g => g.id === layerInfo.garmentId);
+                if (!garment) continue;
+                try {
+                    const garmentFile = await urlToFile(garment.url, garment.name);
+                    const baseImageUrl = currentHistory[currentHistory.length - 1].poseImages[POSE_INSTRUCTIONS[0]];
+                    // Directly calling service or using hook? Using hook function is better but we are in a loop.
+                    // generateVTO updates loading state.
+                    const newImageUrl = await generateVTO(baseImageUrl, garmentFile, garment, layerInfo.texture || 'default', POSE_INSTRUCTIONS[0]);
+                    if(newImageUrl) {
+                        const newLayer: OutfitLayer = {
+                            garment,
+                            texture: layerInfo.texture,
+                            poseImages: { [POSE_INSTRUCTIONS[0]]: newImageUrl },
+                        };
+                        currentHistory.push(newLayer);
+                    }
+                } catch (err) { break; }
+            }
+            setHistory(currentHistory);
+            setCurrentPoseIndex(0);
+        };
+        loadLayers();
+    };
 
     // Use Custom Hook for all internal Logic & UI State
     const studio = useStudioState({
@@ -100,7 +206,7 @@ const StudioScreen: React.FC<StudioScreenProps> = ({
                     onStartOver={handleStartOverLocal}
                     isLoading={isVTOLoading}
                     loadingMessage={loadingMessage}
-                    onSelectPose={onSelectPose}
+                    onSelectPose={handleSelectPose}
                     poseInstructions={POSE_INSTRUCTIONS}
                     currentPoseIndex={currentPoseIndex}
                     availablePoseKeys={Object.keys(currentOutfit?.poseImages ?? {})}
@@ -109,7 +215,7 @@ const StudioScreen: React.FC<StudioScreenProps> = ({
                     onRedo={redo}
                     canUndo={canUndo}
                     canRedo={canRedo}
-                    onGenerateCommonPoses={onGenerateCommonPoses}
+                    onGenerateCommonPoses={handleGenerateCommonPoses}
                     isMobile={isMobile}
                     theme={theme}
                     onToggleTheme={onToggleTheme}

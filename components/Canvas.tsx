@@ -3,13 +3,14 @@
  * @license
  * SPDX-License-Identifier: Apache-2.0
 */
-import React, { useState, useMemo, useRef, useEffect, useCallback } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { RotateCcwIcon, ChevronLeftIcon, ChevronRightIcon, DownloadIcon, UndoIcon, RedoIcon, ZoomInIcon, ZoomOutIcon, MaximizeIcon, CheckCircleIcon, WandSparklesIcon, SunIcon, MoonIcon } from './icons';
 import Spinner from './Spinner';
 import { AnimatePresence, motion } from 'framer-motion';
 import DownloadFormatModal from './DownloadFormatModal';
 import { ImageFormat, convertImage, cn } from '../lib/utils';
 import { Button } from './ui/button';
+import { useCanvasInteraction } from '../hooks/useCanvasInteraction';
 
 interface CanvasProps {
   displayImageUrl: string | null;
@@ -37,138 +38,26 @@ interface CanvasProps {
   onToggleTheme: () => void;
 }
 
-const MIN_SCALE = 1;
-const MAX_SCALE = 5;
-const clamp = (val: number, min: number, max: number) => Math.min(Math.max(val, min), max);
-
 const Canvas: React.FC<CanvasProps> = ({ displayImageUrl, onStartOver, isLoading, loadingMessage, onSelectPose, poseInstructions, currentPoseIndex, availablePoseKeys, filters, onUndo, onRedo, canUndo, canRedo, onGenerateCommonPoses, isMobile, theme, onToggleTheme }) => {
   const [isPoseMenuOpen, setIsPoseMenuOpen] = useState(false);
   const [isFormatModalOpen, setIsFormatModalOpen] = useState(false);
   const [isDownloading, setIsDownloading] = useState(false);
   
-  // State for zoom and pan
-  const [scale, setScale] = useState(1);
-  const [position, setPosition] = useState({ x: 0, y: 0 });
-  const [isDragging, setIsDragging] = useState(false);
-  const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
-  
-  const containerRef = useRef<HTMLDivElement>(null);
-
-  // State for touch gestures
-  const touchStartDistance = useRef<number>(0);
-  const touchStartPosition = useRef<{ x: number; y: number }>({ x: 0, y: 0 });
+  // Custom Hook for Interaction Logic
+  const { 
+    scale, position, isDragging, containerRef, resetView, 
+    handlers, zoomIn, zoomOut, canZoomIn, canZoomOut, isZoomed, isDefaultView 
+  } = useCanvasInteraction();
 
   const imageStyle = useMemo(() => ({
     filter: `brightness(${filters.brightness / 100}) contrast(${filters.contrast / 100}) saturate(${filters.saturation / 100}) hue-rotate(${filters.hue}deg) sepia(${filters.sepia}%)`,
     transition: 'filter 0.2s ease-out'
   }), [filters]);
   
-  const handleResetView = useCallback(() => {
-    setScale(1);
-    setPosition({ x: 0, y: 0 });
-  }, []);
-
   // Effect to reset zoom/pan when image changes
   useEffect(() => {
-    handleResetView();
-  }, [displayImageUrl, handleResetView]);
-
-  const setClampedPosition = useCallback((newPos: { x: number; y: number }, currentScale: number) => {
-    if (!containerRef.current) {
-      setPosition(newPos);
-      return;
-    }
-    
-    const container = containerRef.current;
-    const containerRect = container.getBoundingClientRect();
-
-    const minX = containerRect.width - containerRect.width * currentScale;
-    const minY = containerRect.height - containerRect.height * currentScale;
-
-    const clampedX = clamp(newPos.x, minX, 0);
-    const clampedY = clamp(newPos.y, minY, 0);
-    
-    setPosition({ x: clampedX, y: clampedY });
-  }, []);
-
-
-  const handleZoom = (delta: number, clientX?: number, clientY?: number) => {
-    if (!containerRef.current) return;
-
-    const newScale = clamp(scale + delta, MIN_SCALE, MAX_SCALE);
-    if (newScale === scale) return;
-    
-    if (newScale === 1) {
-      handleResetView();
-      return;
-    }
-
-    const rect = containerRef.current.getBoundingClientRect();
-    const mouseX = (clientX ?? (rect.left + rect.width / 2)) - rect.left;
-    const mouseY = (clientY ?? (rect.top + rect.height / 2)) - rect.top;
-    
-    const newPosX = mouseX - ((mouseX - position.x) / scale) * newScale;
-    const newPosY = mouseY - ((mouseY - position.y) / scale) * newScale;
-    
-    setScale(newScale);
-    setClampedPosition({ x: newPosX, y: newPosY }, newScale);
-  };
-  
-  // --- Mouse and Wheel Event Handlers ---
-  const handleWheel = (e: React.WheelEvent) => {
-    e.preventDefault();
-    handleZoom(-e.deltaY * 0.005, e.clientX, e.clientY);
-  };
-  
-  const handleMouseDown = (e: React.MouseEvent) => {
-    if (scale <= 1) return;
-    e.preventDefault();
-    setIsDragging(true);
-    setDragStart({ x: e.clientX - position.x, y: e.clientY - position.y });
-  };
-  
-  const handleMouseMove = (e: React.MouseEvent) => {
-    if (!isDragging || scale <= 1) return;
-    e.preventDefault();
-    const newPos = { x: e.clientX - dragStart.x, y: e.clientY - dragStart.y };
-    setClampedPosition(newPos, scale);
-  };
-
-  const handleMouseUpOrLeave = () => {
-    setIsDragging(false);
-  };
-
-  // --- Touch Event Handlers ---
-  const getDistance = (touches: React.TouchList) => {
-    return Math.sqrt(Math.pow(touches[0].clientX - touches[1].clientX, 2) + Math.pow(touches[0].clientY - touches[1].clientY, 2));
-  };
-
-  const handleTouchStart = (e: React.TouchEvent) => {
-    if (e.touches.length === 2) {
-      touchStartDistance.current = getDistance(e.touches);
-    } else if (e.touches.length === 1 && scale > 1) {
-      setIsDragging(true);
-      touchStartPosition.current = { x: e.touches[0].clientX, y: e.touches[0].clientY };
-      setDragStart({ x: e.touches[0].clientX - position.x, y: e.touches[0].clientY - position.y });
-    }
-  };
-
-  const handleTouchMove = (e: React.TouchEvent) => {
-    if (e.touches.length === 2) {
-      const newDistance = getDistance(e.touches);
-      const delta = (newDistance - touchStartDistance.current) * 0.01; // Sensitivity
-      handleZoom(delta, (e.touches[0].clientX + e.touches[1].clientX) / 2, (e.touches[0].clientY + e.touches[1].clientY) / 2);
-      touchStartDistance.current = newDistance;
-    } else if (e.touches.length === 1 && isDragging && scale > 1) {
-      const newPos = { x: e.touches[0].clientX - dragStart.x, y: e.touches[0].clientY - dragStart.y };
-      setClampedPosition(newPos, scale);
-    }
-  };
-
-  const handleTouchEnd = () => {
-    setIsDragging(false);
-    touchStartDistance.current = 0;
-  };
+    resetView();
+  }, [displayImageUrl, resetView]);
 
   const handlePreviousPose = () => {
     if (isLoading) return;
@@ -272,15 +161,8 @@ const Canvas: React.FC<CanvasProps> = ({ displayImageUrl, onStartOver, isLoading
       <div 
         ref={containerRef}
         className="relative w-full h-full flex items-center justify-center overflow-hidden"
-        style={{ cursor: scale > 1 ? (isDragging ? 'grabbing' : 'grab') : 'default' }}
-        onMouseDown={handleMouseDown}
-        onMouseMove={handleMouseMove}
-        onMouseUp={handleMouseUpOrLeave}
-        onMouseLeave={handleMouseUpOrLeave}
-        onWheel={handleWheel}
-        onTouchStart={handleTouchStart}
-        onTouchMove={handleTouchMove}
-        onTouchEnd={handleTouchEnd}
+        style={{ cursor: isZoomed ? (isDragging ? 'grabbing' : 'grab') : 'default' }}
+        {...handlers}
       >
         {displayImageUrl ? (
           <div
@@ -331,15 +213,15 @@ const Canvas: React.FC<CanvasProps> = ({ displayImageUrl, onStartOver, isLoading
             "absolute z-30 flex flex-col items-center gap-1 bg-white/80 dark:bg-stone-900/80 rounded-full p-1.5 border border-stone-300/80 dark:border-stone-700/80 shadow-md backdrop-blur-sm",
             isMobile ? "bottom-4 left-4" : "right-4 top-1/2 -translate-y-1/2 md:opacity-0 md:group-hover:opacity-100 transition-opacity"
           )}>
-              <Button onClick={() => handleZoom(0.2)} disabled={scale >= MAX_SCALE} variant="ghost" size="icon" className="rounded-full hover:bg-stone-200/60 dark:hover:bg-stone-800/60 h-8 w-8" aria-label="Perbesar">
+              <Button onClick={zoomIn} disabled={!canZoomIn} variant="ghost" size="icon" className="rounded-full hover:bg-stone-200/60 dark:hover:bg-stone-800/60 h-8 w-8" aria-label="Perbesar">
                   <ZoomInIcon className="w-5 h-5" />
               </Button>
               <div className="w-5 h-px bg-stone-300/80 dark:bg-stone-700/80"></div>
-              <Button onClick={() => handleZoom(-0.2)} disabled={scale <= MIN_SCALE} variant="ghost" size="icon" className="rounded-full hover:bg-stone-200/60 dark:hover:bg-stone-800/60 h-8 w-8" aria-label="Perkecil">
+              <Button onClick={zoomOut} disabled={!canZoomOut} variant="ghost" size="icon" className="rounded-full hover:bg-stone-200/60 dark:hover:bg-stone-800/60 h-8 w-8" aria-label="Perkecil">
                   <ZoomOutIcon className="w-5 h-5" />
               </Button>
               <div className="w-5 h-px bg-stone-300/80 dark:bg-stone-700/80 my-1"></div>
-              <Button onClick={handleResetView} disabled={scale === 1 && position.x === 0 && position.y === 0} variant="ghost" size="icon" className="rounded-full hover:bg-stone-200/60 dark:hover:bg-stone-800/60 h-8 w-8" aria-label="Atur Ulang Tampilan">
+              <Button onClick={resetView} disabled={isDefaultView} variant="ghost" size="icon" className="rounded-full hover:bg-stone-200/60 dark:hover:bg-stone-800/60 h-8 w-8" aria-label="Atur Ulang Tampilan">
                   <MaximizeIcon className="w-5 h-5" />
               </Button>
           </div>

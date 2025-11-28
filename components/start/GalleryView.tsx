@@ -1,19 +1,18 @@
-import React, { useRef } from 'react';
+
+import React, { useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { FileUpIcon, DownloadIcon, PencilIcon, Trash2Icon, PlusIcon } from '../../components/icons';
-import Spinner from '../../components/Spinner';
 import ConfirmationDialog from '../../components/AddProductModal';
 import { cn } from '../../lib/utils';
 import { CustomModel } from '../../types';
 import { Button } from '../../components/ui/button';
+import { useInlineRename } from '../../hooks/useInlineRename';
 
 interface GalleryViewProps {
   customModels: CustomModel[];
   predefinedModels: CustomModel[];
   isImporting: boolean;
   isExporting: boolean;
-  renamingModelId: string | null;
-  renameInput: string;
   deletingModel: CustomModel | null;
   
   // Handlers
@@ -23,10 +22,9 @@ interface GalleryViewProps {
   onSetViewUploader: () => void;
   setDeletingModel: (model: CustomModel | null) => void;
   handleConfirmDelete: () => void;
-  handleStartRename: (model: CustomModel) => void;
-  setRenameInput: (input: string) => void;
-  handleFinishRename: () => void;
-  handleRenameKeyDown: (e: React.KeyboardEvent<HTMLInputElement>) => void;
+  
+  // New unified rename handler
+  onRenameModel: (id: string, newName: string) => void;
 }
 
 const screenVariants = {
@@ -39,13 +37,22 @@ const GalleryView: React.FC<GalleryViewProps> = (props) => {
   const importFileRef = useRef<HTMLInputElement>(null);
   const renameInputRef = useRef<HTMLInputElement>(null);
 
+  const {
+    renamingId,
+    inputValue,
+    setInputValue,
+    startRename,
+    commitRename,
+    handleKeyDown
+  } = useInlineRename(props.onRenameModel);
+
   // Focus rename input on change
-  React.useEffect(() => {
-    if (props.renamingModelId && renameInputRef.current) {
+  useEffect(() => {
+    if (renamingId && renameInputRef.current) {
         renameInputRef.current.focus();
         renameInputRef.current.select();
     }
-  }, [props.renamingModelId]);
+  }, [renamingId]);
 
   const handleImportClick = () => {
      if(importFileRef.current) importFileRef.current.click();
@@ -146,7 +153,7 @@ const GalleryView: React.FC<GalleryViewProps> = (props) => {
                                 </div>
                                 <div className="absolute top-2 right-2 z-10 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                                     <button 
-                                        onClick={() => props.handleStartRename(model)} 
+                                        onClick={() => startRename(model.id, model.name)} 
                                         className="p-1.5 bg-black/40 text-white rounded-full hover:bg-black/60 transition-colors"
                                         aria-label={`Ubah nama ${model.name}`}
                                     >
@@ -162,14 +169,14 @@ const GalleryView: React.FC<GalleryViewProps> = (props) => {
                                 </div>
                             </div>
                             <div className="text-center font-semibold text-stone-800 dark:text-stone-200 mt-2">
-                            {props.renamingModelId === model.id ? (
+                            {renamingId === model.id ? (
                                     <input
                                         ref={renameInputRef}
                                         type="text"
-                                        value={props.renameInput}
-                                        onChange={(e) => props.setRenameInput(e.target.value)}
-                                        onBlur={props.handleFinishRename}
-                                        onKeyDown={props.handleRenameKeyDown}
+                                        value={inputValue}
+                                        onChange={(e) => setInputValue(e.target.value)}
+                                        onBlur={commitRename}
+                                        onKeyDown={handleKeyDown}
                                         className="w-full text-center bg-stone-100 dark:bg-stone-800 border border-stone-300 dark:border-stone-600 rounded-md px-2 py-1 -my-1 focus:outline-none focus:ring-1 focus:ring-stone-800 dark:focus:ring-stone-200"
                                     />
                             ) : (
