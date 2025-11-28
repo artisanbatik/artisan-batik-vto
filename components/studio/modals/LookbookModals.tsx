@@ -5,46 +5,51 @@ import LookbookModal from '../../lookbook/LookbookModal';
 import { LookbookImage } from '../../../types';
 
 interface LookbookModalsProps {
-    isLookbookStyleModalOpen: boolean;
-    setIsLookbookStyleModalOpen: (open: boolean) => void;
-    handleGenerateLookbook: (style: string, aspectRatio: string, customPrompt?: string) => void;
-    isLookbookLoading: boolean;
-
-    isLookbookModalOpen: boolean;
-    setIsLookbookModalOpen: (open: boolean) => void;
-    lookbookImages: LookbookImage[];
-    lookbookError: string | null;
-    lookbookStyle: string;
-    lookbookAspectRatio: string;
-    handleRegenerateLookbookImage: (image: LookbookImage, prompt: string) => void;
-    regeneratingImageId: string | null;
-    handleSaveLookbook: () => void;
-    isLookbookSaved: boolean;
+    modals: {
+        isLookbookStyleModalOpen: boolean;
+        setIsLookbookStyleModalOpen: (open: boolean) => void;
+        isLookbookModalOpen: boolean;
+        setIsLookbookModalOpen: (open: boolean) => void;
+    };
+    lookbook: {
+        images: LookbookImage[];
+        style: string;
+        aspectRatio: string;
+        isLoading: boolean;
+        error: string | null;
+        regeneratingId: string | null;
+        isSaved: boolean;
+    };
+    handlers: {
+        handleGenerateLookbook: (style: string, aspectRatio: string, customPrompt?: string) => void;
+        handleRegenerateLookbookImage: (image: LookbookImage, prompt: string) => void;
+        handleSaveLookbook: () => void;
+    };
     isMobile: boolean;
 }
 
-const LookbookModals: React.FC<LookbookModalsProps> = (props) => {
+const LookbookModals: React.FC<LookbookModalsProps> = ({ modals, lookbook, handlers, isMobile }) => {
     return (
         <>
             <LookbookStyleModal
-                isOpen={props.isLookbookStyleModalOpen}
-                onClose={() => props.setIsLookbookStyleModalOpen(false)}
-                onGenerate={props.handleGenerateLookbook}
-                isLoading={props.isLookbookLoading}
+                isOpen={modals.isLookbookStyleModalOpen}
+                onClose={() => modals.setIsLookbookStyleModalOpen(false)}
+                onGenerate={handlers.handleGenerateLookbook}
+                isLoading={lookbook.isLoading}
             />
             <LookbookModal
-                isOpen={props.isLookbookModalOpen}
-                onClose={() => props.setIsLookbookModalOpen(false)}
-                isLoading={props.isLookbookLoading}
-                images={props.lookbookImages}
-                error={props.lookbookError}
-                style={props.lookbookStyle}
-                aspectRatio={props.lookbookAspectRatio}
-                onRegenerate={props.handleRegenerateLookbookImage}
-                regeneratingImageId={props.regeneratingImageId}
-                onSave={props.handleSaveLookbook}
-                isSaved={props.isLookbookSaved}
-                isMobile={props.isMobile}
+                isOpen={modals.isLookbookModalOpen}
+                onClose={() => modals.setIsLookbookModalOpen(false)}
+                isLoading={lookbook.isLoading}
+                images={lookbook.images}
+                error={lookbook.error}
+                style={lookbook.style}
+                aspectRatio={lookbook.aspectRatio}
+                onRegenerate={handlers.handleRegenerateLookbookImage}
+                regeneratingImageId={lookbook.regeneratingId}
+                onSave={handlers.handleSaveLookbook}
+                isSaved={lookbook.isSaved}
+                isMobile={isMobile}
             />
         </>
     );

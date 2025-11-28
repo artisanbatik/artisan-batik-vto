@@ -3,23 +3,29 @@ import React from 'react';
 import ProductInfoModal from '../../modals/ProductInfoModal';
 
 interface ProductInfoModalsProps {
-    isProductInfoModalOpen: boolean;
-    setIsProductInfoModalOpen: (open: boolean) => void;
-    isProductInfoLoading: boolean;
-    productInfoMarkdown: string | null;
-    productInfoError: string | null;
-    handleGenerateProductInfo: (force: boolean) => void;
+    modals: {
+        isProductInfoModalOpen: boolean;
+        setIsProductInfoModalOpen: (open: boolean) => void;
+    };
+    productInfo: {
+        isLoading: boolean;
+        markdown: string | null;
+        error: string | null;
+    };
+    handlers: {
+        handleGenerateProductInfo: (force: boolean) => void;
+    };
 }
 
-const ProductInfoModals: React.FC<ProductInfoModalsProps> = (props) => {
+const ProductInfoModals: React.FC<ProductInfoModalsProps> = ({ modals, productInfo, handlers }) => {
     return (
         <ProductInfoModal 
-            isOpen={props.isProductInfoModalOpen}
-            onClose={() => props.setIsProductInfoModalOpen(false)}
-            isLoading={props.isProductInfoLoading}
-            productInfoMarkdown={props.productInfoMarkdown}
-            error={props.productInfoError}
-            onRegenerate={() => props.handleGenerateProductInfo(true)}
+            isOpen={modals.isProductInfoModalOpen}
+            onClose={() => modals.setIsProductInfoModalOpen(false)}
+            isLoading={productInfo.isLoading}
+            productInfoMarkdown={productInfo.markdown}
+            error={productInfo.error}
+            onRegenerate={() => handlers.handleGenerateProductInfo(true)}
         />
     );
 };

@@ -43,7 +43,6 @@ const StudioScreen: React.FC<StudioScreenProps> = ({
     onStartOver, theme, onToggleTheme
 }) => {
     // --- Internal State Management ---
-    // Moved from App.tsx to encapsulate Studio logic
     const { 
         history, currentIndex, currentPoseIndex, currentOutfit, activeOutfitLayers, 
         canUndo, canRedo, updateHistory, undo, redo, jumpToState, setCurrentPoseIndex, updateCurrentLayerPoses, resetHistory, setHistory
@@ -69,7 +68,7 @@ const StudioScreen: React.FC<StudioScreenProps> = ({
         }
     }, [initialModel]);
 
-    // --- Logic Handlers (Moved from App.tsx) ---
+    // --- Logic Handlers ---
 
     const handleGenerateVTO = useCallback(async (garmentFile: File, garmentInfo: WardrobeItem, texture: string) => {
         if (!currentOutfit) return;
@@ -148,18 +147,12 @@ const StudioScreen: React.FC<StudioScreenProps> = ({
         const loadLayers = async () => {
             let currentHistory = [baseLayer];
             
-            // Show loading state implicitly by maybe setting a message if we had a global loader, 
-            // but for now we rely on the VTO hook's loading state per item or just blocking UI.
-            // Since we are iterating, let's just do it. 
-            
             for (const layerInfo of outfitToLoad.layers) {
                 const garment = wardrobe.find(g => g.id === layerInfo.garmentId);
                 if (!garment) continue;
                 try {
                     const garmentFile = await urlToFile(garment.url, garment.name);
                     const baseImageUrl = currentHistory[currentHistory.length - 1].poseImages[POSE_INSTRUCTIONS[0]];
-                    // Directly calling service or using hook? Using hook function is better but we are in a loop.
-                    // generateVTO updates loading state.
                     const newImageUrl = await generateVTO(baseImageUrl, garmentFile, garment, layerInfo.texture || 'default', POSE_INSTRUCTIONS[0]);
                     if(newImageUrl) {
                         const newLayer: OutfitLayer = {
@@ -246,57 +239,17 @@ const StudioScreen: React.FC<StudioScreenProps> = ({
             footer={<Footer isOnDressingScreen />}
             modals={
                 <StudioModals
-                    isWardrobeOpen={studio.modals.isWardrobeOpen}
-                    setIsWardrobeOpen={studio.modals.setIsWardrobeOpen}
-                    handleGarmentSelect={studio.handlers.handleGarmentSelect}
-                    handleFileUpload={studio.handlers.handleFileUpload}
+                    // Passing grouped state objects directly
+                    modals={studio.modals}
+                    selections={studio.selections}
+                    productInfo={studio.productInfo}
+                    lookbook={studio.lookbook}
+                    handlers={studio.handlers}
+                    
+                    // Data props
                     activeOutfitLayers={activeOutfitLayers}
                     isVTOLoading={isVTOLoading}
                     wardrobe={wardrobe}
-                    handleEditGarment={studio.handlers.handleEditGarment}
-                    handleDeleteGarment={studio.handlers.handleDeleteGarment}
-                    
-                    isTextureModalOpen={studio.modals.isTextureModalOpen}
-                    setIsTextureModalOpen={studio.modals.setIsTextureModalOpen}
-                    handleTextureConfirm={studio.handlers.handleTextureConfirm}
-                    garmentForTexture={studio.selections.garmentForTexture}
-                    
-                    isCategorizeModalOpen={studio.modals.isCategorizeModalOpen}
-                    setIsCategorizeModalOpen={studio.modals.setIsCategorizeModalOpen}
-                    handleCategorizeConfirm={studio.handlers.handleCategorizeConfirm}
-                    garmentToCategorize={studio.selections.garmentToCategorize}
-                    
-                    isEditGarmentModalOpen={studio.modals.isEditGarmentModalOpen}
-                    setIsEditGarmentModalOpen={studio.modals.setIsEditGarmentModalOpen}
-                    handleSaveGarmentEdit={studio.handlers.handleSaveGarmentEdit}
-                    garmentToEdit={studio.selections.garmentToEdit}
-                    
-                    deletingGarment={studio.selections.deletingGarment}
-                    setDeletingGarment={studio.selections.setDeletingGarment}
-                    handleConfirmDeleteGarment={studio.handlers.handleConfirmDeleteGarment}
-                    
-                    isProductInfoModalOpen={studio.modals.isProductInfoModalOpen}
-                    setIsProductInfoModalOpen={studio.modals.setIsProductInfoModalOpen}
-                    isProductInfoLoading={studio.productInfo.isLoading}
-                    productInfoMarkdown={studio.productInfo.markdown}
-                    productInfoError={studio.productInfo.error}
-                    handleGenerateProductInfo={studio.handlers.handleGenerateProductInfo}
-                    
-                    isLookbookStyleModalOpen={studio.modals.isLookbookStyleModalOpen}
-                    setIsLookbookStyleModalOpen={studio.modals.setIsLookbookStyleModalOpen}
-                    handleGenerateLookbook={studio.handlers.handleGenerateLookbook}
-                    isLookbookLoading={studio.lookbook.isLoading}
-                    
-                    isLookbookModalOpen={studio.modals.isLookbookModalOpen}
-                    setIsLookbookModalOpen={studio.modals.setIsLookbookModalOpen}
-                    lookbookImages={studio.lookbook.images}
-                    lookbookError={studio.lookbook.error}
-                    lookbookStyle={studio.lookbook.style}
-                    lookbookAspectRatio={studio.lookbook.aspectRatio}
-                    handleRegenerateLookbookImage={studio.handlers.handleRegenerateLookbookImage}
-                    regeneratingImageId={studio.lookbook.regeneratingId}
-                    handleSaveLookbook={studio.handlers.handleSaveLookbook}
-                    isLookbookSaved={studio.lookbook.isSaved}
                     isMobile={isMobile}
                 />
             }
