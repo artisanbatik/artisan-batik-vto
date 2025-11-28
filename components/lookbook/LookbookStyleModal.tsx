@@ -11,6 +11,8 @@ import { SHOT_TYPES } from '../../services/geminiService';
 import { cn } from '../../lib/utils';
 import Spinner from '../Spinner';
 import { ModalDialog } from '../ui/modal-dialog';
+import { Select } from '../ui/select';
+import { Textarea } from '../ui/textarea';
 
 interface LookbookStyleModalProps {
   isOpen: boolean;
@@ -57,15 +59,13 @@ const LookbookStyleModal: React.FC<LookbookStyleModalProps> = ({ isOpen, onClose
             maxWidth="max-w-md"
         >
             <div className="mb-4">
-                <label htmlFor="aspect-ratio-select" className="block text-sm font-semibold text-stone-700 dark:text-stone-300 mb-2">Aspek Rasio</label>
-                <select
-                    id="aspect-ratio-select"
+                <Select
+                    label="Rasio Aspek"
                     value={aspectRatio}
                     onChange={(e) => setAspectRatio(e.target.value)}
-                    className="w-full font-mono font-semibold text-stone-800 dark:text-stone-200 p-2.5 border-2 border-stone-300 dark:border-stone-700 rounded-lg hover:border-stone-400 dark:hover:border-stone-500 transition-colors bg-white dark:bg-stone-800 focus:outline-none focus:ring-2 focus:ring-amber-600"
-                >
-                    {ASPECT_RATIOS.map(ratio => <option key={ratio} value={ratio}>{ratio}</option>)}
-                </select>
+                    options={ASPECT_RATIOS.map(ratio => ({ value: ratio, label: ratio }))}
+                    className="font-mono font-semibold"
+                />
             </div>
             <hr className="my-4 border-stone-200 dark:border-stone-800" />
             <AnimatePresence mode="wait">
@@ -110,13 +110,13 @@ const LookbookStyleModal: React.FC<LookbookStyleModalProps> = ({ isOpen, onClose
                         transition={{ duration: 0.3, ease: 'easeInOut' }}
                     >
                             <p className="text-stone-600 dark:text-stone-400 mb-2">Jelaskan foto OOTD spesifik yang ingin Anda buat. Model dan pakaian Anda akan ditempatkan dalam adegan ini.</p>
-                            <textarea
-                            value={customPrompt}
-                            onChange={(e) => setCustomPrompt(e.target.value)}
-                            placeholder='Contoh: "Seorang wanita tersenyum sambil memegang secangkir kopi di sebuah kafe bergaya di Bali, dengan cahaya pagi yang lembut."'
-                            className="w-full h-28 p-2 text-sm bg-white dark:bg-stone-800 text-stone-900 dark:text-stone-100 border border-stone-300 dark:border-stone-700 rounded-md focus:outline-none focus:ring-2 focus:ring-amber-600"
+                            <Textarea
+                                value={customPrompt}
+                                onChange={(e) => setCustomPrompt(e.target.value)}
+                                placeholder='Contoh: "Seorang wanita tersenyum sambil memegang secangkir kopi di sebuah kafe bergaya di Bali, dengan cahaya pagi yang lembut."'
+                                className="h-28"
                             />
-                            <p className="text-xs text-stone-500 dark:text-stone-400 mt-1">Gaya yang dipilih di bawah ini (<span className="font-semibold">{selectedStyle}</span>) akan digunakan sebagai konteks umum.</p>
+                            <p className="text-xs text-stone-500 dark:text-stone-400 mt-2">Gaya yang dipilih di bawah ini (<span className="font-semibold">{selectedStyle}</span>) akan digunakan sebagai konteks umum.</p>
                             <div className="mt-4 text-center">
                             <button onClick={() => setView('presets')} className="text-sm font-semibold text-amber-700 dark:text-amber-500 hover:text-amber-800 dark:hover:text-amber-400 transition-colors">
                                 &larr; Kembali ke prasetel

@@ -8,6 +8,7 @@ import { ShirtIcon, PantsIcon, JacketIcon, DressIcon, ShoppingBagIcon } from '..
 import { WardrobeItem, WardrobeCategory } from '../../types';
 import { cn } from '../../lib/utils';
 import { ModalDialog } from '../ui/modal-dialog';
+import { Input } from '../ui/input';
 
 export interface EditGarmentModalProps {
   isOpen: boolean;
@@ -87,17 +88,14 @@ export const EditGarmentModal: React.FC<EditGarmentModalProps> = ({ isOpen, onCl
                 <img src={garment.url} alt={garment.name} className="w-full aspect-square object-cover rounded-lg border dark:border-stone-700"/>
             </div>
             <div className="flex-grow space-y-4">
+                <Input 
+                    label="Nama"
+                    id="garment-name"
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                />
+                
                 <div>
-                    <label htmlFor="garment-name" className="block text-sm font-semibold text-stone-700 dark:text-stone-300 mb-1">Nama</label>
-                    <input
-                        id="garment-name"
-                        type="text"
-                        value={name}
-                        onChange={(e) => setName(e.target.value)}
-                        className="w-full px-3 py-2 bg-white dark:bg-stone-800 text-stone-900 dark:text-stone-100 border border-stone-300 dark:border-stone-700 rounded-md focus:outline-none focus:ring-2 focus:ring-stone-800 dark:focus:ring-stone-200"
-                    />
-                </div>
-                    <div>
                     <p className="block text-sm font-semibold text-stone-700 dark:text-stone-300 mb-2">Kategori</p>
                     <div className="grid grid-cols-2 gap-3">
                         {CATEGORIES_FOR_MODAL.map(cat => (

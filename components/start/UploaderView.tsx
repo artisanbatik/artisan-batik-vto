@@ -8,6 +8,7 @@ import Camera from '../../components/Camera';
 import { cn } from '../../lib/utils';
 import { CustomModel } from '../../types';
 import { Button } from '../../components/ui/button';
+import { Select } from '../../components/ui/select';
 import { useModelGenerator } from '../../hooks/useModelGenerator';
 
 interface UploaderViewProps {
@@ -153,25 +154,22 @@ const UploaderView: React.FC<UploaderViewProps> = (props) => {
                          {/* Settings (only visible before upload) */}
                          <div className="grid grid-cols-2 gap-4 pt-2">
                              <div>
-                                <label className="block text-xs font-semibold text-stone-500 mb-1">Rasio Aspek</label>
-                                <select 
+                                <Select
+                                    label="Rasio Aspek"
                                     value={aspectRatio}
                                     onChange={(e) => setAspectRatio(e.target.value)}
-                                    className="w-full text-sm p-2 rounded-md border border-stone-300 dark:border-stone-700 bg-white dark:bg-stone-800"
-                                >
-                                    {ASPECT_RATIOS.map(r => <option key={r} value={r}>{r}</option>)}
-                                </select>
+                                    options={ASPECT_RATIOS.map(r => ({ value: r, label: r }))}
+                                />
                              </div>
                              <div>
-                                <label className="block text-xs font-semibold text-stone-500 mb-1">Warna Latar</label>
+                                <label className="block text-sm font-semibold text-stone-700 dark:text-stone-300 mb-1.5">Warna Latar</label>
                                 <div className="flex items-center gap-2">
                                     <input 
                                         type="color" 
                                         value={backgroundColor}
                                         onChange={(e) => setBackgroundColor(e.target.value)}
-                                        className="h-9 w-9 p-0 border-0 rounded-md cursor-pointer"
+                                        className="h-10 w-full p-0 border-0 rounded-md cursor-pointer"
                                     />
-                                    <span className="text-xs font-mono text-stone-500">{backgroundColor}</span>
                                 </div>
                              </div>
                          </div>

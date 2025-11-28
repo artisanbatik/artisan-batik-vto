@@ -7,6 +7,7 @@ import React from 'react';
 import { SlidersIcon } from './icons';
 import { Panel } from './ui/panel';
 import { Button } from './ui/button';
+import { Slider } from './ui/slider';
 
 interface FilterPanelProps {
   filters: {
@@ -20,36 +21,6 @@ interface FilterPanelProps {
   onResetFilters: () => void;
   isDisabled: boolean;
 }
-
-const FilterSlider: React.FC<{
-  label: string;
-  value: number;
-  onChange: (value: number) => void;
-  min?: number;
-  max?: number;
-  step?: number;
-  isDisabled: boolean;
-  unit?: string;
-}> = ({ label, value, onChange, min = 0, max = 200, step = 1, isDisabled, unit = '%' }) => (
-  <div className="space-y-2">
-    <div className="flex justify-between items-center">
-      <label htmlFor={`slider-${label}`} className="text-sm font-medium text-stone-700 dark:text-stone-300">{label}</label>
-      <span className="text-sm font-mono text-stone-600 dark:text-stone-300 bg-stone-100 dark:bg-stone-800 px-2 py-0.5 rounded-md">{value}{unit}</span>
-    </div>
-    <input
-      id={`slider-${label}`}
-      type="range"
-      min={min}
-      max={max}
-      step={step}
-      value={value}
-      onChange={(e) => onChange(parseInt(e.target.value, 10))}
-      disabled={isDisabled}
-      className="w-full h-2 bg-stone-200 dark:bg-stone-700 rounded-lg appearance-none cursor-pointer disabled:cursor-not-allowed accent-stone-800 dark:accent-stone-200"
-    />
-  </div>
-);
-
 
 const FilterPanel: React.FC<FilterPanelProps> = ({ filters, onFilterChange, onResetFilters, isDisabled }) => {
   const resetButton = (
@@ -72,41 +43,50 @@ const FilterPanel: React.FC<FilterPanelProps> = ({ filters, onFilterChange, onRe
       isDisabled={isDisabled}
     >
       <div className="space-y-4">
-        <FilterSlider
+        <Slider
           label="Kecerahan"
           value={filters.brightness}
           onChange={(v) => onFilterChange({ brightness: v })}
-          isDisabled={isDisabled}
+          min={0}
+          max={200}
+          disabled={isDisabled}
+          unit="%"
         />
-        <FilterSlider
+        <Slider
           label="Kontras"
           value={filters.contrast}
           onChange={(v) => onFilterChange({ contrast: v })}
-          isDisabled={isDisabled}
+          min={0}
+          max={200}
+          disabled={isDisabled}
+          unit="%"
         />
-        <FilterSlider
+        <Slider
           label="Saturasi"
           value={filters.saturation}
           onChange={(v) => onFilterChange({ saturation: v })}
-          isDisabled={isDisabled}
+          min={0}
+          max={200}
+          disabled={isDisabled}
+          unit="%"
         />
-        <FilterSlider
+        <Slider
           label="Rona"
           value={filters.hue}
           onChange={(v) => onFilterChange({ hue: v })}
           min={-180}
           max={180}
+          disabled={isDisabled}
           unit="deg"
-          isDisabled={isDisabled}
         />
-        <FilterSlider
+        <Slider
           label="Sepia"
           value={filters.sepia}
           onChange={(v) => onFilterChange({ sepia: v })}
           min={0}
           max={100}
+          disabled={isDisabled}
           unit="%"
-          isDisabled={isDisabled}
         />
       </div>
     </Panel>

@@ -1,6 +1,7 @@
 
 import React, { useRef, useEffect } from 'react';
 import { cn } from '../../lib/utils';
+import { Input } from './input';
 
 interface ResourceItemProps {
   id: string;
@@ -79,7 +80,7 @@ export const ResourceItem: React.FC<ResourceItemProps> = ({
         
         <div className="flex-grow overflow-hidden">
           {isRenaming ? (
-            <input
+            <Input
               ref={inputRef}
               type="text"
               value={renameValue}
@@ -87,7 +88,7 @@ export const ResourceItem: React.FC<ResourceItemProps> = ({
               onBlur={onRenameSubmit}
               onKeyDown={onRenameKeyDown}
               onClick={(e) => e.stopPropagation()}
-              className="font-semibold text-stone-800 dark:text-stone-100 bg-white dark:bg-stone-800 border border-stone-300 dark:border-stone-600 rounded-md px-2 py-1 -my-1 focus:outline-none focus:ring-1 focus:ring-stone-800 dark:focus:ring-stone-200 w-full text-sm"
+              className="h-7 px-2 py-1 text-sm font-semibold"
             />
           ) : (
             <p className="font-semibold text-stone-800 dark:text-stone-200 truncate text-sm" title={title}>
