@@ -1,10 +1,10 @@
 
 import React from 'react';
-import WardrobeModal from '../../WardrobeSheet';
+import { WardrobePickerModal } from '../../modals/WardrobePickerModal';
 import { TextureSelectionModal } from '../../modals/TextureSelectionModal';
 import { CategorizeGarmentModal } from '../../modals/CategorizeGarmentModal';
 import { EditGarmentModal } from '../../modals/EditGarmentModal';
-import ConfirmationDialog from '../../AddProductModal';
+import { ConfirmationDialog } from '../../ui/confirmation-dialog';
 import { WardrobeItem, OutfitLayer } from '../../../types';
 
 interface GarmentModalsProps {
@@ -43,7 +43,7 @@ interface GarmentModalsProps {
 const GarmentModals: React.FC<GarmentModalsProps> = ({ modals, selections, handlers, activeOutfitLayers, isVTOLoading, wardrobe }) => {
     return (
         <>
-            <WardrobeModal
+            <WardrobePickerModal
                 isOpen={modals.isWardrobeOpen}
                 onClose={() => modals.setIsWardrobeOpen(false)}
                 onGarmentSelect={handlers.handleGarmentSelect}

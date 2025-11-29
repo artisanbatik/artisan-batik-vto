@@ -6,7 +6,7 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import Spinner from './Spinner';
 import { AnimatePresence, motion } from 'framer-motion';
-import DownloadFormatModal from './DownloadFormatModal';
+import { DownloadFormatModal } from './modals/DownloadFormatModal';
 import { ImageFormat, convertImage } from '../lib/utils';
 import { useCanvasInteraction } from '../hooks/useCanvasInteraction';
 import { useStudio } from './studio/StudioContext';

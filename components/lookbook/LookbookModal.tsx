@@ -6,7 +6,7 @@ import { XIcon, DownloadIcon, WandSparklesIcon, ZoomInIcon, ChevronLeftIcon, Sav
 import Spinner from '../Spinner';
 import { cn, ImageFormat, convertImage } from '../../lib/utils';
 import JSZip from 'jszip';
-import DownloadFormatModal from '../DownloadFormatModal';
+import { DownloadFormatModal } from '../modals/DownloadFormatModal';
 import { useCanvasInteraction } from '../../hooks/useCanvasInteraction';
 import { ImageCard } from '../ui/image-card';
 

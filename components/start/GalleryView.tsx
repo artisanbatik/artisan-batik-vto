@@ -2,7 +2,7 @@
 import React, { useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { FileUpIcon, DownloadIcon, PencilIcon, Trash2Icon, PlusIcon } from '../../components/icons';
-import ConfirmationDialog from '../../components/AddProductModal';
+import { ConfirmationDialog } from '../../components/ui/confirmation-dialog';
 import { cn } from '../../lib/utils';
 import { CustomModel } from '../../types';
 import { Button } from '../../components/ui/button';
