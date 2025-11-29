@@ -5,10 +5,11 @@
 */
 import React, { useState } from 'react';
 import type { WardrobeItem, WardrobeCategory } from '../types';
-import { UploadCloudIcon, CheckCircleIcon, PencilIcon, Trash2Icon } from './icons';
+import { CheckCircleIcon, PencilIcon, Trash2Icon, UploadCloudIcon } from './icons';
 import { cn, urlToFile } from '../lib/utils';
 import { ModalDialog } from './ui/modal-dialog';
 import { Button } from './ui/button';
+import { FileDropzone } from './ui/file-dropzone';
 
 interface WardrobeModalProps {
   isOpen: boolean;
@@ -33,7 +34,6 @@ const CATEGORIES: { id: WardrobeCategory | 'all', name: string }[] = [
 
 const WardrobeModal: React.FC<WardrobeModalProps> = ({ isOpen, onClose, onGarmentSelect, onFileUpload, activeGarmentIds, isLoading, wardrobe, onEditGarment, onDeleteGarment }) => {
     const [error, setError] = useState<string | null>(null);
-    const [isDraggingOver, setIsDraggingOver] = useState(false);
     const [activeCategory, setActiveCategory] = useState<WardrobeCategory | 'all'>('all');
 
     const handleGarmentClick = async (item: WardrobeItem) => {
@@ -57,43 +57,6 @@ const WardrobeModal: React.FC<WardrobeModalProps> = ({ isOpen, onClose, onGarmen
       }
       setError(null);
       onFileUpload(file);
-    };
-
-    const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        if (e.target.files && e.target.files[0]) {
-            handleGarmentFileSelect(e.target.files[0]);
-        }
-    };
-    
-    const handleDragEnter = (e: React.DragEvent<HTMLLabelElement>) => {
-        e.preventDefault();
-        e.stopPropagation();
-        if (isLoading) return;
-        setIsDraggingOver(true);
-    };
-
-    const handleDragLeave = (e: React.DragEvent<HTMLLabelElement>) => {
-        e.preventDefault();
-        e.stopPropagation();
-        if (e.currentTarget.contains(e.relatedTarget as Node)) {
-          return;
-        }
-        setIsDraggingOver(false);
-    };
-    
-    const handleDragOver = (e: React.DragEvent<HTMLLabelElement>) => {
-        e.preventDefault();
-        e.stopPropagation();
-    };
-
-    const handleDrop = (e: React.DragEvent<HTMLLabelElement>) => {
-        e.preventDefault();
-        e.stopPropagation();
-        setIsDraggingOver(false);
-        if (isLoading) return;
-        if (e.dataTransfer.files && e.dataTransfer.files[0]) {
-            handleGarmentFileSelect(e.dataTransfer.files[0]);
-        }
     };
     
     const filteredWardrobe = wardrobe.filter(item => 
@@ -127,23 +90,14 @@ const WardrobeModal: React.FC<WardrobeModalProps> = ({ isOpen, onClose, onGarmen
 
             <div className="overflow-y-auto min-h-0 flex-grow -mx-2 px-2">
                 <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 pb-4">
-                        <label 
-                        htmlFor="modal-garment-upload" 
-                        className={cn(
-                            'relative aspect-square border-2 border-dashed rounded-lg flex flex-col items-center justify-center text-stone-500 dark:text-stone-400 transition-colors',
-                            isLoading && 'cursor-not-allowed bg-stone-100 dark:bg-stone-800',
-                            !isLoading && isDraggingOver && 'cursor-pointer border-solid border-stone-600 dark:border-stone-400 bg-stone-100 dark:bg-stone-800',
-                            !isLoading && !isDraggingOver && 'cursor-pointer border-stone-300 dark:border-stone-600 hover:border-stone-500 dark:hover:border-stone-400 hover:text-stone-700 dark:hover:text-stone-200'
-                        )}
-                        onDragEnter={handleDragEnter}
-                        onDragLeave={handleDragLeave}
-                        onDragOver={handleDragOver}
-                        onDrop={handleDrop}
-                    >
-                        <UploadCloudIcon className="w-8 h-8 mb-2"/>
-                        <span className="text-xs text-center font-semibold">Unggah</span>
-                        <input id="modal-garment-upload" type="file" className="hidden" accept="image/png, image/jpeg, image/webp, image/avif, image/heic, image/heif" onChange={handleFileChange} disabled={isLoading}/>
-                    </label>
+                    
+                    <FileDropzone
+                        onFileSelect={handleGarmentFileSelect}
+                        disabled={isLoading}
+                        variant="compact"
+                        label="Unggah"
+                        icon={<UploadCloudIcon className="w-8 h-8 mb-2" />}
+                    />
                     
                     {filteredWardrobe.map((item) => {
                     const isActive = activeGarmentIds.includes(item.id);

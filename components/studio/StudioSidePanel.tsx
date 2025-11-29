@@ -6,7 +6,7 @@
 
 import React from 'react';
 import SidePanel, { SidePanelTab } from '../SidePanel';
-import { OutfitLayer, SavedOutfit, SavedLookbook, WardrobeItem } from '../../types';
+import { useStudio } from './StudioContext';
 
 // Icons
 import { PackageIcon, LibraryIcon, BookOpenIcon, ClockIcon, SlidersIcon } from '../icons';
@@ -18,43 +18,28 @@ import SavedLookbooksPanel from '../SavedLookbooksPanel';
 import HistoryPanel from '../HistoryPanel';
 import FilterPanel from '../FilterPanel';
 
-interface StudioSidePanelProps {
-    // Data
-    history: OutfitLayer[];
-    currentIndex: number;
-    savedOutfits: SavedOutfit[];
-    savedLookbooks: SavedLookbook[];
-    wardrobe: WardrobeItem[];
-    filters: any;
-    
-    // UI State
-    isVTOLoading: boolean;
-    
-    // Actions
-    undo: (onRemoveGarment?: (id: string) => void) => void;
-    jumpToState: (index: number) => void;
-    
-    // Persistence Actions
-    persistenceActions: any;
-    
-    // Handler Actions from useStudioState or parent
-    handleSaveOutfit: () => void;
-    handleLoadOutfit: (outfit: SavedOutfit) => void;
-    onOpenWardrobe: () => void;
-    onGenerateProductInfo: () => void;
-    onOpenLookbookConfig: () => void;
-    handleViewLookbook: (lookbook: SavedLookbook) => void;
-    onFilterChange: (newFilters: any) => void;
-    onResetFilters: () => void;
-}
+const StudioSidePanel: React.FC = () => {
+    // Consume Context
+    const { 
+        history, 
+        currentIndex, 
+        savedOutfits, 
+        savedLookbooks, 
+        wardrobe, // Available via context if needed by panels
+        filters: filterManager,
+        isVTOLoading, 
+        undo, 
+        jumpToState, 
+        persistenceActions,
+        handleSaveOutfit,
+        handleLoadOutfit,
+        modals, // for opening wardrobe
+        handlers, // for product info, lookbook
+        // for filters
+    } = useStudio();
 
-const StudioSidePanel: React.FC<StudioSidePanelProps> = ({
-    history, currentIndex, savedOutfits, savedLookbooks, filters,
-    isVTOLoading, undo, jumpToState, persistenceActions,
-    handleSaveOutfit, handleLoadOutfit, onOpenWardrobe, onGenerateProductInfo, 
-    onOpenLookbookConfig, handleViewLookbook, onFilterChange, onResetFilters
-}) => {
-    
+    const filters = filterManager.data;
+
     const sidePanelTabs: SidePanelTab[] = [
         {
             id: 'outfit',
@@ -66,9 +51,9 @@ const StudioSidePanel: React.FC<StudioSidePanelProps> = ({
                     onUndo={() => undo((id) => persistenceActions.deleteWardrobeItem(id))} 
                     onSaveOutfit={handleSaveOutfit} 
                     isLoading={isVTOLoading} 
-                    onAddGarment={onOpenWardrobe} 
-                    onGenerateProductInfo={onGenerateProductInfo} 
-                    onGenerateLookbook={onOpenLookbookConfig} 
+                    onAddGarment={() => modals.setIsWardrobeOpen(true)} 
+                    onGenerateProductInfo={() => handlers.handleGenerateProductInfo(false)} 
+                    onGenerateLookbook={() => modals.setIsLookbookStyleModalOpen(true)} 
                 />
             )
         },
@@ -95,7 +80,7 @@ const StudioSidePanel: React.FC<StudioSidePanelProps> = ({
                     savedLookbooks={savedLookbooks} 
                     onDeleteLookbook={persistenceActions.deleteLookbook} 
                     onRenameLookbook={persistenceActions.renameLookbook} 
-                    onViewLookbook={handleViewLookbook} 
+                    onViewLookbook={(lb) => handlers.handleViewLookbook(lb, handleLoadOutfit)} 
                     isLoading={isVTOLoading} 
                 />
             )
@@ -120,8 +105,8 @@ const StudioSidePanel: React.FC<StudioSidePanelProps> = ({
             content: (
                 <FilterPanel 
                     filters={filters} 
-                    onFilterChange={onFilterChange} 
-                    onResetFilters={onResetFilters}
+                    onFilterChange={(newFilters) => filterManager.set(f => ({ ...f, ...newFilters }))} 
+                    onResetFilters={filterManager.reset}
                     isDisabled={isVTOLoading} 
                 />
             )

@@ -1,3 +1,4 @@
+
 /**
  * @license
  * SPDX-License-Identifier: Apache-2.0
@@ -6,6 +7,7 @@ import React, { useState } from 'react';
 import type { WardrobeItem, WardrobeCategory } from '../types';
 import { UploadCloudIcon, CheckCircleIcon } from './icons';
 import { cn, urlToFile } from '../lib/utils';
+import { FileDropzone } from './ui/file-dropzone';
 
 interface WardrobePanelProps {
   onGarmentSelect: (garmentFile: File, garmentInfo: WardrobeItem) => void;
@@ -25,16 +27,12 @@ const CATEGORIES: { id: WardrobeCategory | 'all', name: string }[] = [
 
 const WardrobePanel: React.FC<WardrobePanelProps> = ({ onGarmentSelect, activeGarmentIds, isLoading, wardrobe }) => {
     const [error, setError] = useState<string | null>(null);
-    const [isDraggingOver, setIsDraggingOver] = useState(false);
     const [activeCategory, setActiveCategory] = useState<WardrobeCategory | 'all'>('all');
-
 
     const handleGarmentClick = async (item: WardrobeItem) => {
         if (isLoading || activeGarmentIds.includes(item.id)) return;
         setError(null);
         try {
-            // If the item was from an upload, its URL is a blob URL. We need to fetch it to create a file.
-            // If it was a default item, it's a regular URL. This handles both.
             const file = await urlToFile(item.url, item.name);
             onGarmentSelect(file, item);
         } catch (err) {
@@ -63,37 +61,6 @@ const WardrobePanel: React.FC<WardrobePanelProps> = ({ onGarmentSelect, activeGa
     const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         if (e.target.files && e.target.files[0]) {
             handleGarmentFileSelect(e.target.files[0]);
-        }
-    };
-    
-    const handleDragEnter = (e: React.DragEvent<HTMLLabelElement>) => {
-        e.preventDefault();
-        e.stopPropagation();
-        if (isLoading) return;
-        setIsDraggingOver(true);
-    };
-
-    const handleDragLeave = (e: React.DragEvent<HTMLLabelElement>) => {
-        e.preventDefault();
-        e.stopPropagation();
-        if (e.currentTarget.contains(e.relatedTarget as Node)) {
-          return;
-        }
-        setIsDraggingOver(false);
-    };
-    
-    const handleDragOver = (e: React.DragEvent<HTMLLabelElement>) => {
-        e.preventDefault();
-        e.stopPropagation(); // Necessary to allow drop.
-    };
-
-    const handleDrop = (e: React.DragEvent<HTMLLabelElement>) => {
-        e.preventDefault();
-        e.stopPropagation();
-        setIsDraggingOver(false);
-        if (isLoading) return;
-        if (e.dataTransfer.files && e.dataTransfer.files[0]) {
-            handleGarmentFileSelect(e.dataTransfer.files[0]);
         }
     };
     
@@ -149,29 +116,15 @@ const WardrobePanel: React.FC<WardrobePanelProps> = ({ onGarmentSelect, activeGa
                 </button>
             );
             })}
-            <label 
-              htmlFor="custom-garment-upload" 
-              className={cn(
-                'relative aspect-square border-2 rounded-lg flex flex-col items-center justify-center text-gray-500 transition-colors',
-                isLoading && 'cursor-not-allowed bg-gray-100 border-dashed',
-                !isLoading && isDraggingOver && 'cursor-pointer border-solid border-gray-600 bg-gray-100',
-                !isLoading && !isDraggingOver && 'cursor-pointer border-dashed hover:border-gray-400 hover:text-gray-600'
-              )}
-              onDragEnter={handleDragEnter}
-              onDragLeave={handleDragLeave}
-              onDragOver={handleDragOver}
-              onDrop={handleDrop}
-            >
-              {isDraggingOver && !isLoading ? (
-                  <span className="text-xs text-center font-semibold text-gray-700 p-2">Drop image here</span>
-              ) : (
-                  <>
-                      <UploadCloudIcon className="w-6 h-6 mb-1"/>
-                      <span className="text-xs text-center">Upload</span>
-                  </>
-              )}
-              <input id="custom-garment-upload" type="file" className="hidden" accept="image/png, image/jpeg, image/webp, image/avif, image/heic, image/heif" onChange={handleFileChange} disabled={isLoading}/>
-            </label>
+            
+            <FileDropzone 
+                onFileSelect={handleGarmentFileSelect}
+                disabled={isLoading}
+                variant="compact"
+                label="Upload"
+                icon={<UploadCloudIcon className="w-6 h-6 mb-1"/>}
+                className="border-gray-300 hover:border-gray-400"
+            />
         </div>
         {filteredWardrobe.length === 0 && (
              <p className="text-center text-sm text-gray-500 mt-4">No items in this category.</p>

@@ -1,7 +1,7 @@
 
 import React, { useState, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { UploadCloudIcon, CameraIcon, FileUpIcon, DownloadIcon, WandSparklesIcon, RotateCcwIcon, CheckCircleIcon, ArrowRightIcon } from '../../components/icons';
+import { CameraIcon, FileUpIcon, DownloadIcon, WandSparklesIcon, RotateCcwIcon, ArrowRightIcon } from '../../components/icons';
 import { Compare } from '../../components/ui/compare';
 import Spinner from '../../components/Spinner';
 import Camera from '../../components/Camera';
@@ -10,6 +10,7 @@ import { CustomModel } from '../../types';
 import { Button } from '../../components/ui/button';
 import { Select } from '../../components/ui/select';
 import { useModelGenerator } from '../../hooks/useModelGenerator';
+import { FileDropzone } from '../../components/ui/file-dropzone';
 
 interface UploaderViewProps {
   customModels: CustomModel[];
@@ -30,7 +31,6 @@ const ASPECT_RATIOS = ['1:1', '2:3', '3:2', '3:4', '4:3', '4:5', '5:4', '9:16', 
 
 const UploaderView: React.FC<UploaderViewProps> = (props) => {
   // Local State for UI preferences
-  const [isDraggingOver, setIsDraggingOver] = useState(false);
   const [backgroundColor, setBackgroundColor] = useState('#f3f2ef');
   const [aspectRatio, setAspectRatio] = useState('4:5');
   const [isCameraOpen, setIsCameraOpen] = useState(false);
@@ -47,36 +47,13 @@ const UploaderView: React.FC<UploaderViewProps> = (props) => {
      if(importFileRef.current) importFileRef.current.click();
   }
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files[0]) {
-      generateModel(e.target.files[0], backgroundColor, aspectRatio);
-    }
+  const handleFileSelect = (file: File) => {
+     generateModel(file, backgroundColor, aspectRatio);
   };
 
   const handleCapture = (file: File) => {
     setIsCameraOpen(false);
     generateModel(file, backgroundColor, aspectRatio);
-  };
-
-  // Drag and Drop Handlers
-  const handleDragEnter = (e: React.DragEvent<HTMLDivElement>) => {
-    e.preventDefault(); e.stopPropagation();
-    setIsDraggingOver(true);
-  };
-  const handleDragLeave = (e: React.DragEvent<HTMLDivElement>) => {
-    e.preventDefault(); e.stopPropagation();
-    if (e.currentTarget.contains(e.relatedTarget as Node)) return;
-    setIsDraggingOver(false);
-  };
-  const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
-    e.preventDefault(); e.stopPropagation();
-  };
-  const handleDrop = (e: React.DragEvent<HTMLDivElement>) => {
-    e.preventDefault(); e.stopPropagation();
-    setIsDraggingOver(false);
-    if (e.dataTransfer.files && e.dataTransfer.files[0]) {
-        generateModel(e.dataTransfer.files[0], backgroundColor, aspectRatio);
-    }
   };
 
   return (
@@ -109,32 +86,10 @@ const UploaderView: React.FC<UploaderViewProps> = (props) => {
 
                 {!userImageUrl ? (
                     <div className="w-full max-w-sm space-y-4">
-                        <div 
-                            className={cn(
-                                "border-2 border-dashed rounded-xl p-8 transition-all duration-200 flex flex-col items-center justify-center cursor-pointer group",
-                                isDraggingOver 
-                                    ? "border-stone-800 bg-stone-100 dark:border-stone-200 dark:bg-stone-800" 
-                                    : "border-stone-300 dark:border-stone-700 hover:border-stone-500 dark:hover:border-stone-500 hover:bg-stone-50 dark:hover:bg-stone-900"
-                            )}
-                            onDragEnter={handleDragEnter}
-                            onDragLeave={handleDragLeave}
-                            onDragOver={handleDragOver}
-                            onDrop={handleDrop}
-                            onClick={() => document.getElementById('file-upload')?.click()}
-                        >
-                            <div className="w-16 h-16 bg-stone-200 dark:bg-stone-800 rounded-full flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
-                                <UploadCloudIcon className="w-8 h-8 text-stone-600 dark:text-stone-400" />
-                            </div>
-                            <p className="text-sm font-semibold text-stone-900 dark:text-stone-100">Klik untuk unggah atau seret foto</p>
-                            <p className="text-xs text-stone-500 dark:text-stone-400 mt-1">PNG, JPG, WEBP hingga 10MB</p>
-                            <input 
-                                id="file-upload" 
-                                type="file" 
-                                className="hidden" 
-                                accept="image/png, image/jpeg, image/webp, image/avif, image/heic, image/heif" 
-                                onChange={handleFileChange} 
-                            />
-                        </div>
+                        <FileDropzone 
+                            onFileSelect={handleFileSelect}
+                            subLabel="PNG, JPG, WEBP hingga 10MB"
+                        />
                         
                         <div className="flex items-center gap-3">
                             <div className="h-px bg-stone-300 dark:bg-stone-700 flex-grow"></div>
