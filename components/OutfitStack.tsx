@@ -6,9 +6,10 @@
 
 import React from 'react';
 import { OutfitLayer } from '../types';
-import { Trash2Icon, SaveIcon, PlusIcon, FileTextIcon, BookOpenIcon } from './icons';
+import { Trash2Icon, SaveIcon, PlusIcon, FileTextIcon, BookOpenIcon, PackageIcon } from './icons';
 import Spinner from './Spinner';
 import { Button } from './ui/button';
+import { Panel } from './ui/panel';
 import { ResourceList, ResourceItem } from './ui/resource-list';
 
 interface OutfitStackProps {
@@ -25,22 +26,27 @@ interface OutfitStackProps {
 const OutfitStack: React.FC<OutfitStackProps> = ({ outfitHistory, onUndo, onSaveOutfit, isLoading, onAddGarment, generatingLayerIndex, onGenerateProductInfo, onGenerateLookbook }) => {
   const isOutfitSavable = outfitHistory.length > 1;
 
+  const saveAction = (
+    <Button
+      onClick={onSaveOutfit}
+      disabled={!isOutfitSavable || isLoading}
+      variant="ghost"
+      size="sm"
+      className="hover:bg-stone-200/70 dark:hover:bg-stone-800/70 h-8 text-stone-700 dark:text-stone-300"
+      leftIcon={<SaveIcon className="w-4 h-4" />}
+    >
+      Simpan
+    </Button>
+  );
+
   return (
-    <div className="flex flex-col h-full">
-      <div className="flex items-center justify-between border-b border-stone-400/50 dark:border-stone-700/50 pb-2 mb-3 flex-shrink-0">
-        <h2 className="text-xl font-serif tracking-wider text-stone-800 dark:text-stone-200">Koleksi Anda</h2>
-        <Button
-          onClick={onSaveOutfit}
-          disabled={!isOutfitSavable || isLoading}
-          variant="ghost"
-          size="sm"
-          className="hover:bg-stone-200/70 dark:hover:bg-stone-800/70 h-8 text-stone-700 dark:text-stone-300"
-          leftIcon={<SaveIcon className="w-4 h-4" />}
-        >
-          Simpan
-        </Button>
-      </div>
-      
+    <Panel
+      title="Koleksi Anda"
+      icon={<PackageIcon className="w-5 h-5 text-stone-600 dark:text-stone-400"/>}
+      action={saveAction}
+      className="h-full"
+      contentClassName="overflow-hidden"
+    >
       <ResourceList
         items={outfitHistory}
         className="flex-grow"
@@ -86,7 +92,7 @@ const OutfitStack: React.FC<OutfitStackProps> = ({ outfitHistory, onUndo, onSave
         }}
       />
 
-       <div className="mt-4 grid grid-cols-1 gap-3 flex-shrink-0">
+       <div className="mt-4 grid grid-cols-1 gap-3 flex-shrink-0 pt-2 border-t border-stone-200 dark:border-stone-800">
         <Button 
             onClick={onAddGarment}
             disabled={isLoading}
@@ -115,7 +121,7 @@ const OutfitStack: React.FC<OutfitStackProps> = ({ outfitHistory, onUndo, onSave
           </Button>
         </div>
       </div>
-    </div>
+    </Panel>
   );
 };
 

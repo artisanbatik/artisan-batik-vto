@@ -13,6 +13,7 @@ import { cn, ImageFormat, convertImage } from '../../lib/utils';
 import JSZip from 'jszip';
 import DownloadFormatModal from '../DownloadFormatModal';
 import { useCanvasInteraction } from '../../hooks/useCanvasInteraction';
+import { ImageCard } from '../ui/image-card'; // Import ImageCard
 
 interface LookbookModalProps {
   isOpen: boolean;
@@ -334,40 +335,43 @@ const LookbookModal: React.FC<LookbookModalProps> = ({ isOpen, onClose, isLoadin
                             {images.map((image) => {
                                 const isRegenerating = regeneratingImageId === image.id;
                                 return (
-                                    <div key={image.id} className={cn("relative group rounded-lg overflow-hidden border border-stone-200 dark:border-stone-800", `aspect-[${aspectRatio.replace(':', '/')}]`)}>
-                                        <img src={image.url} alt={`Lookbook image for ${style}`} className="w-full h-full object-cover"/>
+                                    <div key={image.id} className="relative">
+                                        <ImageCard
+                                            imageUrl={image.url}
+                                            aspectRatio={aspectRatio}
+                                            className="h-full w-full"
+                                            overlayContent={
+                                                <div className="flex gap-2">
+                                                    <button 
+                                                        onClick={() => openZoomedView(image)} 
+                                                        className="p-2 bg-white/80 dark:bg-stone-900/80 rounded-full text-stone-800 dark:text-stone-200 hover:bg-white dark:hover:bg-stone-900 shadow-md backdrop-blur-sm"
+                                                        aria-label="Perbesar gambar"
+                                                    >
+                                                        <ZoomInIcon className="w-5 h-5"/>
+                                                    </button>
+                                                    <button 
+                                                        onClick={() => { openZoomedView(image); setShowRegenPrompt(true); }}
+                                                        disabled={!!regeneratingImageId}
+                                                        className="p-2 bg-white/80 dark:bg-stone-900/80 rounded-full text-stone-800 dark:text-stone-200 hover:bg-white dark:hover:bg-stone-900 shadow-md backdrop-blur-sm disabled:opacity-50"
+                                                        aria-label="Buat ulang gambar"
+                                                    >
+                                                        <WandSparklesIcon className="w-5 h-5"/>
+                                                    </button>
+                                                </div>
+                                            }
+                                        />
                                         <AnimatePresence>
                                         {isRegenerating && (
                                             <motion.div
                                                 initial={{ opacity: 0 }}
                                                 animate={{ opacity: 1 }}
                                                 exit={{ opacity: 0 }}
-                                                className="absolute inset-0 bg-white/80 dark:bg-stone-950/80 z-10 flex flex-col items-center justify-center"
+                                                className="absolute inset-0 bg-white/80 dark:bg-stone-950/80 z-20 flex flex-col items-center justify-center rounded-lg"
                                             >
                                                 <Spinner className="w-6 h-6"/>
                                             </motion.div>
                                         )}
                                         </AnimatePresence>
-                                        <div className={cn(
-                                            "absolute inset-0 bg-black/50 flex items-center justify-center gap-2 p-2",
-                                            "opacity-0 group-hover:opacity-100 transition-opacity"
-                                        )}>
-                                            <button 
-                                                onClick={() => openZoomedView(image)} 
-                                                className="p-2 bg-white/80 dark:bg-stone-900/80 rounded-full text-stone-800 dark:text-stone-200 hover:bg-white dark:hover:bg-stone-900"
-                                                aria-label="Perbesar gambar"
-                                            >
-                                                <ZoomInIcon className="w-5 h-5"/>
-                                            </button>
-                                            <button 
-                                                onClick={() => { openZoomedView(image); setShowRegenPrompt(true); }}
-                                                disabled={!!regeneratingImageId}
-                                                className="p-2 bg-white/80 dark:bg-stone-900/80 rounded-full text-stone-800 dark:text-stone-200 hover:bg-white dark:hover:bg-stone-900 disabled:opacity-50"
-                                                aria-label="Buat ulang gambar"
-                                            >
-                                                <WandSparklesIcon className="w-5 h-5"/>
-                                            </button>
-                                        </div>
                                     </div>
                                 );
                             })}

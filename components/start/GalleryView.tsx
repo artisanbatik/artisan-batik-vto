@@ -7,6 +7,7 @@ import { cn } from '../../lib/utils';
 import { CustomModel } from '../../types';
 import { Button } from '../../components/ui/button';
 import { Input } from '../../components/ui/input';
+import { ImageCard } from '../../components/ui/image-card'; // Import ImageCard
 import { useInlineRename } from '../../hooks/useInlineRename';
 
 interface GalleryViewProps {
@@ -124,17 +125,18 @@ const GalleryView: React.FC<GalleryViewProps> = (props) => {
                     <h2 className="text-lg font-semibold text-stone-700 dark:text-stone-300 mb-4">Model Siap Pakai</h2>
                     <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-5">
                         {props.predefinedModels.map(model => (
-                            <div key={model.id} className="relative group animate-fade-in">
-                                <div className={cn("relative overflow-hidden rounded-lg shadow-md", `aspect-[${model.aspectRatio.replace(':', '/')}]`)}>
-                                    <img src={model.imageUrl} alt={model.name} className="w-full h-full object-cover" />
-                                    <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center gap-3 p-4">
-                                        <Button onClick={() => props.onSelectModel(model)} variant="secondary" className="w-full bg-white text-black hover:bg-stone-200">
-                                            Pilih
-                                        </Button>
-                                    </div>
-                                </div>
-                                <p className="text-center font-semibold text-stone-800 dark:text-stone-200 mt-2">{model.name}</p>
-                            </div>
+                            <ImageCard
+                                key={model.id}
+                                imageUrl={model.imageUrl}
+                                title={model.name}
+                                aspectRatio={model.aspectRatio}
+                                className="animate-fade-in"
+                                overlayContent={
+                                    <Button onClick={() => props.onSelectModel(model)} variant="secondary" className="w-full bg-white text-black hover:bg-stone-200 shadow-md">
+                                        Pilih
+                                    </Button>
+                                }
+                            />
                         ))}
                     </div>
                 </div>
@@ -143,63 +145,69 @@ const GalleryView: React.FC<GalleryViewProps> = (props) => {
             <div className="w-full">
                 <h2 className="text-lg font-semibold text-stone-700 dark:text-stone-300 mb-4">Model Kustom Anda</h2>
                 <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-5">
-                    {props.customModels.map(model => (
-                        <div key={model.id} className="relative group animate-fade-in">
-                            <div className={cn("relative overflow-hidden rounded-lg shadow-md", `aspect-[${model.aspectRatio.replace(':', '/')}]`)}>
-                                <img src={model.imageUrl} alt={model.name} className="w-full h-full object-cover" />
-                                <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center gap-3 p-4">
-                                    <Button onClick={() => props.onSelectModel(model)} variant="secondary" className="w-full bg-white text-black hover:bg-stone-200">
+                    {props.customModels.map(model => {
+                        const isRenaming = renamingId === model.id;
+                        return (
+                            <ImageCard
+                                key={model.id}
+                                imageUrl={model.imageUrl}
+                                aspectRatio={model.aspectRatio}
+                                className="animate-fade-in"
+                                title={
+                                    isRenaming ? (
+                                        <Input
+                                            ref={renameInputRef}
+                                            type="text"
+                                            value={inputValue}
+                                            onChange={(e) => setInputValue(e.target.value)}
+                                            onBlur={commitRename}
+                                            onKeyDown={handleKeyDown}
+                                            className="w-full text-center h-7 px-2 py-0 text-sm -my-0.5"
+                                        />
+                                    ) : (
+                                        model.name
+                                    )
+                                }
+                                overlayContent={
+                                    <Button onClick={() => props.onSelectModel(model)} variant="secondary" className="w-full bg-white text-black hover:bg-stone-200 shadow-md">
                                         Pilih
                                     </Button>
-                                </div>
-                                <div className="absolute top-2 right-2 z-10 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                                    <Button
-                                        onClick={() => startRename(model.id, model.name)}
-                                        variant="secondary"
-                                        size="icon"
-                                        className="h-8 w-8 rounded-full bg-black/40 text-white hover:bg-black/60 border-none"
-                                        aria-label={`Ubah nama ${model.name}`}
-                                    >
-                                        <PencilIcon className="w-4 h-4" />
-                                    </Button>
-                                    <Button 
-                                        onClick={() => props.setDeletingModel(model)} 
-                                        variant="secondary"
-                                        size="icon"
-                                        className="h-8 w-8 rounded-full bg-black/40 text-white hover:bg-red-600 border-none"
-                                        aria-label={`Hapus ${model.name}`}
-                                    >
-                                        <Trash2Icon className="w-4 h-4" />
-                                    </Button>
-                                </div>
-                            </div>
-                            <div className="text-center font-semibold text-stone-800 dark:text-stone-200 mt-2">
-                            {renamingId === model.id ? (
-                                    <Input
-                                        ref={renameInputRef}
-                                        type="text"
-                                        value={inputValue}
-                                        onChange={(e) => setInputValue(e.target.value)}
-                                        onBlur={commitRename}
-                                        onKeyDown={handleKeyDown}
-                                        className="w-full text-center h-8 px-2 py-1 -my-1"
-                                    />
-                            ) : (
-                                <p className="truncate" title={model.name}>{model.name}</p>
-                            )}
-                            </div>
-                        </div>
-                    ))}
+                                }
+                                actionButtons={
+                                    <>
+                                        <Button
+                                            onClick={(e) => { e.stopPropagation(); startRename(model.id, model.name); }}
+                                            variant="secondary"
+                                            size="icon"
+                                            className="h-8 w-8 rounded-full bg-black/40 text-white hover:bg-black/60 border-none backdrop-blur-md"
+                                            title="Ubah Nama"
+                                        >
+                                            <PencilIcon className="w-3.5 h-3.5" />
+                                        </Button>
+                                        <Button 
+                                            onClick={(e) => { e.stopPropagation(); props.setDeletingModel(model); }} 
+                                            variant="secondary"
+                                            size="icon"
+                                            className="h-8 w-8 rounded-full bg-black/40 text-white hover:bg-red-600 border-none backdrop-blur-md"
+                                            title="Hapus Model"
+                                        >
+                                            <Trash2Icon className="w-3.5 h-3.5" />
+                                        </Button>
+                                    </>
+                                }
+                            />
+                        );
+                    })}
                     <Button 
                         onClick={props.onSetViewUploader} 
                         variant="outline"
                         className={cn(
-                        "h-auto flex-col border-dashed rounded-lg text-stone-500 dark:text-stone-400 hover:text-stone-700 dark:hover:text-stone-200",
-                        'aspect-[3/4]'
+                            "h-auto flex-col border-dashed rounded-lg text-stone-500 dark:text-stone-400 hover:text-stone-700 dark:hover:text-stone-200 hover:border-stone-400",
+                            'aspect-[3/4]'
                         )}
                     >
                         <PlusIcon className="w-8 h-8 mb-2" />
-                        <span className="font-semibold">Tambah Model Baru</span>
+                        <span className="font-semibold text-center">Tambah<br/>Model Baru</span>
                     </Button>
                 </div>
             </div>

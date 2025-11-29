@@ -5,11 +5,12 @@
 */
 import React, { useState } from 'react';
 import type { WardrobeItem, WardrobeCategory } from '../types';
-import { CheckCircleIcon, PencilIcon, Trash2Icon, UploadCloudIcon } from './icons';
-import { cn, urlToFile } from '../lib/utils';
+import { PencilIcon, Trash2Icon, UploadCloudIcon } from './icons';
+import { urlToFile } from '../lib/utils';
 import { ModalDialog } from './ui/modal-dialog';
 import { Button } from './ui/button';
 import { FileDropzone } from './ui/file-dropzone';
+import { ImageCard } from './ui/image-card'; // Import ImageCard
 
 interface WardrobeModalProps {
   isOpen: boolean;
@@ -100,50 +101,41 @@ const WardrobeModal: React.FC<WardrobeModalProps> = ({ isOpen, onClose, onGarmen
                     />
                     
                     {filteredWardrobe.map((item) => {
-                    const isActive = activeGarmentIds.includes(item.id);
-                    return (
-                        <div key={item.id} className="relative group aspect-square">
-                            <button
+                        const isActive = activeGarmentIds.includes(item.id);
+                        return (
+                            <ImageCard
+                                key={item.id}
+                                imageUrl={item.url}
+                                title={item.name}
+                                aspectRatio="1:1"
+                                isActive={isActive}
+                                isDisabled={isLoading}
                                 onClick={() => handleGarmentClick(item)}
-                                disabled={isLoading || isActive}
-                                className={cn(
-                                    "w-full h-full border dark:border-stone-700 rounded-lg overflow-hidden focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-stone-800 dark:focus:ring-stone-200 disabled:opacity-60 disabled:cursor-not-allowed transition-all",
-                                    isActive ? "ring-2 ring-stone-900 dark:ring-stone-100 ring-offset-2" : ""
-                                )}
-                                aria-label={`Select ${item.name}`}
-                            >
-                                <img src={item.url} alt={item.name} className="w-full h-full object-cover" />
-                                {isActive && (
-                                    <div className="absolute inset-0 bg-stone-900/40 flex items-center justify-center">
-                                        <CheckCircleIcon className="w-8 h-8 text-white drop-shadow-md" />
-                                    </div>
-                                )}
-                            </button>
-                            <div className="absolute top-1 right-1 flex flex-col gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                                <Button 
-                                    onClick={(e) => { e.stopPropagation(); onEditGarment(item); }}
-                                    variant="secondary"
-                                    size="icon"
-                                    className="h-7 w-7 rounded-full shadow-sm bg-white/90 dark:bg-stone-800/90 hover:bg-white dark:hover:bg-stone-800"
-                                    title="Ubah"
-                                >
-                                    <PencilIcon className="w-3.5 h-3.5 text-stone-700 dark:text-stone-200" />
-                                </Button>
-                                <Button 
-                                    onClick={(e) => { e.stopPropagation(); onDeleteGarment(item); }}
-                                    variant="secondary"
-                                    size="icon"
-                                    className="h-7 w-7 rounded-full shadow-sm bg-white/90 dark:bg-stone-800/90 hover:bg-white dark:hover:bg-stone-800"
-                                    title="Hapus"
-                                >
-                                    <Trash2Icon className="w-3.5 h-3.5 text-red-600 dark:text-red-400" />
-                                </Button>
-                            </div>
-                            <div className="absolute bottom-0 left-0 right-0 p-1 bg-gradient-to-t from-black/70 to-transparent pointer-events-none rounded-b-lg">
-                                <p className="text-white text-xs font-semibold truncate text-center">{item.name}</p>
-                            </div>
-                        </div>
-                    );
+                                titleOverlay={true}
+                                actionButtons={
+                                    <>
+                                        <Button 
+                                            onClick={(e) => { e.stopPropagation(); onEditGarment(item); }}
+                                            variant="secondary"
+                                            size="icon"
+                                            className="h-7 w-7 rounded-full shadow-sm bg-white/90 dark:bg-stone-800/90 hover:bg-white dark:hover:bg-stone-800"
+                                            title="Ubah"
+                                        >
+                                            <PencilIcon className="w-3.5 h-3.5 text-stone-700 dark:text-stone-200" />
+                                        </Button>
+                                        <Button 
+                                            onClick={(e) => { e.stopPropagation(); onDeleteGarment(item); }}
+                                            variant="secondary"
+                                            size="icon"
+                                            className="h-7 w-7 rounded-full shadow-sm bg-white/90 dark:bg-stone-800/90 hover:bg-white dark:hover:bg-stone-800"
+                                            title="Hapus"
+                                        >
+                                            <Trash2Icon className="w-3.5 h-3.5 text-red-600 dark:text-red-400" />
+                                        </Button>
+                                    </>
+                                }
+                            />
+                        );
                     })}
                 </div>
                 {filteredWardrobe.length === 0 && (
