@@ -13,7 +13,6 @@ import StudioLayout from './studio/StudioLayout';
 import Canvas from './Canvas';
 import StudioModals from './studio/StudioModals';
 import StudioSidePanel from './studio/StudioSidePanel';
-import Footer from './Footer';
 
 interface StudioScreenProps {
     initialModel: CustomModel | null;
@@ -69,7 +68,6 @@ const StudioScreenContent: React.FC<{
             
             canvas={<Canvas />}
             sidePanelContent={<StudioSidePanel />}
-            footer={<Footer isOnDressingScreen />}
             modals={<StudioModals />}
         />
     );

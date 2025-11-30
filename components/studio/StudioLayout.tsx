@@ -1,3 +1,4 @@
+
 /**
  * @license
  * SPDX-License-Identifier: Apache-2.0
@@ -12,7 +13,6 @@ import { ChevronRightIcon, ChevronLeftIcon, SlidersIcon, XIcon } from '../icons'
 interface StudioLayoutProps {
     canvas: React.ReactNode;
     sidePanelContent: React.ReactNode;
-    footer: React.ReactNode;
     modals: React.ReactNode;
     
     isMobile: boolean;
@@ -26,7 +26,6 @@ interface StudioLayoutProps {
 const StudioLayout: React.FC<StudioLayoutProps> = ({
     canvas,
     sidePanelContent,
-    footer,
     modals,
     isMobile,
     isPanelOpen,
@@ -120,8 +119,7 @@ const StudioLayout: React.FC<StudioLayoutProps> = ({
                     </div>
                 </BottomSheet>
             )}
-
-            {footer}
+            
             {modals}
         </div>
     );

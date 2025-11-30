@@ -9,7 +9,6 @@ import React, { useState } from 'react';
 // Components
 import StartScreen from './components/StartScreen';
 import StudioScreen from './components/StudioScreen';
-import Footer from './components/Footer';
 
 // Hooks & Services
 import { useTheme } from './hooks/useTheme';
@@ -74,7 +73,6 @@ const App: React.FC = () => {
                 onToggleTheme={toggleTheme}
               />
           </main>
-          <Footer />
       </div>
     )
   }
