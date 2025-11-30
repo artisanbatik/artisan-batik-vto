@@ -1,6 +1,7 @@
 
 import React from 'react';
 import { cn } from '../../lib/utils';
+import { Heading } from './typography';
 
 interface PanelProps {
   title: React.ReactNode;
@@ -28,10 +29,12 @@ export const Panel: React.FC<PanelProps> = ({
       className
     )}>
       <div className="flex items-center justify-between mb-3 flex-shrink-0">
-        <h2 className="text-xl font-serif tracking-wider text-stone-800 dark:text-stone-200 flex items-center gap-3">
-          {icon && <span className="text-stone-600 dark:text-stone-400">{icon}</span>}
-          {title}
-        </h2>
+        <div className="flex items-center gap-3">
+            {icon && <span className="text-stone-600 dark:text-stone-400">{icon}</span>}
+            <Heading level={3}>
+              {title}
+            </Heading>
+        </div>
         {action && <div>{action}</div>}
       </div>
       <div className={cn("relative flex-grow flex flex-col min-h-0", contentClassName)}>

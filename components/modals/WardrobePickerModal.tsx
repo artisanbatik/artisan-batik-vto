@@ -5,12 +5,13 @@
 */
 import React, { useState } from 'react';
 import type { WardrobeItem, WardrobeCategory } from '../../types';
-import { PencilIcon, Trash2Icon, UploadCloudIcon } from '../icons';
+import { PencilIcon, Trash2Icon, UploadCloudIcon, PackageIcon } from '../icons';
 import { urlToFile } from '../../lib/utils';
 import { ModalDialog } from '../ui/modal-dialog';
 import { Button } from '../ui/button';
 import { FileDropzone } from '../ui/file-dropzone';
 import { ImageCard } from '../ui/image-card';
+import { EmptyState } from '../ui/empty-state';
 
 interface WardrobePickerModalProps {
   isOpen: boolean;
@@ -139,8 +140,12 @@ export const WardrobePickerModal: React.FC<WardrobePickerModalProps> = ({ isOpen
                     })}
                 </div>
                 {filteredWardrobe.length === 0 && (
-                    <div className="col-span-full py-8 text-center">
-                        <p className="text-stone-500 dark:text-stone-400">Belum ada item di kategori ini.</p>
+                    <div className="col-span-full py-8">
+                        <EmptyState 
+                            icon={<PackageIcon className="w-8 h-8"/>}
+                            title="Belum ada item"
+                            description="Belum ada item di kategori ini. Mulai dengan mengunggah gambar baru."
+                        />
                     </div>
                 )}
                     {error && (

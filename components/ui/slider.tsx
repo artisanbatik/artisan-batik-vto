@@ -1,5 +1,7 @@
+
 import React from 'react';
 import { cn } from '../../lib/utils';
+import { Badge } from './badge';
 
 interface SliderProps extends Omit<React.InputHTMLAttributes<HTMLInputElement>, 'onChange'> {
   label: string;
@@ -29,9 +31,9 @@ const Slider: React.FC<SliderProps> = ({
         <label htmlFor={generatedId} className="text-sm font-medium text-stone-700 dark:text-stone-300">
             {label}
         </label>
-        <span className="text-sm font-mono text-stone-600 dark:text-stone-300 bg-stone-100 dark:bg-stone-800 px-2 py-0.5 rounded-md border border-stone-200 dark:border-stone-700">
+        <Badge variant="ghost" className="font-mono">
             {value}{unit}
-        </span>
+        </Badge>
       </div>
       <input
         id={generatedId}

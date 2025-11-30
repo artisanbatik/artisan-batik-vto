@@ -1,6 +1,8 @@
+
 import React from 'react';
 import { FileUpIcon, DownloadIcon } from '../../icons';
 import { Button } from '../../ui/button';
+import { Heading, Text } from '../../ui/typography';
 
 interface GalleryHeaderProps {
     isImporting: boolean;
@@ -16,8 +18,12 @@ export const GalleryHeader: React.FC<GalleryHeaderProps> = ({
     isImporting, isExporting, hasCustomModels, onImportClick, onExportClick, onImportFileChange, importFileRef
 }) => (
     <div className="text-center flex-shrink-0">
-        <h1 className="text-4xl md:text-5xl font-serif font-bold text-stone-900 dark:text-stone-100 leading-tight text-center">Pilih Model Anda</h1>
-        <p className="mt-2 text-md text-stone-600 dark:text-stone-400 text-center">Pilih model siap pakai atau gunakan model kustom Anda.</p>
+        <Heading level={1} className="text-center">
+            Pilih Model Anda
+        </Heading>
+        <Text variant="large" className="mt-2 text-center">
+            Pilih model siap pakai atau gunakan model kustom Anda.
+        </Text>
         <div className="mt-6 flex items-center justify-center gap-4">
             <Button 
                 onClick={onImportClick}

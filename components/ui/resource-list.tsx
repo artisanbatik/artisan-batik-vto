@@ -2,6 +2,8 @@
 import React, { useRef, useEffect } from 'react';
 import { cn } from '../../lib/utils';
 import { Input } from './input';
+import { EmptyState } from './empty-state';
+import { PackageIcon } from 'lucide-react';
 
 interface ResourceItemProps {
   id: string;
@@ -117,6 +119,7 @@ interface ResourceListProps<T> {
   items: T[];
   renderItem: (item: T, index: number) => React.ReactNode;
   emptyMessage?: string;
+  emptyIcon?: React.ReactNode;
   className?: string;
   maxHeight?: string;
 }
@@ -125,14 +128,17 @@ export const ResourceList = <T,>({
   items, 
   renderItem, 
   emptyMessage = "Tidak ada item.", 
+  emptyIcon,
   className,
   maxHeight = "max-h-48"
 }: ResourceListProps<T>) => {
   if (items.length === 0) {
     return (
-      <p className="text-center text-sm text-stone-500 dark:text-stone-400 pt-4">
-        {emptyMessage}
-      </p>
+      <EmptyState 
+        icon={emptyIcon || <PackageIcon className="w-5 h-5"/>}
+        description={emptyMessage}
+        className="py-6"
+      />
     );
   }
 

@@ -10,6 +10,7 @@ import { Trash2Icon, SaveIcon, PackageIcon } from '../../icons';
 import Spinner from '../../ui/spinner';
 import { Button } from '../../ui/button';
 import { Panel } from '../../ui/panel';
+import { Badge } from '../../ui/badge';
 import { ResourceList, ResourceItem } from '../../ui/resource-list';
 import { OutfitActions } from './outfit/OutfitActions';
 
@@ -62,9 +63,9 @@ const OutfitStack: React.FC<OutfitStackProps> = ({ outfitHistory, onUndo, onSave
                     key={layer.garment?.id || 'base'}
                     id={layer.garment?.id || 'base'}
                     prefix={
-                        <span className="flex items-center justify-center w-6 h-6 text-xs font-bold text-stone-600 dark:text-stone-300 bg-stone-200 dark:bg-stone-800 rounded-full">
+                        <Badge variant="secondary" className="w-5 h-5 p-0 flex items-center justify-center rounded-full">
                           {index + 1}
-                        </span>
+                        </Badge>
                     }
                     thumbnailUrl={layer.garment?.url}
                     title={layer.garment ? layer.garment.name : 'Model Dasar'}
