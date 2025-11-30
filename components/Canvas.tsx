@@ -1,13 +1,14 @@
+
 /**
  * @license
  * SPDX-License-Identifier: Apache-2.0
 */
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useMemo, useEffect } from 'react';
 import Spinner from './ui/spinner';
 import { AnimatePresence, motion } from 'framer-motion';
 import { DownloadFormatModal } from './modals/DownloadFormatModal';
-import { ImageFormat, convertImage } from '../lib/utils';
 import { useCanvasInteraction } from '../hooks/useCanvasInteraction';
+import { useCanvasActions } from '../hooks/useCanvasActions';
 import { useStudio } from './studio/StudioContext';
 
 // Sub-components
@@ -40,11 +41,15 @@ const Canvas: React.FC = () => {
 
   const filters = filterManager.data;
 
-  // Local UI State
-  const [isFormatModalOpen, setIsFormatModalOpen] = useState(false);
-  const [isDownloading, setIsDownloading] = useState(false);
+  // Custom Hooks
+  const { 
+      isFormatModalOpen, 
+      setIsFormatModalOpen, 
+      isDownloading, 
+      handleDownloadRequest, 
+      handleConfirmDownload 
+  } = useCanvasActions();
   
-  // Custom Hook for Interaction Logic
   const { 
     scale, position, isDragging, containerRef, resetView, 
     handlers, zoomIn, zoomOut, canZoomIn, canZoomOut, isZoomed, isDefaultView 
@@ -59,26 +64,6 @@ const Canvas: React.FC = () => {
   useEffect(() => {
     resetView();
   }, [currentDisplayImage, resetView]);
-
-  const handleConfirmDownload = async (format: ImageFormat) => {
-    if (!currentDisplayImage) return;
-    setIsDownloading(true);
-    setIsFormatModalOpen(false); // Close modal right away
-    try {
-        const { blob, extension } = await convertImage(currentDisplayImage, format, filters);
-        const link = document.createElement('a');
-        link.href = URL.createObjectURL(blob);
-        link.download = `artisan-batik-vto-outfit.${extension}`;
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-        URL.revokeObjectURL(link.href);
-    } catch (error) {
-        console.error("Gagal mengunduh gambar:", error);
-    } finally {
-        setIsDownloading(false);
-    }
-  };
   
   return (
     <div className="w-full h-full flex items-center justify-center p-4 pb-18 relative animate-zoom-in group bg-stone-100 dark:bg-stone-800">
@@ -93,7 +78,7 @@ const Canvas: React.FC = () => {
         canRedo={canRedo}
         isLoading={isVTOLoading}
         hasImage={!!currentDisplayImage}
-        onDownloadClick={() => setIsFormatModalOpen(true)}
+        onDownloadClick={handleDownloadRequest}
         isDownloading={isDownloading}
       />
 
@@ -173,7 +158,7 @@ const Canvas: React.FC = () => {
       <DownloadFormatModal
         isOpen={isFormatModalOpen}
         onClose={() => setIsFormatModalOpen(false)}
-        onConfirm={handleConfirmDownload}
+        onConfirm={(format) => handleConfirmDownload(format, currentDisplayImage, filters)}
         isProcessing={isDownloading}
       />
     </div>

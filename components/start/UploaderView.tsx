@@ -1,10 +1,12 @@
-import React, { useState, useRef } from 'react';
+
+import React, { useRef } from 'react';
 import { AnimatePresence } from 'framer-motion';
 import { FileUpIcon, DownloadIcon } from '../icons';
 import Camera from '../Camera';
 import { CustomModel } from '../../types';
 import { Button } from '../ui/button';
 import { useModelGenerator } from '../../hooks/useModelGenerator';
+import { useUploaderSettings } from '../../hooks/useUploaderSettings';
 
 // Extracted Components
 import { UploaderHeader } from './uploader/UploaderHeader';
@@ -23,12 +25,15 @@ interface UploaderViewProps {
   isExporting: boolean;
 }
 
-const ASPECT_RATIOS = ['1:1', '2:3', '3:2', '3:4', '4:3', '4:5', '5:4', '9:16', '16:9', '21:9'];
-
 const UploaderView: React.FC<UploaderViewProps> = (props) => {
-  const [backgroundColor, setBackgroundColor] = useState('#f3f2ef');
-  const [aspectRatio, setAspectRatio] = useState('4:5');
-  const [isCameraOpen, setIsCameraOpen] = useState(false);
+  // Use custom hook for settings
+  const settings = useUploaderSettings();
+  const { 
+      backgroundColor, 
+      aspectRatio, 
+      isCameraOpen, 
+      setIsCameraOpen 
+  } = settings;
 
   const { 
       userImageUrl, generatedModelUrl, isGenerating, isRefining, error, 
@@ -74,12 +79,7 @@ const UploaderView: React.FC<UploaderViewProps> = (props) => {
                 {!userImageUrl ? (
                     <InputSection 
                         onFileSelect={handleFileSelect}
-                        onCameraOpen={() => setIsCameraOpen(true)}
-                        aspectRatio={aspectRatio}
-                        setAspectRatio={setAspectRatio}
-                        backgroundColor={backgroundColor}
-                        setBackgroundColor={setBackgroundColor}
-                        ASPECT_RATIOS={ASPECT_RATIOS}
+                        config={settings}
                     />
                 ) : (
                     <ResultControls 

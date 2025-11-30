@@ -11,6 +11,7 @@ import { SunIcon, MoonIcon } from './icons';
 import UploaderView from './start/UploaderView';
 import GalleryView from './start/GalleryView';
 import { useStartScreenState } from '../hooks/useStartScreenState';
+import { Button } from './ui/button';
 
 interface StartScreenProps {
   onAddModel: (modelUrl: string, aspectRatio: string) => void;
@@ -56,9 +57,15 @@ const StartScreen: React.FC<StartScreenProps> = ({
   return (
     <>
       <div className="absolute top-4 right-4 z-50">
-          <button onClick={onToggleTheme} className="p-2 rounded-full text-stone-500 dark:text-stone-400 hover:bg-stone-200 dark:hover:bg-stone-800 transition-colors" aria-label="Toggle theme">
+          <Button 
+            onClick={onToggleTheme} 
+            variant="ghost" 
+            size="icon"
+            className="rounded-full text-stone-500 dark:text-stone-400 hover:bg-stone-200 dark:hover:bg-stone-800" 
+            aria-label="Toggle theme"
+          >
               {theme === 'light' ? <MoonIcon className="w-5 h-5" /> : <SunIcon className="w-5 h-5" />}
-          </button>
+          </Button>
       </div>
       
       {view === 'uploader' ? (
