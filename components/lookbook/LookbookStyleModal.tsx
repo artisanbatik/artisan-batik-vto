@@ -1,4 +1,3 @@
-
 /**
  * @license
  * SPDX-License-Identifier: Apache-2.0
@@ -9,7 +8,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { WandSparklesIcon } from '../icons';
 import { SHOT_TYPES } from '../../services/geminiService';
 import { cn } from '../../lib/utils';
-import Spinner from '../Spinner';
+import Spinner from '../ui/spinner';
 import { ModalDialog } from '../ui/modal-dialog';
 import { Select } from '../ui/select';
 import { Textarea } from '../ui/textarea';

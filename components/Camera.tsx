@@ -1,4 +1,3 @@
-
 /**
  * @license
  * SPDX-License-Identifier: Apache-2.0
@@ -7,7 +6,7 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { XIcon, SwitchCameraIcon } from './icons';
-import Spinner from './Spinner';
+import Spinner from './ui/spinner';
 import { cn } from '../lib/utils';
 import { Button } from './ui/button';
 import { useCamera } from '../hooks/useCamera';

@@ -1,4 +1,3 @@
-
 /**
  * @license
  * SPDX-License-Identifier: Apache-2.0
@@ -12,11 +11,11 @@ import { useStudio } from './StudioContext';
 import { PackageIcon, LibraryIcon, BookOpenIcon, ClockIcon, SlidersIcon } from '../icons';
 
 // Panels
-import OutfitStack from '../OutfitStack';
-import SavedOutfitsPanel from '../AdjustmentPanel';
-import SavedLookbooksPanel from '../SavedLookbooksPanel';
-import HistoryPanel from '../HistoryPanel';
-import FilterPanel from '../FilterPanel';
+import OutfitStack from './panels/OutfitStack';
+import SavedOutfitsPanel from './panels/SavedOutfitsPanel';
+import SavedLookbooksPanel from './panels/SavedLookbooksPanel';
+import HistoryPanel from './panels/HistoryPanel';
+import FilterPanel from './panels/FilterPanel';
 
 const StudioSidePanel: React.FC = () => {
     // Consume Context

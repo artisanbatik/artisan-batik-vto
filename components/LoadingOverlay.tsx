@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
 */
 import React from 'react';
-import Spinner from './Spinner';
+import Spinner from './ui/spinner';
 
 interface LoadingOverlayProps {
   message: string;

@@ -1,4 +1,3 @@
-
 /**
  * @license
  * SPDX-License-Identifier: Apache-2.0
@@ -6,7 +5,7 @@
 
 import React, { useState, useMemo } from 'react';
 import { FileTextIcon, WandSparklesIcon } from '../icons';
-import Spinner from '../Spinner';
+import Spinner from '../ui/spinner';
 import { ModalDialog } from '../ui/modal-dialog';
 
 interface ProductInfoModalProps {

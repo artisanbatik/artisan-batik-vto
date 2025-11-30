@@ -3,7 +3,7 @@ import React, { useState, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { CameraIcon, FileUpIcon, DownloadIcon, WandSparklesIcon, RotateCcwIcon, ArrowRightIcon } from '../../components/icons';
 import { Compare } from '../../components/ui/compare';
-import Spinner from '../../components/Spinner';
+import Spinner from '../../components/ui/spinner';
 import Camera from '../../components/Camera';
 import { cn } from '../../lib/utils';
 import { CustomModel } from '../../types';

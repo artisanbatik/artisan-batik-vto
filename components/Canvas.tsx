@@ -1,10 +1,9 @@
-
 /**
  * @license
  * SPDX-License-Identifier: Apache-2.0
 */
 import React, { useState, useMemo, useEffect } from 'react';
-import Spinner from './Spinner';
+import Spinner from './ui/spinner';
 import { AnimatePresence, motion } from 'framer-motion';
 import { DownloadFormatModal } from './modals/DownloadFormatModal';
 import { ImageFormat, convertImage } from '../lib/utils';

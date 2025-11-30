@@ -3,7 +3,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { LookbookImage } from '../../types';
 import { XIcon, DownloadIcon, WandSparklesIcon, ZoomInIcon, ChevronLeftIcon, SaveIcon, ChevronRightIcon, ZoomOutIcon, MaximizeIcon } from '../icons';
-import Spinner from '../Spinner';
+import Spinner from '../ui/spinner';
 import { cn, ImageFormat, convertImage } from '../../lib/utils';
 import JSZip from 'jszip';
 import { DownloadFormatModal } from '../modals/DownloadFormatModal';

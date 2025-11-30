@@ -1,4 +1,3 @@
-
 /**
  * @license
  * SPDX-License-Identifier: Apache-2.0
@@ -8,7 +7,7 @@ import React, { useState } from 'react';
 import { DownloadIcon } from '../icons';
 import { cn } from '../../lib/utils';
 import { ImageFormat } from '../../lib/utils';
-import Spinner from '../Spinner';
+import Spinner from '../ui/spinner';
 import { ModalDialog } from '../ui/modal-dialog';
 import { Button } from '../ui/button';
 
