@@ -20,13 +20,15 @@ export const CameraPreview: React.FC<CameraPreviewProps> = ({
         <div className="relative w-full h-full bg-black">
              {/* Close Button - Top Right (Consistent with Viewport) */}
              <div className="absolute top-4 right-4 z-30">
-                <button 
-                    onClick={onClose} 
-                    className="p-2 bg-black/30 rounded-full text-white hover:bg-black/50 transition-colors backdrop-blur-sm" 
+                <Button
+                    onClick={onClose}
+                    variant="ghost"
+                    size="icon"
+                    className="rounded-full bg-black/30 text-white hover:bg-black/50 hover:text-white backdrop-blur-sm border-none w-10 h-10"
                     aria-label="Tutup kamera"
                 >
                     <XIcon className="w-6 h-6" />
-                </button>
+                </Button>
             </div>
 
             <img 
@@ -40,14 +42,14 @@ export const CameraPreview: React.FC<CameraPreviewProps> = ({
                     <Button 
                         onClick={onRetake} 
                         variant="secondary" 
-                        className="rounded-full bg-white/10 text-white hover:bg-white/20 border-white/20 px-6 backdrop-blur-md"
+                        className="rounded-full bg-white/10 text-white hover:bg-white/20 border-white/20 px-8 backdrop-blur-md h-12"
                     >
                         Ambil Ulang
                     </Button>
                     <Button 
                         onClick={onConfirm} 
                         variant="default" 
-                        className="rounded-full bg-white text-black hover:bg-gray-200 px-6 shadow-lg"
+                        className="rounded-full bg-white text-black hover:bg-stone-200 px-8 h-12 shadow-lg"
                     >
                         Gunakan Foto
                     </Button>

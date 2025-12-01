@@ -1,6 +1,7 @@
 
 import React from 'react';
 import Spinner from '../ui/spinner';
+import { Text } from '../ui/typography';
 
 interface CameraOverlayProps {
     isLoading: boolean;
@@ -10,18 +11,18 @@ interface CameraOverlayProps {
 export const CameraOverlay: React.FC<CameraOverlayProps> = ({ isLoading, error }) => {
     if (error) {
         return (
-            <div className="absolute inset-0 z-20 flex flex-col items-center justify-center bg-black/80 text-white p-4 text-center">
-                <p className="font-semibold text-lg text-red-400">Kesalahan Kamera</p>
-                <p className="text-gray-300 mt-2 text-sm">{error}</p>
+            <div className="absolute inset-0 z-20 flex flex-col items-center justify-center bg-black/80 p-6 text-center animate-fade-in">
+                <Text variant="large" className="font-semibold text-red-400 mb-2">Kesalahan Kamera</Text>
+                <Text variant="muted" className="text-stone-300 text-sm max-w-xs">{error}</Text>
             </div>
         );
     }
 
     if (isLoading) {
         return (
-            <div className="absolute inset-0 z-20 bg-black/50 flex flex-col items-center justify-center">
-                <Spinner className="text-white w-8 h-8" />
-                <p className="text-white mt-4 font-serif">Memulai kamera...</p>
+            <div className="absolute inset-0 z-20 bg-black/60 flex flex-col items-center justify-center backdrop-blur-sm animate-fade-in">
+                <Spinner className="text-white w-10 h-10" />
+                <Text variant="large" className="text-white mt-4 font-serif tracking-wide">Memulai kamera...</Text>
             </div>
         );
     }
