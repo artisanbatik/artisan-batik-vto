@@ -1,4 +1,3 @@
-
 /**
  * @license
  * SPDX-License-Identifier: Apache-2.0
@@ -12,6 +11,7 @@ import { Button } from '../ui/button';
 import { FileDropzone } from '../ui/file-dropzone';
 import { ImageCard } from '../ui/image-card';
 import { EmptyState } from '../ui/empty-state';
+import { CategoryFilter, CategoryOption } from '../wardrobe/CategoryFilter';
 
 interface WardrobePickerModalProps {
   isOpen: boolean;
@@ -25,7 +25,7 @@ interface WardrobePickerModalProps {
   onDeleteGarment: (garment: WardrobeItem) => void;
 }
 
-const CATEGORIES: { id: WardrobeCategory | 'all', name: string }[] = [
+const CATEGORIES: CategoryOption[] = [
     { id: 'all', name: 'Semua' },
     { id: 'top', name: 'Atasan' },
     { id: 'bottom', name: 'Bawahan' },
@@ -73,22 +73,12 @@ export const WardrobePickerModal: React.FC<WardrobePickerModalProps> = ({ isOpen
             maxWidth="max-w-2xl"
             className="h-[85vh] flex flex-col"
         >
-            <div className="flex-shrink-0 mb-4 overflow-x-auto -mx-6 px-6 pb-2">
-                <div className="flex items-center gap-2">
-                    {CATEGORIES.map(category => (
-                        <Button
-                            key={category.id}
-                            onClick={() => setActiveCategory(category.id)}
-                            variant={activeCategory === category.id ? 'default' : 'outline'}
-                            size="sm"
-                            className="rounded-full whitespace-nowrap"
-                            disabled={isLoading}
-                        >
-                            {category.name}
-                        </Button>
-                    ))}
-                </div>
-            </div>
+            <CategoryFilter 
+                categories={CATEGORIES}
+                activeCategory={activeCategory}
+                onSelectCategory={setActiveCategory}
+                disabled={isLoading}
+            />
 
             <div className="overflow-y-auto min-h-0 flex-grow -mx-2 px-2">
                 <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 pb-4">
