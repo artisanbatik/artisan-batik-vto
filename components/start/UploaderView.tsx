@@ -4,7 +4,7 @@ import { AnimatePresence } from 'framer-motion';
 import { FileUpIcon, DownloadIcon } from '../icons';
 import Camera from '../Camera';
 import { CustomModel } from '../../types';
-import { Button } from '../ui/button';
+import { Button } from '../ui';
 import { useModelGenerator } from '../../hooks/useModelGenerator';
 import { useUploaderSettings } from '../../hooks/useUploaderSettings';
 
