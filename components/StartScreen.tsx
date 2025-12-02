@@ -7,11 +7,10 @@
 import React from 'react';
 import { CustomModel } from '../types';
 import { predefinedModels } from '../models';
-import { SunIcon, MoonIcon } from './icons';
 import UploaderView from './start/UploaderView';
 import GalleryView from './start/GalleryView';
 import { useStartScreenState } from '../hooks/useStartScreenState';
-import { Button } from './ui/button';
+import { ThemeToggle } from './ui/theme-toggle';
 
 interface StartScreenProps {
   onAddModel: (modelUrl: string, aspectRatio: string) => void;
@@ -57,15 +56,11 @@ const StartScreen: React.FC<StartScreenProps> = ({
   return (
     <div className="w-screen h-screen bg-stone-50 dark:bg-stone-950 text-stone-900 dark:text-stone-100 flex flex-col p-4 sm:p-6 md:p-8 overflow-hidden transition-colors duration-300">
       <div className="absolute top-4 right-4 z-50">
-          <Button 
-            onClick={onToggleTheme} 
-            variant="ghost" 
-            size="icon"
-            className="rounded-full text-stone-500 dark:text-stone-400 hover:bg-stone-200 dark:hover:bg-stone-800" 
-            aria-label="Toggle theme"
-          >
-              {theme === 'light' ? <MoonIcon className="w-5 h-5" /> : <SunIcon className="w-5 h-5" />}
-          </Button>
+          <ThemeToggle 
+            theme={theme} 
+            onToggle={onToggleTheme} 
+            className="text-stone-500 dark:text-stone-400 hover:bg-stone-200 dark:hover:bg-stone-800"
+          />
       </div>
       
       <main className="flex-grow flex items-center justify-center w-full h-full relative">

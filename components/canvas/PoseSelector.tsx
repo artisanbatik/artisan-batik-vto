@@ -74,21 +74,27 @@ export const PoseSelector: React.FC<PoseSelectorProps> = ({
                 const isCurrent = index === currentPoseIndex;
 
                 return (
-                  <button
+                  <Button
                     key={pose}
                     onClick={() => onSelectPose(index)}
                     disabled={isLoading || isCurrent}
-                    className="w-full flex items-center justify-between text-left text-xs font-medium text-stone-800 dark:text-stone-200 p-2 rounded-md hover:bg-stone-200/70 dark:hover:bg-stone-800/70 disabled:bg-stone-200/70 dark:disabled:bg-stone-800/70 disabled:font-bold disabled:cursor-not-allowed"
-                  >
-                    <span className="truncate pr-2">{pose}</span>
-                    {isCurrent ? (
-                      <CheckCircleIcon className="w-3.5 h-3.5 text-stone-600 dark:text-stone-400 flex-shrink-0" />
-                    ) : isGenerated ? (
-                      <CheckCircleIcon className="w-3.5 h-3.5 text-green-500 flex-shrink-0" />
-                    ) : (
-                      <WandSparklesIcon className="w-3.5 h-3.5 text-amber-500 flex-shrink-0" />
+                    variant="ghost"
+                    className={cn(
+                        "w-full justify-between px-2 h-auto py-2 text-xs font-medium",
+                        isCurrent && "bg-stone-100 dark:bg-stone-800"
                     )}
-                  </button>
+                    rightIcon={
+                        isCurrent ? (
+                            <CheckCircleIcon className="w-3.5 h-3.5 text-stone-600 dark:text-stone-400 flex-shrink-0" />
+                        ) : isGenerated ? (
+                            <CheckCircleIcon className="w-3.5 h-3.5 text-green-500 flex-shrink-0" />
+                        ) : (
+                            <WandSparklesIcon className="w-3.5 h-3.5 text-amber-500 flex-shrink-0" />
+                        )
+                    }
+                  >
+                    <span className="truncate">{pose}</span>
+                  </Button>
                 )
               })}
             </div>

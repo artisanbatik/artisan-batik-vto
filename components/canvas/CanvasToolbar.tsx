@@ -1,7 +1,8 @@
 
 import React from 'react';
-import { RotateCcwIcon, MoonIcon, SunIcon, UndoIcon, RedoIcon, DownloadIcon } from '../icons';
+import { RotateCcwIcon, UndoIcon, RedoIcon, DownloadIcon } from '../icons';
 import { Button } from '../ui/button';
+import { ThemeToggle } from '../ui/theme-toggle';
 
 interface CanvasToolbarProps {
   onStartOver: () => void;
@@ -44,14 +45,12 @@ export const CanvasToolbar: React.FC<CanvasToolbarProps> = ({
           Mulai Ulang
         </Button>
 
-        <Button
-          onClick={onToggleTheme}
-          variant="outline"
-          size="icon"
-          className="rounded-full bg-white/80 dark:bg-stone-900/80 border-stone-300/80 dark:border-stone-700/80 hover:bg-white dark:hover:bg-stone-900 shadow-sm backdrop-blur-sm"
-        >
-          {theme === 'light' ? <MoonIcon className="w-4 h-4" /> : <SunIcon className="w-4 h-4" />}
-        </Button>
+        <ThemeToggle 
+            theme={theme}
+            onToggle={onToggleTheme}
+            variant="outline"
+            className="bg-white/80 dark:bg-stone-900/80 border-stone-300/80 dark:border-stone-700/80 hover:bg-white dark:hover:bg-stone-900 shadow-sm backdrop-blur-sm"
+        />
 
         {/* Undo/Redo Controls */}
         <div className="flex items-center bg-white/80 dark:bg-stone-900/80 border border-stone-300/80 dark:border-stone-700/80 rounded-full p-1 shadow-sm backdrop-blur-sm gap-1">
