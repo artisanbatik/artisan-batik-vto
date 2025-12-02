@@ -56,7 +56,7 @@ const UploaderView: React.FC<UploaderViewProps> = (props) => {
   };
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen p-4 sm:p-8 animate-fade-in relative w-full max-w-5xl mx-auto">
+    <div className="flex flex-col h-full w-full overflow-y-auto relative animate-fade-in">
         
         {/* Top Right Controls */}
         <div className="absolute top-0 right-0 p-4 z-20 flex gap-2">
@@ -71,55 +71,57 @@ const UploaderView: React.FC<UploaderViewProps> = (props) => {
             )}
         </div>
 
-        <div className="w-full max-w-4xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 items-center">
-            {/* Left Column: Input & Controls */}
-            <div className="order-2 lg:order-1 flex flex-col items-center lg:items-start text-center lg:text-left space-y-6">
-                <UploaderHeader />
+        <div className="flex-grow flex items-center justify-center p-4 sm:p-8">
+            <div className="w-full max-w-5xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 items-center">
+                {/* Left Column: Input & Controls */}
+                <div className="order-2 lg:order-1 flex flex-col items-center lg:items-start text-center lg:text-left space-y-6">
+                    <UploaderHeader />
 
-                {!userImageUrl ? (
-                    <InputSection 
-                        onFileSelect={handleFileSelect}
-                        config={settings}
-                    />
-                ) : (
-                    <ResultControls 
-                        onRefinePose={() => refineModel('pose', backgroundColor, aspectRatio)}
-                        onRefineBackground={() => refineModel('background', backgroundColor, aspectRatio)}
-                        onStart={() => generatedModelUrl && props.onSaveAndStart(generatedModelUrl, aspectRatio)}
-                        onReset={reset}
-                        isRefining={isRefining}
-                        isGenerating={isGenerating}
-                        hasGeneratedModel={!!generatedModelUrl}
-                    />
-                )}
-                
-                {/* Advanced Options */}
-                 <div className="flex gap-4 pt-8 text-sm text-stone-500">
-                    <button onClick={handleImportClick} className="hover:text-stone-800 dark:hover:text-stone-300 underline underline-offset-4 flex items-center gap-1">
-                        <FileUpIcon className="w-3 h-3"/> Impor
-                    </button>
-                    <input 
-                        ref={importFileRef}
-                        type="file" 
-                        accept=".zip" 
-                        className="hidden" 
-                        onChange={props.onImportFileChange}
-                    />
-                    <button onClick={props.onExportModels} className="hover:text-stone-800 dark:hover:text-stone-300 underline underline-offset-4 flex items-center gap-1">
-                         <DownloadIcon className="w-3 h-3"/> Ekspor
-                    </button>
+                    {!userImageUrl ? (
+                        <InputSection 
+                            onFileSelect={handleFileSelect}
+                            config={settings}
+                        />
+                    ) : (
+                        <ResultControls 
+                            onRefinePose={() => refineModel('pose', backgroundColor, aspectRatio)}
+                            onRefineBackground={() => refineModel('background', backgroundColor, aspectRatio)}
+                            onStart={() => generatedModelUrl && props.onSaveAndStart(generatedModelUrl, aspectRatio)}
+                            onReset={reset}
+                            isRefining={isRefining}
+                            isGenerating={isGenerating}
+                            hasGeneratedModel={!!generatedModelUrl}
+                        />
+                    )}
+                    
+                    {/* Advanced Options */}
+                    <div className="flex gap-4 pt-8 text-sm text-stone-500">
+                        <button onClick={handleImportClick} className="hover:text-stone-800 dark:hover:text-stone-300 underline underline-offset-4 flex items-center gap-1">
+                            <FileUpIcon className="w-3 h-3"/> Impor
+                        </button>
+                        <input 
+                            ref={importFileRef}
+                            type="file" 
+                            accept=".zip" 
+                            className="hidden" 
+                            onChange={props.onImportFileChange}
+                        />
+                        <button onClick={props.onExportModels} className="hover:text-stone-800 dark:hover:text-stone-300 underline underline-offset-4 flex items-center gap-1">
+                            <DownloadIcon className="w-3 h-3"/> Ekspor
+                        </button>
+                    </div>
                 </div>
-            </div>
 
-            {/* Right Column: Preview */}
-            <div className="order-1 lg:order-2 flex justify-center w-full">
-                <PreviewSection 
-                    userImageUrl={userImageUrl}
-                    generatedModelUrl={generatedModelUrl}
-                    isProcessing={isGenerating || isRefining}
-                    isRefining={isRefining}
-                    error={error}
-                />
+                {/* Right Column: Preview */}
+                <div className="order-1 lg:order-2 flex justify-center w-full">
+                    <PreviewSection 
+                        userImageUrl={userImageUrl}
+                        generatedModelUrl={generatedModelUrl}
+                        isProcessing={isGenerating || isRefining}
+                        isRefining={isRefining}
+                        error={error}
+                    />
+                </div>
             </div>
         </div>
 

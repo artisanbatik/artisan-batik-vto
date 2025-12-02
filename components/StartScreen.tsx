@@ -11,6 +11,7 @@ import UploaderView from './start/UploaderView';
 import GalleryView from './start/GalleryView';
 import { useStartScreenState } from '../hooks/useStartScreenState';
 import { ThemeToggle } from './ui/theme-toggle';
+import { PageLayout } from './ui/page-layout';
 
 interface StartScreenProps {
   onAddModel: (modelUrl: string, aspectRatio: string) => void;
@@ -54,7 +55,7 @@ const StartScreen: React.FC<StartScreenProps> = ({
   });
 
   return (
-    <div className="w-screen h-screen bg-stone-50 dark:bg-stone-950 text-stone-900 dark:text-stone-100 flex flex-col p-4 sm:p-6 md:p-8 overflow-hidden transition-colors duration-300">
+    <PageLayout className="flex flex-col relative">
       <div className="absolute top-4 right-4 z-50">
           <ThemeToggle 
             theme={theme} 
@@ -63,7 +64,12 @@ const StartScreen: React.FC<StartScreenProps> = ({
           />
       </div>
       
-      <main className="flex-grow flex items-center justify-center w-full h-full relative">
+      {/* 
+         Removed p-4 padding from PageLayout and flex centering from main.
+         Views are now responsible for their own internal padding and centering 
+         to ensure full control over scrolling behavior.
+      */}
+      <main className="w-full h-full relative overflow-hidden">
         {view === 'uploader' ? (
           <UploaderView
               customModels={customModels}
@@ -78,26 +84,28 @@ const StartScreen: React.FC<StartScreenProps> = ({
               onSaveAndStart={(url, ratio) => onAddModel(url, ratio)}
           />
         ) : (
-          <GalleryView
-              customModels={customModels}
-              predefinedModels={predefinedModels}
-              
-              isImporting={isImporting}
-              isExporting={isExporting}
-              deletingModel={deletingModel}
-              
-              onSelectModel={onSelectModel}
-              onImportFileChange={handleImportFileChange}
-              onExportModels={handleExportModels}
-              onSetViewUploader={() => setView('uploader')}
-              
-              setDeletingModel={setDeletingModel}
-              handleConfirmDelete={handleConfirmDelete}
-              onRenameModel={onRenameModel}
-          />
+          <div className="w-full h-full p-4 sm:p-6 md:p-8">
+            <GalleryView
+                customModels={customModels}
+                predefinedModels={predefinedModels}
+                
+                isImporting={isImporting}
+                isExporting={isExporting}
+                deletingModel={deletingModel}
+                
+                onSelectModel={onSelectModel}
+                onImportFileChange={handleImportFileChange}
+                onExportModels={handleExportModels}
+                onSetViewUploader={() => setView('uploader')}
+                
+                setDeletingModel={setDeletingModel}
+                handleConfirmDelete={handleConfirmDelete}
+                onRenameModel={onRenameModel}
+            />
+          </div>
         )}
       </main>
-    </div>
+    </PageLayout>
   );
 };
 

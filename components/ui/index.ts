@@ -25,6 +25,7 @@ export * from './empty-state';
 export * from './resource-list';
 export * from './resource-item';
 export * from './BottomSheet';
+export * from './page-layout';
 
 // Icons (Custom)
 export * from './custom-icons';
