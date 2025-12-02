@@ -55,7 +55,7 @@ const StartScreen: React.FC<StartScreenProps> = ({
   });
 
   return (
-    <>
+    <div className="w-screen h-screen bg-stone-50 dark:bg-stone-950 text-stone-900 dark:text-stone-100 flex flex-col p-4 sm:p-6 md:p-8 overflow-hidden transition-colors duration-300">
       <div className="absolute top-4 right-4 z-50">
           <Button 
             onClick={onToggleTheme} 
@@ -68,39 +68,41 @@ const StartScreen: React.FC<StartScreenProps> = ({
           </Button>
       </div>
       
-      {view === 'uploader' ? (
-        <UploaderView
-            customModels={customModels}
-            hasPredefinedModels={predefinedModels.length > 0}
-            
-            isImporting={isImporting}
-            isExporting={isExporting}
-            
-            onImportFileChange={handleImportFileChange}
-            onExportModels={handleExportModels}
-            onViewGallery={() => setView('gallery')}
-            onSaveAndStart={(url, ratio) => onAddModel(url, ratio)}
-        />
-      ) : (
-        <GalleryView
-            customModels={customModels}
-            predefinedModels={predefinedModels}
-            
-            isImporting={isImporting}
-            isExporting={isExporting}
-            deletingModel={deletingModel}
-            
-            onSelectModel={onSelectModel}
-            onImportFileChange={handleImportFileChange}
-            onExportModels={handleExportModels}
-            onSetViewUploader={() => setView('uploader')}
-            
-            setDeletingModel={setDeletingModel}
-            handleConfirmDelete={handleConfirmDelete}
-            onRenameModel={onRenameModel}
-        />
-      )}
-    </>
+      <main className="flex-grow flex items-center justify-center w-full h-full relative">
+        {view === 'uploader' ? (
+          <UploaderView
+              customModels={customModels}
+              hasPredefinedModels={predefinedModels.length > 0}
+              
+              isImporting={isImporting}
+              isExporting={isExporting}
+              
+              onImportFileChange={handleImportFileChange}
+              onExportModels={handleExportModels}
+              onViewGallery={() => setView('gallery')}
+              onSaveAndStart={(url, ratio) => onAddModel(url, ratio)}
+          />
+        ) : (
+          <GalleryView
+              customModels={customModels}
+              predefinedModels={predefinedModels}
+              
+              isImporting={isImporting}
+              isExporting={isExporting}
+              deletingModel={deletingModel}
+              
+              onSelectModel={onSelectModel}
+              onImportFileChange={handleImportFileChange}
+              onExportModels={handleExportModels}
+              onSetViewUploader={() => setView('uploader')}
+              
+              setDeletingModel={setDeletingModel}
+              handleConfirmDelete={handleConfirmDelete}
+              onRenameModel={onRenameModel}
+          />
+        )}
+      </main>
+    </div>
   );
 };
 
