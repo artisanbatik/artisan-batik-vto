@@ -1,3 +1,4 @@
+
 /**
  * @license
  * SPDX-License-Identifier: Apache-2.0
@@ -22,6 +23,7 @@ export * from './modal-dialog';
 export * from './confirmation-dialog';
 export * from './empty-state';
 export * from './resource-list';
+export * from './resource-item';
 export * from './BottomSheet';
 
 // Icons (Custom)

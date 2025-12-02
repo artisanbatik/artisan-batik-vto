@@ -1,3 +1,4 @@
+
 /**
  * @license
  * SPDX-License-Identifier: Apache-2.0
@@ -9,7 +10,8 @@ import { Trash2Icon, PencilIcon, BookOpenIcon } from '../../icons';
 import { Button } from '../../ui/button';
 import { Panel } from '../../ui/panel';
 import { useInlineRename } from '../../../hooks/useInlineRename';
-import { ResourceList, ResourceItem } from '../../ui/resource-list';
+import { ResourceList } from '../../ui/resource-list';
+import { ResourceItem } from '../../ui/resource-item';
 
 interface SavedLookbooksPanelProps {
   savedLookbooks: SavedLookbook[];

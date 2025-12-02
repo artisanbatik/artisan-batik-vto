@@ -1,3 +1,4 @@
+
 /**
  * @license
  * SPDX-License-Identifier: Apache-2.0
@@ -7,7 +8,8 @@ import React from 'react';
 import { OutfitLayer } from '../../../types';
 import { ClockIcon } from '../../icons';
 import { Panel } from '../../ui/panel';
-import { ResourceList, ResourceItem } from '../../ui/resource-list';
+import { ResourceList } from '../../ui/resource-list';
+import { ResourceItem } from '../../ui/resource-item';
 
 interface HistoryPanelProps {
   history: OutfitLayer[];

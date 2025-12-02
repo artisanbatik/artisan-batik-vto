@@ -6,13 +6,12 @@
 
 import React from 'react';
 import { OutfitLayer } from '../../../types';
-import { Trash2Icon, SaveIcon, PackageIcon } from '../../icons';
-import Spinner from '../../ui/spinner';
+import { SaveIcon, PackageIcon } from '../../icons';
 import { Button } from '../../ui/button';
 import { Panel } from '../../ui/panel';
-import { Badge } from '../../ui/badge';
-import { ResourceList, ResourceItem } from '../../ui/resource-list';
+import { ResourceList } from '../../ui/resource-list';
 import { OutfitActions } from './outfit/OutfitActions';
+import { OutfitLayerItem } from './outfit/OutfitLayerItem';
 
 interface OutfitStackProps {
   outfitHistory: OutfitLayer[];
@@ -57,38 +56,18 @@ const OutfitStack: React.FC<OutfitStackProps> = ({ outfitHistory, onUndo, onSave
         renderItem={(layer: OutfitLayer, index: number) => {
             const isGenerating = index > 0 && generatingLayerIndex === index;
             const isLast = index === outfitHistory.length - 1;
+            // Can delete if it's the last item, not the base model (index > 0), and nothing is currently generating
+            const canDelete = index > 0 && isLast && !generatingLayerIndex;
             
             return (
-                <ResourceItem
-                    key={layer.garment?.id || 'base'}
-                    id={layer.garment?.id || 'base'}
-                    prefix={
-                        <Badge variant="secondary" className="w-5 h-5 p-0 flex items-center justify-center rounded-full">
-                          {index + 1}
-                        </Badge>
-                    }
-                    thumbnailUrl={layer.garment?.url}
-                    title={layer.garment ? layer.garment.name : 'Model Dasar'}
-                    subtitle={layer.texture ? `Tekstur ${layer.texture}` : undefined}
-                    isDisabled={isLoading && !isGenerating}
-                    actionButtons={
-                        <>
-                            {isGenerating && (
-                                <Spinner className="w-5 h-5 text-stone-500" />
-                            )}
-                            {index > 0 && isLast && !generatingLayerIndex && (
-                                <Button
-                                    onClick={onUndo}
-                                    variant="ghost"
-                                    size="icon"
-                                    className="text-stone-500 dark:text-stone-400 hover:text-red-600 dark:hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/30 h-8 w-8"
-                                    aria-label={`Hapus ${layer.garment?.name}`}
-                                >
-                                    <Trash2Icon className="w-4 h-4" />
-                                </Button>
-                            )}
-                        </>
-                    }
+                <OutfitLayerItem
+                    key={layer.garment?.id || `layer-${index}`}
+                    layer={layer}
+                    index={index}
+                    isGenerating={isGenerating}
+                    canDelete={canDelete}
+                    isLoading={isLoading}
+                    onUndo={onUndo}
                 />
             );
         }}
