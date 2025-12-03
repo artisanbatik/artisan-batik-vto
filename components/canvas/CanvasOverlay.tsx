@@ -6,22 +6,16 @@
 import React from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import Spinner from '../ui/spinner';
+import { useStudio } from '../studio/StudioContext';
 
-interface CanvasOverlayProps {
-  isLoading: boolean;
-  loadingMessage: string;
-  hasImage: boolean;
-}
+export const CanvasOverlay: React.FC = () => {
+  const { isVTOLoading, loadingMessage, currentDisplayImage } = useStudio();
+  const hasImage = !!currentDisplayImage;
 
-export const CanvasOverlay: React.FC<CanvasOverlayProps> = ({
-  isLoading,
-  loadingMessage,
-  hasImage
-}) => {
   return (
     <>
       {/* Empty State / Placeholder */}
-      {!hasImage && !isLoading && (
+      {!hasImage && !isVTOLoading && (
         <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
           <div className="w-full h-full max-w-md max-h-[80vh] bg-stone-100 dark:bg-stone-800 border border-stone-200 dark:border-stone-700 rounded-lg flex flex-col items-center justify-center">
             <Spinner />
@@ -32,7 +26,7 @@ export const CanvasOverlay: React.FC<CanvasOverlayProps> = ({
 
       {/* Loading Overlay */}
       <AnimatePresence>
-        {isLoading && (
+        {isVTOLoading && (
             <motion.div
                 className="absolute inset-0 bg-white/90 dark:bg-stone-900/90 flex flex-col items-center justify-center z-20"
                 initial={{ opacity: 0 }}

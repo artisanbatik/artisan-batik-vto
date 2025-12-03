@@ -3,6 +3,7 @@ import React from 'react';
 import { ZoomInIcon, ZoomOutIcon, MaximizeIcon } from '../icons';
 import { Button } from '../ui/button';
 import { cn } from '../../lib/utils';
+import { useStudio } from '../studio/StudioContext';
 
 interface ZoomControlsProps {
   onZoomIn: () => void;
@@ -11,8 +12,6 @@ interface ZoomControlsProps {
   canZoomIn: boolean;
   canZoomOut: boolean;
   isDefaultView: boolean;
-  visible: boolean;
-  isMobile: boolean;
 }
 
 export const ZoomControls: React.FC<ZoomControlsProps> = ({
@@ -22,9 +21,10 @@ export const ZoomControls: React.FC<ZoomControlsProps> = ({
   canZoomIn,
   canZoomOut,
   isDefaultView,
-  visible,
-  isMobile
 }) => {
+  const { currentDisplayImage, isMobile } = useStudio();
+  const visible = !!currentDisplayImage;
+
   if (!visible) return null;
 
   return (

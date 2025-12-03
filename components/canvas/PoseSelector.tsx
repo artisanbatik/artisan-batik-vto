@@ -4,38 +4,31 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { WandSparklesIcon, CheckCircleIcon, ChevronLeftIcon, ChevronRightIcon } from '../icons';
 import { Button } from '../ui/button';
 import { cn } from '../../lib/utils';
+import { useStudio } from '../studio/StudioContext';
 
-interface PoseSelectorProps {
-  poseInstructions: string[];
-  currentPoseIndex: number;
-  availablePoseKeys: string[];
-  onSelectPose: (index: number) => void;
-  onGenerateCommonPoses: () => void;
-  isLoading: boolean;
-  isMobile: boolean;
-}
+export const PoseSelector: React.FC = () => {
+  const {
+      poseInstructions,
+      currentPoseIndex,
+      availablePoseKeys,
+      handleSelectPose,
+      handleGenerateCommonPoses,
+      isVTOLoading,
+      isMobile
+  } = useStudio();
 
-export const PoseSelector: React.FC<PoseSelectorProps> = ({
-  poseInstructions,
-  currentPoseIndex,
-  availablePoseKeys,
-  onSelectPose,
-  onGenerateCommonPoses,
-  isLoading,
-  isMobile
-}) => {
   const [isPoseMenuOpen, setIsPoseMenuOpen] = useState(false);
 
   const handlePreviousPose = () => {
-    if (isLoading) return;
+    if (isVTOLoading) return;
     const newIndex = (currentPoseIndex - 1 + poseInstructions.length) % poseInstructions.length;
-    onSelectPose(newIndex);
+    handleSelectPose(newIndex);
   };
 
   const handleNextPose = () => {
-    if (isLoading) return;
+    if (isVTOLoading) return;
     const newIndex = (currentPoseIndex + 1) % poseInstructions.length;
-    onSelectPose(newIndex);
+    handleSelectPose(newIndex);
   };
 
   return (
@@ -59,8 +52,8 @@ export const PoseSelector: React.FC<PoseSelectorProps> = ({
           >
             <div className="p-2 border-b border-stone-200 dark:border-stone-700 mb-2">
               <Button
-                onClick={onGenerateCommonPoses}
-                disabled={isLoading}
+                onClick={handleGenerateCommonPoses}
+                disabled={isVTOLoading}
                 variant="default"
                 className="w-full bg-stone-800 dark:bg-stone-200 text-white dark:text-stone-900 hover:bg-stone-600 dark:hover:bg-stone-300"
                 leftIcon={<WandSparklesIcon className="w-4 h-4" />}
@@ -76,8 +69,8 @@ export const PoseSelector: React.FC<PoseSelectorProps> = ({
                 return (
                   <Button
                     key={pose}
-                    onClick={() => onSelectPose(index)}
-                    disabled={isLoading || isCurrent}
+                    onClick={() => handleSelectPose(index)}
+                    disabled={isVTOLoading || isCurrent}
                     variant="ghost"
                     className={cn(
                         "w-full justify-between px-2 h-auto py-2 text-xs font-medium",
@@ -112,7 +105,7 @@ export const PoseSelector: React.FC<PoseSelectorProps> = ({
           variant="ghost"
           size="icon"
           className="rounded-full hover:bg-stone-200/50 dark:hover:bg-stone-800/50 h-8 w-8"
-          disabled={isLoading}
+          disabled={isVTOLoading}
         >
           <ChevronLeftIcon className="w-5 h-5 text-stone-800 dark:text-stone-200" />
         </Button>
@@ -125,7 +118,7 @@ export const PoseSelector: React.FC<PoseSelectorProps> = ({
           variant="ghost"
           size="icon"
           className="rounded-full hover:bg-stone-200/50 dark:hover:bg-stone-800/50 h-8 w-8"
-          disabled={isLoading}
+          disabled={isVTOLoading}
         >
           <ChevronRightIcon className="w-5 h-5 text-stone-800 dark:text-stone-200" />
         </Button>

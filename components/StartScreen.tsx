@@ -12,30 +12,27 @@ import GalleryView from './start/GalleryView';
 import { useStartScreenState } from '../hooks/useStartScreenState';
 import { ThemeToggle } from './ui/theme-toggle';
 import { PageLayout } from './ui/page-layout';
+import { usePersistence } from './PersistenceContext';
 
 interface StartScreenProps {
-  onAddModel: (modelUrl: string, aspectRatio: string) => void;
   onSelectModel: (model: CustomModel) => void;
-  onDeleteModel: (modelId: string) => void;
-  onRenameModel: (modelId: string, newName: string) => void;
-  customModels: CustomModel[];
-  onModelsImported: () => void;
-  setLoadingError: (error: string | null) => void;
   theme: 'light' | 'dark';
   onToggleTheme: () => void;
 }
 
 const StartScreen: React.FC<StartScreenProps> = ({ 
-    onAddModel, 
     onSelectModel, 
-    onDeleteModel, 
-    onRenameModel, 
-    customModels, 
-    onModelsImported, 
-    setLoadingError, 
     theme, 
     onToggleTheme 
 }) => {
+  // Access global data from context
+  const { 
+      customModels, 
+      actions: { addCustomModel, deleteCustomModel, renameCustomModel },
+      refreshCustomModels,
+      setLoadingError
+  } = usePersistence();
+
   const {
       view,
       setView,
@@ -48,11 +45,26 @@ const StartScreen: React.FC<StartScreenProps> = ({
       handleImportFileChange
   } = useStartScreenState({
       customModels,
-      onRenameModel,
-      onDeleteModel,
-      onModelsImported,
+      onRenameModel: renameCustomModel,
+      onDeleteModel: deleteCustomModel,
+      onModelsImported: refreshCustomModels,
       setLoadingError
   });
+
+  const handleAddModel = async (modelUrl: string, aspectRatio: string) => {
+      const name = `Model ${customModels.length + 1}`;
+      const newModel: CustomModel = {
+          id: `model-${Date.now()}`,
+          name: name,
+          imageUrl: modelUrl,
+          aspectRatio,
+      };
+      
+      await addCustomModel(newModel);
+      
+      // Auto-select the newly added model
+      onSelectModel({ ...newModel, imageUrl: modelUrl }); 
+  };
 
   return (
     <PageLayout className="flex flex-col relative">
@@ -64,11 +76,6 @@ const StartScreen: React.FC<StartScreenProps> = ({
           />
       </div>
       
-      {/* 
-         Removed p-4 padding from PageLayout and flex centering from main.
-         Views are now responsible for their own internal padding and centering 
-         to ensure full control over scrolling behavior.
-      */}
       <main className="w-full h-full relative overflow-hidden">
         {view === 'uploader' ? (
           <UploaderView
@@ -81,7 +88,7 @@ const StartScreen: React.FC<StartScreenProps> = ({
               onImportFileChange={handleImportFileChange}
               onExportModels={handleExportModels}
               onViewGallery={() => setView('gallery')}
-              onSaveAndStart={(url, ratio) => onAddModel(url, ratio)}
+              onSaveAndStart={handleAddModel}
           />
         ) : (
           <div className="w-full h-full p-4 sm:p-6 md:p-8">
@@ -100,7 +107,7 @@ const StartScreen: React.FC<StartScreenProps> = ({
                 
                 setDeletingModel={setDeletingModel}
                 handleConfirmDelete={handleConfirmDelete}
-                onRenameModel={onRenameModel}
+                onRenameModel={renameCustomModel}
             />
           </div>
         )}

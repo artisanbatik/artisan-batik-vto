@@ -1,24 +1,19 @@
-
 /**
  * @license
  * SPDX-License-Identifier: Apache-2.0
 */
 
 import React from 'react';
+import { useStudio } from '../StudioContext';
 import { OutfitLayer } from '../../../types';
 import { ClockIcon } from '../../icons';
 import { Panel } from '../../ui/panel';
 import { ResourceList } from '../../ui/resource-list';
 import { ResourceItem } from '../../ui/resource-item';
 
-interface HistoryPanelProps {
-  history: OutfitLayer[];
-  currentIndex: number;
-  onJumpToState: (index: number) => void;
-  isLoading: boolean;
-}
+const HistoryPanel: React.FC = () => {
+  const { history, currentIndex, jumpToState, isVTOLoading } = useStudio();
 
-const HistoryPanel: React.FC<HistoryPanelProps> = ({ history, currentIndex, onJumpToState, isLoading }) => {
   return (
     <Panel
       title="Riwayat Sesi"
@@ -45,8 +40,8 @@ const HistoryPanel: React.FC<HistoryPanelProps> = ({ history, currentIndex, onJu
               subtitle={`Langkah ${index + 1}`}
               thumbnailUrl={thumbnailUrl}
               isActive={isCurrent}
-              isDisabled={isLoading}
-              onClick={() => onJumpToState(index)}
+              isDisabled={isVTOLoading}
+              onClick={() => jumpToState(index)}
             />
           );
         }}

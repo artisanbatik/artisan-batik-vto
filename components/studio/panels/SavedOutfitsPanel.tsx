@@ -1,10 +1,10 @@
-
 /**
  * @license
  * SPDX-License-Identifier: Apache-2.0
 */
 
 import React from 'react';
+import { useStudio } from '../StudioContext';
 import { SavedOutfit } from '../../../types';
 import { Trash2Icon, PencilIcon } from '../../icons';
 import { Button } from '../../ui/button';
@@ -13,15 +13,14 @@ import { useInlineRename } from '../../../hooks/useInlineRename';
 import { ResourceList } from '../../ui/resource-list';
 import { ResourceItem } from '../../ui/resource-item';
 
-interface SavedOutfitsPanelProps {
-  savedOutfits: SavedOutfit[];
-  onLoadOutfit: (outfit: SavedOutfit) => void;
-  onDeleteOutfit: (outfitId: string) => void;
-  onRenameOutfit: (outfitId: string, newName: string) => void;
-  isLoading: boolean;
-}
+const SavedOutfitsPanel: React.FC = () => {
+  const { 
+    savedOutfits, 
+    handleLoadOutfit, 
+    persistenceActions, 
+    isVTOLoading 
+  } = useStudio();
 
-const SavedOutfitsPanel: React.FC<SavedOutfitsPanelProps> = ({ savedOutfits, onLoadOutfit, onDeleteOutfit, onRenameOutfit, isLoading }) => {
   const {
     renamingId,
     inputValue,
@@ -29,10 +28,10 @@ const SavedOutfitsPanel: React.FC<SavedOutfitsPanelProps> = ({ savedOutfits, onL
     startRename,
     commitRename,
     handleKeyDown
-  } = useInlineRename(onRenameOutfit);
+  } = useInlineRename(persistenceActions.renameOutfit);
 
   return (
-    <Panel title="Koleksi Tersimpan" isDisabled={isLoading}>
+    <Panel title="Koleksi Tersimpan" isDisabled={isVTOLoading}>
       <ResourceList
         items={savedOutfits}
         emptyMessage="Koleksi yang Anda simpan akan muncul di sini."
@@ -42,7 +41,7 @@ const SavedOutfitsPanel: React.FC<SavedOutfitsPanelProps> = ({ savedOutfits, onL
             id={outfit.id}
             title={outfit.name}
             thumbnailUrl={outfit.thumbnailUrl}
-            isDisabled={isLoading}
+            isDisabled={isVTOLoading}
             
             // Rename logic
             isRenaming={renamingId === outfit.id}
@@ -55,8 +54,8 @@ const SavedOutfitsPanel: React.FC<SavedOutfitsPanelProps> = ({ savedOutfits, onL
             actionButtons={
               <>
                 <Button
-                  onClick={() => onLoadOutfit(outfit)}
-                  disabled={isLoading}
+                  onClick={() => handleLoadOutfit(outfit)}
+                  disabled={isVTOLoading}
                   variant="secondary"
                   size="sm"
                   className="bg-transparent hover:bg-stone-200/70 dark:hover:bg-stone-800/70 text-stone-700 dark:text-stone-300 h-8"
@@ -65,7 +64,7 @@ const SavedOutfitsPanel: React.FC<SavedOutfitsPanelProps> = ({ savedOutfits, onL
                 </Button>
                 <Button
                   onClick={() => startRename(outfit.id, outfit.name)}
-                  disabled={isLoading}
+                  disabled={isVTOLoading}
                   variant="ghost"
                   size="icon"
                   className="text-stone-500 dark:text-stone-400 hover:text-stone-800 dark:hover:text-stone-200 hover:bg-stone-200/70 dark:hover:bg-stone-800/70 h-8 w-8"
@@ -74,8 +73,8 @@ const SavedOutfitsPanel: React.FC<SavedOutfitsPanelProps> = ({ savedOutfits, onL
                   <PencilIcon className="w-4 h-4" />
                 </Button>
                 <Button
-                  onClick={() => onDeleteOutfit(outfit.id)}
-                  disabled={isLoading}
+                  onClick={() => persistenceActions.deleteOutfit(outfit.id)}
+                  disabled={isVTOLoading}
                   variant="ghost"
                   size="icon"
                   className="text-stone-500 dark:text-stone-400 hover:text-red-600 dark:hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/30 h-8 w-8"

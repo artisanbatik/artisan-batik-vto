@@ -9,37 +9,33 @@ import React, { useState, useCallback } from 'react';
 // Components
 import StartScreen from './components/StartScreen';
 import StudioScreen from './components/StudioScreen';
+import { PersistenceProvider, usePersistence } from './components/PersistenceContext';
 
 // Hooks & Services
 import { useTheme } from './hooks/useTheme';
-import { useAppPersistence } from './hooks/useAppPersistence';
 
 // Types
 import { CustomModel } from './types';
 
-// --- Main App Component ---
-const App: React.FC = () => {
-  // 1. App-Level Configuration & Persistence
+// --- Main App Content ---
+const AppContent: React.FC = () => {
+  // 1. App-Level Configuration
   const { theme, toggleTheme } = useTheme();
   
+  // Consume Data from Context
   const {
-      loadingError, 
-      setLoadingError, 
       wardrobe, 
       savedOutfits, 
-      customModels, 
       productInfoHistory, 
       savedLookbooks, 
-      refreshCustomModels, 
       actions: persistenceActions
-  } = useAppPersistence();
+  } = usePersistence();
 
   // 2. Navigation State
   const [activeScreen, setActiveScreen] = useState<'start' | 'dressing'>('start');
   const [selectedModel, setSelectedModel] = useState<CustomModel | null>(null);
 
-  // 3. Handlers (Wrapped in useCallback for performance)
-  
+  // 3. Handlers
   const handleSelectModel = useCallback((model: CustomModel) => {
       setSelectedModel(model);
       setActiveScreen('dressing');
@@ -49,36 +45,13 @@ const App: React.FC = () => {
     setSelectedModel(null);
     setActiveScreen('start');
   }, []);
-  
-  const handleAddModel = useCallback(async (modelUrl: string, aspectRatio: string) => {
-      // Logic for creating a new model entry
-      const name = `Model ${customModels.length + 1}`;
-      const newModel: CustomModel = {
-          id: `model-${Date.now()}`,
-          name: name,
-          imageUrl: modelUrl,
-          aspectRatio,
-      };
-      
-      await persistenceActions.addCustomModel(newModel);
-      
-      // Auto-select the newly added model
-      handleSelectModel({ ...newModel, imageUrl: modelUrl }); 
-  }, [customModels.length, persistenceActions, handleSelectModel]);
-
 
   // 4. Render Logic (Router)
 
   if (activeScreen === 'start') {
     return (
       <StartScreen 
-        onAddModel={handleAddModel} 
         onSelectModel={handleSelectModel}
-        customModels={customModels}
-        onDeleteModel={persistenceActions.deleteCustomModel}
-        onRenameModel={persistenceActions.renameCustomModel}
-        onModelsImported={refreshCustomModels}
-        setLoadingError={setLoadingError}
         theme={theme}
         onToggleTheme={toggleTheme}
       />
@@ -91,7 +64,7 @@ const App: React.FC = () => {
         // Initial State
         initialModel={selectedModel}
 
-        // Data props
+        // Data props (StudioScreen still expects these for now)
         wardrobe={wardrobe}
         savedOutfits={savedOutfits}
         savedLookbooks={savedLookbooks}
@@ -106,6 +79,15 @@ const App: React.FC = () => {
         onToggleTheme={toggleTheme}
     />
   );
+};
+
+// --- Root App Wrapper ---
+const App: React.FC = () => {
+    return (
+        <PersistenceProvider>
+            <AppContent />
+        </PersistenceProvider>
+    );
 };
 
 export default App;

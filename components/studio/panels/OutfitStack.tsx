@@ -1,36 +1,43 @@
-
 /**
  * @license
  * SPDX-License-Identifier: Apache-2.0
 */
 
 import React from 'react';
-import { OutfitLayer } from '../../../types';
+import { useStudio } from '../StudioContext';
 import { SaveIcon, PackageIcon } from '../../icons';
 import { Button } from '../../ui/button';
 import { Panel } from '../../ui/panel';
 import { ResourceList } from '../../ui/resource-list';
 import { OutfitActions } from './outfit/OutfitActions';
 import { OutfitLayerItem } from './outfit/OutfitLayerItem';
+import { OutfitLayer } from '../../../types';
 
-interface OutfitStackProps {
-  outfitHistory: OutfitLayer[];
-  onUndo: () => void;
-  onSaveOutfit: () => void;
-  isLoading: boolean;
-  onAddGarment: () => void;
-  generatingLayerIndex?: number | null;
-  onGenerateProductInfo: () => void;
-  onGenerateLookbook: () => void;
-}
+const OutfitStack: React.FC = () => {
+  const { 
+    history, 
+    currentIndex, 
+    undo, 
+    persistenceActions, 
+    handleSaveOutfit, 
+    isVTOLoading, 
+    modals, 
+    handlers 
+  } = useStudio();
 
-const OutfitStack: React.FC<OutfitStackProps> = ({ outfitHistory, onUndo, onSaveOutfit, isLoading, onAddGarment, generatingLayerIndex, onGenerateProductInfo, onGenerateLookbook }) => {
+  // Derived state
+  const outfitHistory = history.slice(0, currentIndex + 1);
   const isOutfitSavable = outfitHistory.length > 1;
+
+  // Custom undo handler that ensures garments are removed from DB if needed
+  const handleUndo = () => {
+    undo((id) => persistenceActions.deleteWardrobeItem(id));
+  };
 
   const saveAction = (
     <Button
-      onClick={onSaveOutfit}
-      disabled={!isOutfitSavable || isLoading}
+      onClick={handleSaveOutfit}
+      disabled={!isOutfitSavable || isVTOLoading}
       variant="ghost"
       size="sm"
       className="hover:bg-stone-200/70 dark:hover:bg-stone-800/70 h-8 text-stone-700 dark:text-stone-300"
@@ -54,30 +61,29 @@ const OutfitStack: React.FC<OutfitStackProps> = ({ outfitHistory, onUndo, onSave
         maxHeight="max-h-none"
         emptyMessage="Karya yang Anda pilih akan muncul di sini."
         renderItem={(layer: OutfitLayer, index: number) => {
-            const isGenerating = index > 0 && generatingLayerIndex === index;
             const isLast = index === outfitHistory.length - 1;
-            // Can delete if it's the last item, not the base model (index > 0), and nothing is currently generating
-            const canDelete = index > 0 && isLast && !generatingLayerIndex;
+            // Can delete if it's the last item and not the base model (index > 0)
+            const canDelete = index > 0 && isLast;
             
             return (
                 <OutfitLayerItem
                     key={layer.garment?.id || `layer-${index}`}
                     layer={layer}
                     index={index}
-                    isGenerating={isGenerating}
+                    isGenerating={false}
                     canDelete={canDelete}
-                    isLoading={isLoading}
-                    onUndo={onUndo}
+                    isLoading={isVTOLoading}
+                    onUndo={handleUndo}
                 />
             );
         }}
       />
       
       <OutfitActions 
-        onAddGarment={onAddGarment}
-        onGenerateLookbook={onGenerateLookbook}
-        onGenerateProductInfo={onGenerateProductInfo}
-        isLoading={isLoading}
+        onAddGarment={() => modals.setIsWardrobeOpen(true)}
+        onGenerateLookbook={() => modals.setIsLookbookStyleModalOpen(true)}
+        onGenerateProductInfo={() => handlers.handleGenerateProductInfo(false)}
+        isLoading={isVTOLoading}
         isOutfitSavable={isOutfitSavable}
       />
     </Panel>

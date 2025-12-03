@@ -4,12 +4,10 @@
  * SPDX-License-Identifier: Apache-2.0
 */
 import React, { useEffect } from 'react';
-import { DownloadFormatModal } from './modals/DownloadFormatModal';
 import { useCanvasInteraction } from '../hooks/useCanvasInteraction';
-import { useCanvasActions } from '../hooks/useCanvasActions';
 import { useStudio } from './studio/StudioContext';
 
-// Sub-components
+// Sub-components (Now Smart Components)
 import { CanvasToolbar } from './canvas/CanvasToolbar';
 import { ZoomControls } from './canvas/ZoomControls';
 import { PoseSelector } from './canvas/PoseSelector';
@@ -17,39 +15,11 @@ import { CanvasViewer } from './canvas/CanvasViewer';
 import { CanvasOverlay } from './canvas/CanvasOverlay';
 
 const Canvas: React.FC = () => {
-  // Consume Context
-  const { 
-      currentDisplayImage, 
-      onStartOver, 
-      isVTOLoading, 
-      loadingMessage, 
-      handleSelectPose, 
-      poseInstructions, 
-      currentPoseIndex, 
-      availablePoseKeys, 
-      filters: filterManager, 
-      undo, 
-      redo, 
-      canUndo, 
-      canRedo, 
-      handleGenerateCommonPoses, 
-      isMobile, 
-      theme, 
-      onToggleTheme,
-      persistenceActions
-  } = useStudio();
-
-  const filters = filterManager.data;
-
-  // Custom Hooks
-  const { 
-      isFormatModalOpen, 
-      setIsFormatModalOpen, 
-      isDownloading, 
-      handleDownloadRequest, 
-      handleConfirmDownload 
-  } = useCanvasActions();
+  // We only need currentDisplayImage and isVTOLoading here 
+  // to conditionally render the PoseSelector and trigger resetView
+  const { currentDisplayImage, isVTOLoading } = useStudio();
   
+  // Interaction Hook stays here because it owns the Container Ref
   const { 
     scale, position, isDragging, containerRef, resetView, 
     handlers, zoomIn, zoomOut, canZoomIn, canZoomOut, isZoomed, isDefaultView 
@@ -63,23 +33,9 @@ const Canvas: React.FC = () => {
   return (
     <div className="w-full h-full flex items-center justify-center p-4 pb-18 relative animate-zoom-in group bg-stone-100 dark:bg-stone-800">
       
-      <CanvasToolbar 
-        onStartOver={onStartOver}
-        onToggleTheme={onToggleTheme}
-        theme={theme}
-        onUndo={() => undo((id) => persistenceActions.deleteWardrobeItem(id))}
-        onRedo={redo}
-        canUndo={canUndo}
-        canRedo={canRedo}
-        isLoading={isVTOLoading}
-        hasImage={!!currentDisplayImage}
-        onDownloadClick={handleDownloadRequest}
-        isDownloading={isDownloading}
-      />
+      <CanvasToolbar />
 
       <CanvasViewer 
-        imageSrc={currentDisplayImage}
-        filters={filters}
         scale={scale}
         position={position}
         isDragging={isDragging}
@@ -88,11 +44,7 @@ const Canvas: React.FC = () => {
         interactionHandlers={handlers}
       />
       
-      <CanvasOverlay 
-        isLoading={isVTOLoading}
-        loadingMessage={loadingMessage}
-        hasImage={!!currentDisplayImage}
-      />
+      <CanvasOverlay />
       
       <ZoomControls 
         onZoomIn={zoomIn}
@@ -101,28 +53,11 @@ const Canvas: React.FC = () => {
         canZoomIn={canZoomIn}
         canZoomOut={canZoomOut}
         isDefaultView={isDefaultView}
-        visible={!!currentDisplayImage}
-        isMobile={isMobile}
       />
 
       {currentDisplayImage && !isVTOLoading && (
-        <PoseSelector 
-            poseInstructions={poseInstructions}
-            currentPoseIndex={currentPoseIndex}
-            availablePoseKeys={availablePoseKeys}
-            onSelectPose={handleSelectPose}
-            onGenerateCommonPoses={handleGenerateCommonPoses}
-            isLoading={isVTOLoading}
-            isMobile={isMobile}
-        />
+        <PoseSelector />
       )}
-
-      <DownloadFormatModal
-        isOpen={isFormatModalOpen}
-        onClose={() => setIsFormatModalOpen(false)}
-        onConfirm={(format) => handleConfirmDownload(format, currentDisplayImage, filters)}
-        isProcessing={isDownloading}
-      />
     </div>
   );
 };

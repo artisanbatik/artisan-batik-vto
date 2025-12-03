@@ -4,16 +4,9 @@
  * SPDX-License-Identifier: Apache-2.0
 */
 import React, { useMemo } from 'react';
+import { useStudio } from '../studio/StudioContext';
 
 interface CanvasViewerProps {
-  imageSrc: string | null;
-  filters: {
-    brightness: number;
-    contrast: number;
-    saturation: number;
-    hue: number;
-    sepia: number;
-  };
   scale: number;
   position: { x: number; y: number };
   isDragging: boolean;
@@ -23,8 +16,6 @@ interface CanvasViewerProps {
 }
 
 export const CanvasViewer: React.FC<CanvasViewerProps> = ({
-  imageSrc,
-  filters,
   scale,
   position,
   isDragging,
@@ -32,12 +23,15 @@ export const CanvasViewer: React.FC<CanvasViewerProps> = ({
   containerRef,
   interactionHandlers
 }) => {
+  const { currentDisplayImage, filters: filterManager } = useStudio();
+  const filters = filterManager.data;
+
   const imageStyle = useMemo(() => ({
     filter: `brightness(${filters.brightness / 100}) contrast(${filters.contrast / 100}) saturate(${filters.saturation / 100}) hue-rotate(${filters.hue}deg) sepia(${filters.sepia}%)`,
     transition: 'filter 0.2s ease-out'
   }), [filters]);
 
-  if (!imageSrc) return null;
+  if (!currentDisplayImage) return null;
 
   return (
     <div 
@@ -56,8 +50,8 @@ export const CanvasViewer: React.FC<CanvasViewerProps> = ({
         }}
       >
         <img
-          key={imageSrc}
-          src={imageSrc}
+          key={currentDisplayImage}
+          src={currentDisplayImage}
           alt="Model coba-pakai virtual"
           className="w-full h-full object-contain"
           style={imageStyle}
