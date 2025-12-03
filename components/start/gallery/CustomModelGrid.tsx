@@ -1,3 +1,4 @@
+
 import React, { useRef, useEffect } from 'react';
 import { PencilIcon, Trash2Icon, PlusIcon } from '../../icons';
 import { CustomModel } from '../../../types';
@@ -36,8 +37,7 @@ export const CustomModelGrid: React.FC<CustomModelGridProps> = ({
     }, [renamingId]);
 
     return (
-        <div className="w-full">
-            <h2 className="text-lg font-semibold text-stone-700 dark:text-stone-300 mb-4">Model Kustom Anda</h2>
+        <div className="w-full animate-fade-in">
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-5">
                 {models.map(model => {
                     const isRenaming = renamingId === model.id;
@@ -46,7 +46,6 @@ export const CustomModelGrid: React.FC<CustomModelGridProps> = ({
                             key={model.id}
                             imageUrl={model.imageUrl}
                             aspectRatio={model.aspectRatio}
-                            className="animate-fade-in"
                             title={
                                 isRenaming ? (
                                     <Input

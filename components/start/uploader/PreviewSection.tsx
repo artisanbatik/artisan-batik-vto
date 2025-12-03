@@ -23,7 +23,7 @@ export const PreviewSection: React.FC<PreviewSectionProps> = ({
     )}>
         {!userImageUrl ? (
             <div className="absolute inset-0 flex flex-col items-center justify-center text-stone-400">
-                <div className="w-32 h-48 bg-stone-200 dark:bg-stone-700 rounded-lg mb-4 animate-pulse"></div>
+                <div className="w-32 h-48 bg-stone-200 dark:bg-stone-700 rounded-lg mb-4"></div>
                 <Text variant="muted" className="font-semibold">Pratinjau Model</Text>
             </div>
         ) : (
