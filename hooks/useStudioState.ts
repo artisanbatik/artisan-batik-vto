@@ -1,11 +1,10 @@
-
 /**
  * @license
  * SPDX-License-Identifier: Apache-2.0
 */
 
 import { useState } from 'react';
-import { WardrobeItem, OutfitLayer, WardrobeCategory, LookbookImage, SavedOutfit, SavedLookbook } from '../types';
+import { WardrobeItem, OutfitLayer, LookbookImage, SavedOutfit, SavedLookbook } from '../types';
 import { resizeImage, getFriendlyErrorMessage } from '../lib/utils';
 import { generateProductInformation, generateLookbookImages, regenerateLookbookImage, SHOT_TYPES } from '../services/geminiService';
 
@@ -45,7 +44,6 @@ export const useStudioState = ({
     // UI State - Modals
     const [isWardrobeOpen, setIsWardrobeOpen] = useState(false);
     const [isTextureModalOpen, setIsTextureModalOpen] = useState(false);
-    const [isCategorizeModalOpen, setIsCategorizeModalOpen] = useState(false);
     const [isEditGarmentModalOpen, setIsEditGarmentModalOpen] = useState(false);
     const [isProductInfoModalOpen, setIsProductInfoModalOpen] = useState(false);
     const [isLookbookStyleModalOpen, setIsLookbookStyleModalOpen] = useState(false);
@@ -55,7 +53,6 @@ export const useStudioState = ({
     const [filters, setFilters] = useState({ brightness: 100, contrast: 100, saturation: 100, hue: 0, sepia: 0 });
     
     // Selection State
-    const [garmentToCategorize, setGarmentToCategorize] = useState<File | null>(null);
     const [garmentToEdit, setGarmentToEdit] = useState<WardrobeItem | null>(null);
     const [garmentForTexture, setGarmentForTexture] = useState<WardrobeItem | null>(null);
     const [fileForTexture, setFileForTexture] = useState<File | null>(null);
@@ -80,13 +77,10 @@ export const useStudioState = ({
 
     const handleGarmentSelect = (garmentFile: File, garmentInfo: WardrobeItem) => {
         setIsWardrobeOpen(false);
-        if (['top', 'bottom', 'outerwear', 'dress'].includes(garmentInfo.category)) {
-          setGarmentForTexture(garmentInfo);
-          setFileForTexture(garmentFile);
-          setIsTextureModalOpen(true);
-        } else {
-          handleGenerateVTO(garmentFile, garmentInfo, 'default'); 
-        }
+        // Since we only support 'top' (shirts), always ask for texture
+        setGarmentForTexture(garmentInfo);
+        setFileForTexture(garmentFile);
+        setIsTextureModalOpen(true);
     };
 
     const handleTextureConfirm = (texture: string) => {
@@ -98,25 +92,19 @@ export const useStudioState = ({
         setGarmentForTexture(null);
     };
 
-    const handleFileUpload = (file: File) => {
-        setGarmentToCategorize(file);
-        setIsCategorizeModalOpen(true);
+    const handleFileUpload = async (file: File) => {
         setIsWardrobeOpen(false);
-    };
-
-    const handleCategorizeConfirm = async (category: WardrobeCategory) => {
-        setIsCategorizeModalOpen(false);
-        if (garmentToCategorize) {
-          const newGarment: WardrobeItem = {
+        // Automatically categorize as 'top' (Shirt/Fabric)
+        const newGarment: WardrobeItem = {
             id: `custom-${Date.now()}`,
-            name: garmentToCategorize.name.split('.').slice(0, -1).join('.') || 'Karya Unggahan',
-            url: URL.createObjectURL(garmentToCategorize),
-            category,
-          };
-          await persistenceActions.addWardrobeItem(newGarment);
-          handleGarmentSelect(garmentToCategorize, newGarment);
-        }
-        setGarmentToCategorize(null);
+            name: file.name.split('.').slice(0, -1).join('.') || 'Karya Unggahan',
+            url: URL.createObjectURL(file),
+            category: 'top',
+        };
+        await persistenceActions.addWardrobeItem(newGarment);
+        
+        // Select it immediately
+        handleGarmentSelect(file, newGarment);
     };
 
     const handleEditGarment = (garment: WardrobeItem) => {
@@ -299,7 +287,6 @@ export const useStudioState = ({
         modals: {
             isWardrobeOpen, setIsWardrobeOpen,
             isTextureModalOpen, setIsTextureModalOpen,
-            isCategorizeModalOpen, setIsCategorizeModalOpen,
             isEditGarmentModalOpen, setIsEditGarmentModalOpen,
             isProductInfoModalOpen, setIsProductInfoModalOpen,
             isLookbookStyleModalOpen, setIsLookbookStyleModalOpen,
@@ -313,7 +300,6 @@ export const useStudioState = ({
         },
         // Selections
         selections: {
-            garmentToCategorize, setGarmentToCategorize,
             garmentToEdit, setGarmentToEdit,
             garmentForTexture, setGarmentForTexture,
             deletingGarment, setDeletingGarment
@@ -339,7 +325,6 @@ export const useStudioState = ({
             handleGarmentSelect,
             handleTextureConfirm,
             handleFileUpload,
-            handleCategorizeConfirm,
             handleEditGarment,
             handleSaveGarmentEdit,
             handleDeleteGarment,

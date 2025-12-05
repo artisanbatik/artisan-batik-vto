@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
 */
 import React, { useState } from 'react';
-import type { WardrobeItem, WardrobeCategory } from '../../types';
+import type { WardrobeItem } from '../../types';
 import { PencilIcon, Trash2Icon, UploadCloudIcon, PackageIcon } from '../icons';
 import { urlToFile } from '../../lib/utils';
 import { ModalDialog } from '../ui/modal-dialog';
@@ -11,7 +11,6 @@ import { Button } from '../ui/button';
 import { FileDropzone } from '../ui/file-dropzone';
 import { ImageCard } from '../ui/image-card';
 import { EmptyState } from '../ui/empty-state';
-import { CategoryFilter, CategoryOption } from '../wardrobe/CategoryFilter';
 
 interface WardrobePickerModalProps {
   isOpen: boolean;
@@ -25,18 +24,8 @@ interface WardrobePickerModalProps {
   onDeleteGarment: (garment: WardrobeItem) => void;
 }
 
-const CATEGORIES: CategoryOption[] = [
-    { id: 'all', name: 'Semua' },
-    { id: 'top', name: 'Atasan' },
-    { id: 'bottom', name: 'Bawahan' },
-    { id: 'outerwear', name: 'Luaran' },
-    { id: 'dress', name: 'Gaun' },
-    { id: 'accessory', name: 'Aksesori' },
-];
-
 export const WardrobePickerModal: React.FC<WardrobePickerModalProps> = ({ isOpen, onClose, onGarmentSelect, onFileUpload, activeGarmentIds, isLoading, wardrobe, onEditGarment, onDeleteGarment }) => {
     const [error, setError] = useState<string | null>(null);
-    const [activeCategory, setActiveCategory] = useState<WardrobeCategory | 'all'>('all');
 
     const handleGarmentClick = async (item: WardrobeItem) => {
         if (isLoading || activeGarmentIds.includes(item.id)) return;
@@ -61,25 +50,17 @@ export const WardrobePickerModal: React.FC<WardrobePickerModalProps> = ({ isOpen
       onFileUpload(file);
     };
     
-    const filteredWardrobe = wardrobe.filter(item => 
-        activeCategory === 'all' || item.category === activeCategory
-    );
+    // Use all wardrobe items as they are all 'top' now
+    const filteredWardrobe = wardrobe;
 
     return (
         <ModalDialog
             isOpen={isOpen}
             onClose={onClose}
-            title="Koleksi Karya"
+            title="Koleksi Karya Kemeja"
             maxWidth="max-w-2xl"
             className="h-[85vh] flex flex-col"
         >
-            <CategoryFilter 
-                categories={CATEGORIES}
-                activeCategory={activeCategory}
-                onSelectCategory={setActiveCategory}
-                disabled={isLoading}
-            />
-
             <div className="overflow-y-auto min-h-0 flex-grow -mx-2 px-2">
                 <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 pb-4">
                     
@@ -87,7 +68,7 @@ export const WardrobePickerModal: React.FC<WardrobePickerModalProps> = ({ isOpen
                         onFileSelect={handleGarmentFileSelect}
                         disabled={isLoading}
                         variant="compact"
-                        label="Unggah"
+                        label="Unggah Kain"
                         icon={<UploadCloudIcon className="w-8 h-8 mb-2" />}
                     />
                     
@@ -133,8 +114,8 @@ export const WardrobePickerModal: React.FC<WardrobePickerModalProps> = ({ isOpen
                     <div className="col-span-full py-8">
                         <EmptyState 
                             icon={<PackageIcon className="w-8 h-8"/>}
-                            title="Belum ada item"
-                            description="Belum ada item di kategori ini. Mulai dengan mengunggah gambar baru."
+                            title="Belum ada karya"
+                            description="Belum ada karya kemeja. Mulai dengan mengunggah gambar motif atau mockup."
                         />
                     </div>
                 )}

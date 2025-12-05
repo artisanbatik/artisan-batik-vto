@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
 */
 
-export type WardrobeCategory = 'top' | 'bottom' | 'outerwear' | 'accessory' | 'dress';
+export type WardrobeCategory = 'top' | 'bottom' | 'outerwear' | 'dress' | 'accessory';
 
 export interface WardrobeItem {
   id: string;

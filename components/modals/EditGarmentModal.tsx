@@ -1,12 +1,9 @@
-
 /**
  * @license
  * SPDX-License-Identifier: Apache-2.0
 */
 import React, { useState, useEffect } from 'react';
-import { ShirtIcon, PantsIcon, JacketIcon, DressIcon, ShoppingBagIcon } from '../icons';
-import { WardrobeItem, WardrobeCategory } from '../../types';
-import { cn } from '../../lib/utils';
+import { WardrobeItem } from '../../types';
 import { ModalDialog } from '../ui/modal-dialog';
 import { Input } from '../ui/input';
 
@@ -18,28 +15,18 @@ export interface EditGarmentModalProps {
   garment: WardrobeItem | null;
 }
 
-const CATEGORIES_FOR_MODAL: { id: WardrobeCategory, name: string, icon: React.FC<React.SVGProps<SVGSVGElement>> }[] = [
-    { id: 'top', name: 'Atasan', icon: ShirtIcon },
-    { id: 'bottom', name: 'Bawahan', icon: PantsIcon },
-    { id: 'outerwear', name: 'Luaran', icon: JacketIcon },
-    { id: 'dress', name: 'Gaun', icon: DressIcon },
-    { id: 'accessory', name: 'Aksesori', icon: ShoppingBagIcon },
-];
-
 export const EditGarmentModal: React.FC<EditGarmentModalProps> = ({ isOpen, onClose, onSave, onDelete, garment }) => {
   const [name, setName] = useState('');
-  const [category, setCategory] = useState<WardrobeCategory | null>(null);
 
   useEffect(() => {
     if (garment && isOpen) {
       setName(garment.name);
-      setCategory(garment.category);
     }
   }, [garment, isOpen]);
 
   const handleSave = () => {
-    if (garment && name.trim() && category) {
-      onSave({ ...garment, name: name.trim(), category });
+    if (garment && name.trim()) {
+      onSave({ ...garment, name: name.trim() });
     }
   };
   
@@ -67,7 +54,7 @@ export const EditGarmentModal: React.FC<EditGarmentModalProps> = ({ isOpen, onCl
         </button>
         <button
             onClick={handleSave}
-            disabled={!name.trim() || !category}
+            disabled={!name.trim()}
             className="px-4 py-2 text-sm font-semibold text-white dark:text-stone-900 bg-stone-900 dark:bg-stone-100 rounded-md hover:bg-stone-700 dark:hover:bg-stone-300 transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-stone-800 disabled:bg-stone-400 disabled:cursor-not-allowed"
         >
             Simpan Perubahan
@@ -79,7 +66,7 @@ export const EditGarmentModal: React.FC<EditGarmentModalProps> = ({ isOpen, onCl
     <ModalDialog
         isOpen={isOpen}
         onClose={onClose}
-        title="Ubah Karya"
+        title="Ubah Nama Karya"
         footer={footer}
         maxWidth="max-w-md"
     >
@@ -94,26 +81,6 @@ export const EditGarmentModal: React.FC<EditGarmentModalProps> = ({ isOpen, onCl
                     value={name}
                     onChange={(e) => setName(e.target.value)}
                 />
-                
-                <div>
-                    <p className="block text-sm font-semibold text-stone-700 dark:text-stone-300 mb-2">Kategori</p>
-                    <div className="grid grid-cols-2 gap-3">
-                        {CATEGORIES_FOR_MODAL.map(cat => (
-                            <button
-                                key={cat.id}
-                                onClick={() => setCategory(cat.id)}
-                                className={cn(
-                                    'px-4 py-2 text-sm font-semibold rounded-md transition-all border-2',
-                                    category === cat.id
-                                        ? 'bg-stone-900 dark:bg-stone-100 text-white dark:text-stone-900 border-stone-900 dark:border-stone-100'
-                                        : 'bg-white dark:bg-stone-800 text-stone-700 dark:text-stone-200 border-stone-300 dark:border-stone-700 hover:border-stone-500 dark:hover:border-stone-500'
-                                )}
-                            >
-                                {cat.name}
-                            </button>
-                        ))}
-                    </div>
-                </div>
             </div>
         </div>
     </ModalDialog>

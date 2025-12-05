@@ -28,7 +28,7 @@ export const SHOT_TYPES = {
     },
     'Special Moments (Occasion Guide)': {
         description: "Elegant, elevated shots for formal events like weddings or ceremonies.",
-        prompt: "Sebuah acara formal yang elegan, seperti pernikahan, upacara, atau pesta malam. Latar belakangnya megah, pencahayaannya indah, dan suasananya istimewa. Pakaian harus ditampilkan sebagai puncak keanggunan."
+        prompt: "Sebuah acara formal yang elegan, seperti pernikahan, upacara, atau pesta malam. Latar belakangnya megah, pencahayaan indah, dan suasananya istimewa. Pakaian harus ditampilkan sebagai puncak keanggunan."
     },
 };
 
@@ -44,16 +44,14 @@ Instruksi Umum untuk model (system):
 
 Gunakan referensi nama produk berikut agar konsisten:
 
-- Lurik Biru – Kain Batik Sarimbit
-- Sekar Jagad – Kain Batik Selendang
-- Parang Sogan – Kain Batik Sarimbit
-- Mega Mendung – Kain Batik Pola Kemeja
-- Kawung Hitam – Kain Batik Pola Kemeja
-- Sido Asih – Kain Batik Sarung Wanita
-- Truntum Merah – Kain Batik Sarimbit
-- Tambal Biru – Kain Batik Selendang
-- Gringsing Emas – Kain Batik Pola Kemeja
-- Macan Senja – Kain Batik Sarung Wanita
+- Lurik Biru – Kemeja Batik Sarimbit
+- Sekar Jagad – Kemeja Batik Pria
+- Parang Sogan – Kemeja Batik Slimfit
+- Mega Mendung – Kemeja Batik Formal
+- Kawung Hitam – Kemeja Batik Kantor
+- Sido Asih – Kemeja Batik Premium
+- Truntum Merah – Kemeja Batik Lengan Panjang
+- Tambal Biru – Kemeja Batik Lengan Pendek
 
 Catatan pola penamaan:
 
@@ -66,7 +64,7 @@ Keluaran (WAJIB, susun persis seperti ini):
 ### Nama Produk
 
 \`\`\`
-[Motif atau Koleksi] + [Warna/nuansa] – Kain Batik [Kategori Produk]
+[Motif atau Koleksi] + [Warna/nuansa] – [Kategori Produk]
 \`\`\`
 
 Nama pendek, elegan, dan mudah diingat.
@@ -93,27 +91,24 @@ Nama pendek, elegan, dan mudah diingat.
 \`\`\`
 | Atribut             | Keterangan                                                                                                                                                |
 | :------------------ | :--------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Kategori**        | (Pilih salah satu: Pola Kemeja, Sarimbit, Sarung Wanita, Selendang)                                                                                      |
+| **Kategori**        | (Pilih salah satu: Kemeja Lengan Panjang, Kemeja Lengan Pendek, Kemeja Slimfit, Kemeja Regular)                                                              |
 | **Bahan**           | (Tulis persis bahan yang diberikan: Contoh: "Katun Primissima", "Sutra ATBM Baron")                                                                     |
 | **Warna Dominan**   | (HANYA SATU KATA — contoh: Merah, Indigo, Sogan, Coklat, Hitam, Putih, Biru, Hijau, Kuning, Abu, Ungu, Emas, Krem) — **WAJIB**                             |
-| **Ukuran**          | (Pilih 1 sesuai kategori)
-|                     | - Kain Batik: ±260x115 cm, 250x115 cm, 250x105 cm                                                                                                         |
-|                     | - Sarung Wanita: ±230x115 cm                                                                                                                                 |
-|                     | - Selendang: ±250x105 cm                                                                                                                                    |
-| **SEO Title**       | (Contoh pola: \`Kain Batik Tulis [Kategori] Motif “[Motif]” \| Artisan Batik\` — sertakan merek "Artisan Batik")                                            |
+| **Ukuran**          | S, M, L, XL, XXL                                                                                                                                          |
+| **SEO Title**       | (Contoh pola: \`Kemeja Batik Tulis [Kategori] Motif “[Motif]” \| Artisan Batik\` — sertakan merek "Artisan Batik")                                            |
 | **SEO Description** | (1 kalimat, 120–160 karakter idealnya). Singkat, jualan, sebutkan bahan + motif + ajakan ringkas.                                                          |
-| **Tags**            | (Daftar 5–9 tag, dipisah koma. Sertakan: Batik Tulis, Kain Batik, Batik Asli, kategori produk, motif spesifik (contoh: Motif Macan), bahan/kelompok: Premium) |
+| **Tags**            | (Daftar 5–9 tag, dipisah koma. Sertakan: Batik Tulis, Kemeja Batik, Batik Asli, kategori produk, motif spesifik (contoh: Motif Macan), bahan/kelompok: Premium) |
 \`\`\`
 \`\`\`
 
 Aturan Validasi (model harus melakukan cek):
 
-- **Kategori** hanya boleh satu dari empat opsi yang disebut. Jika input lain diberikan, pilih yang paling mendekati; jika tidak jelas, gunakan \`Pola Kemeja\` sebagai default.
+- **Kategori** hanya boleh satu dari opsi kemeja yang disebut. Jika tidak jelas, gunakan \`Kemeja Regular\` sebagai default.
 - **Warna Dominan** harus 1 kata. Jika input berupa frasa warna (mis. "merah marun"), ringkas jadi satu kata terdekat seperti \`Merah\` atau \`Burgundy\` hanya jika kata tersebut memang satu kata.
-- **Ukuran**: pilih satu ukuran yang sesuai kategori. Jangan membuat ukuran lain.
-- **SEO Title** harus mengandung kata kunci: \`Kain Batik Tulis\` atau \`Kain Batik\`, motif dalam tanda kutip dan \`| Artisan Batik\` di akhir.
+- **Ukuran**: Selalu sediakan rentang ukuran standar.
+- **SEO Title** harus mengandung kata kunci: \`Kemeja Batik Tulis\` atau \`Kemeja Batik\`, motif dalam tanda kutip dan \`| Artisan Batik\` di akhir.
 - **SEO Description** jangan memuat klaim medis, klaim kepemilikan daerah/warisan tanpa bukti, atau kata-kata negatif.
-- **Tags** maksimal 9 item; hindari kata yang tidak relevan (mis. kata bahasa asing yang tidak umum tanpa alasan).
+- **Tags** maksimal 9 item; hindari kata yang tidak relevan.
 
 Aturan Gaya & Nada:
 
@@ -122,28 +117,19 @@ Aturan Gaya & Nada:
 - Gunakan metafora ringan (api, senja, tenun tangan), tapi pantengin keaslian.
 - Boleh menyisip emoji tanpa berlebihan di deskripsi (opsional).
 
-Penanganan Input Foto / Mockup:
-
-- Jika ada foto: tangkap elemen motif utama (hewan, bunga, geometris) dan gunakan motif itu sebagai basis nama koleksi jika pengguna belum memberikan nama.
-
-  - Contoh: foto harimau → motif "Macan" → nama koleksi bisa jadi "Macan Senja", "Harimau Senja", "Macan Lazuardi", dsb.
-
-- Tulis juga **Alt Text singkat** (1 baris, ≤125 karakter) untuk gambar: deskripsikan motif + bahan + nuansa (contoh: "Motif macan merah di katun primissima, nuansa senja").
-- Jangan mendeskripsikan model (jika ada) secara identitas (umur, etnis) — cukup "model" atau "mockup".
-
 Contoh Template Output (untuk model gunakan sebagai blueprint — PRODUKSI HARUS MENGIKUTI FORMAT INI):
 
 \`\`\`
 ### Nama Produk
 
 \`\`\`
-Macan Senja – Kain Batik Pola Kemeja
+Macan Senja – Kemeja Batik Lengan Panjang
 \`\`\`
 
 ### Deskripsi Singkat
 
 \`\`\`
-Kain Batik "Macan Senja" ini kami hadirkan untuk menemani langkah Anda dengan hangat. Motif macan yang dibatik dengan tangan dalam nuansa merah senja, semoga memberi sentuhan percaya diri dan energi positif tanpa kehilangan kelembutan hati.
+Kemeja Batik "Macan Senja" ini kami hadirkan untuk menemani langkah Anda dengan hangat. Motif macan yang dibatik dengan tangan dalam nuansa merah senja, semoga memberi sentuhan percaya diri dan energi positif tanpa kehilangan kelembutan hati.
 \`\`\`
 
 ### Deskripsi Lengkap
@@ -167,37 +153,31 @@ Ini adalah cerita, doa, dan semangat yang kami titipkan untuk Anda. 😊
 \`\`\`
 | Atribut             | Keterangan                                                                                                                                                        |
 | :------------------ | :---------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Kategori**        | Pola Kemeja                                                                                                                                                       |
+| **Kategori**        | Kemeja Lengan Panjang                                                                                                                                             |
 | **Bahan**           | Katun Primissima                                                                                                                                                  |
 | **Warna Dominan**   | Merah                                                                                                                                                             |
-| **Ukuran**          | ±260x115 cm                                                                                                                                                       |
-| **SEO Title**       | Kain Batik Tulis Pola Kemeja Motif “Macan Senja” \| Artisan Batik                                                                                                 |
-| **SEO Description** | Temukan Kain Batik Tulis “Macan Senja”. Sebuah karya seni eksklusif dengan motif macan yang dilukis tangan di atas katun primissima yang halus. Miliki ceritanya. |
-| **Tags**            | Batik Tulis, Kain Batik, Batik Asli, Kemeja Batik Tulis, Motif Harimau, Motif Macan, Katun Primissima, Premium                                                     |
+| **Ukuran**          | S, M, L, XL, XXL                                                                                                                                                  |
+| **SEO Title**       | Kemeja Batik Tulis Lengan Panjang Motif “Macan Senja” \| Artisan Batik                                                                                            |
+| **SEO Description** | Temukan Kemeja Batik Tulis “Macan Senja”. Sebuah karya seni eksklusif dengan motif macan yang dilukis tangan di atas katun primissima yang halus. Miliki ceritanya. |
+| **Tags**            | Batik Tulis, Kemeja Batik, Batik Asli, Kemeja Pria, Motif Harimau, Motif Macan, Katun Primissima, Premium                                                         |
 \`\`\`
 \`\`\`
-
-Catatan Tambahan untuk Integrasi WooCommerce / CSV:
-
-- Pastikan output dapat diparse: setiap bagian harus ada heading yang sama dan blok triple-backtick.
-- Atribut must be consistent (category, material, dominant color, size).
 
 Fallbacks (jika data terbatas):
 
-- Jika motif/tipe tidak jelas dari input, berikan nama motif generik yang elegan (contoh: "Srikandi Senja", "Macan Senja").
+- Jika motif/tipe tidak jelas dari input, berikan nama motif generik yang elegan.
 - Jika bahan tidak disebutkan, gunakan teks: "Bahan: tidak disebutkan" di kolom Bahan.
-- Jika warna dominan tidak bisa dipastikan, pilih kata yang paling menonjol di gambar atau sebutkan "Netral" sebagai alternatif — namun upayakan memilih satu kata warna.
+- Jika warna dominan tidak bisa dipastikan, pilih kata yang paling menonjol di gambar.
 
 Instruksi akhir:
 
-- Keluaran harus langsung siap copy-paste ke field WooCommerce (judul, short desc, long desc, attributes). Buatlah ringkas, konsisten, dan mudah dibaca.
-- Tidak perlu menjelaskan proses pembuatan atau menanyakan klarifikasi — hasilkan versi terbaik berdasarkan input yang tersedia.
+- Keluaran harus langsung siap copy-paste ke field WooCommerce.
 `;
 
 export const constructModelGenPrompt = (backgroundColor: string) => {
-    return `**Tujuan Utama:** Buat foto model fesyen ¾ badan (dari kepala hingga sekitar lutut) yang fotorealistis untuk merek mewah Artisan Batik.
+    return `**Tujuan Utama:** Buat foto model pria/wanita ¾ badan (dari kepala hingga sekitar lutut) yang fotorealistis untuk merek mewah Artisan Batik.
 **Subjek:** Gunakan orang dari gambar yang disediakan. Pertahankan identitas, fitur unik, dan tipe tubuh mereka.
-**Pakaian (PENTING):** Ubah pakaian yang dikenakan orang tersebut menjadi **pakaian dasar berwarna PUTIH POLOS** (seperti kaos putih polos dan celana/rok putih). Jangan ada pola, logo, atau warna lain pada pakaian.
+**Pakaian (PENTING):** Ubah pakaian yang dikenakan orang tersebut menjadi **kaos putih polos dan celana bahan netral**. Jangan ada pola, logo, atau warna mencolok pada pakaian.
 **Pose & Ekspresi:** Tempatkan mereka dalam pose model berdiri standar yang santai dan elegan dengan ekspresi netral yang percaya diri.
 **Latar Belakang:** Latar belakang HARUS berupa latar studio bersih berwarna solid menggunakan kode hex yang sama persis ini: ${backgroundColor}.
 **Aturan Penting:**
@@ -207,69 +187,40 @@ export const constructModelGenPrompt = (backgroundColor: string) => {
 };
 
 export const constructVTOPrompt = (garmentInfo: WardrobeItem, texture?: string) => {
-    let prompt = '';
+    const rules = [
+        "**Penggantian Menjadi Kemeja Batik:** Anda HARUS sepenuhnya MENGHAPUS atasan (baju/kaos) yang dikenakan oleh orang di 'gambar model' dan MENGGANTINYA dengan **KEMEJA BATIK** baru yang dibuat dari pola di 'gambar pakaian batik'.",
+        "**Keaslian Batik:** Kemeja baru HARUS terlihat seperti kemeja batik tulis asli buatan tangan. Tampilkan ketidaksempurnaan yang halus, tekstur organik, dan keunikan yang berasal dari keahlian tangan. HINDARI tampilan yang datar, digital, atau 'tercetak'.",
+        "**Detail Kemeja:** Berikan perhatian **ekstra** pada area kerah kemeja, plaket (garis kancing), dan manset lengan. Pola batik pada area ini HARUS menyambung secara alami dan akurat dengan pola pada badan kemeja, seolah-olah dipotong dari kain yang sama. Buat kerah kemeja yang tajam dan rapi.",
+        "**Pertahankan Model:** Wajah, rambut, bentuk tubuh, dan pose orang dari 'gambar model' HARUS tetap tidak berubah.",
+        "**Pertahankan Latar Belakang:** Seluruh latar belakang dari 'gambar model' HARUS dipertahankan dengan sempurna.",
+    ];
 
-    if (garmentInfo.category === 'accessory') {
-        const rules = [
-            "**Pertahankan Pakaian yang Ada:** JANGAN mengganti atau mengubah pakaian yang sudah dikenakan orang tersebut. Aksesori harus ditempatkan di atas atau sebagai tambahan pada pakaian mereka saat ini.",
-            "**Pertahankan Model:** Wajah, rambut, bentuk tubuh, dan pose orang dari 'gambar model' HARUS tetap tidak berubah.",
-            "**Pertahankan Latar Belakang:** Seluruh latar belakang dari 'gambar model' HARUS dipertahankan dengan sempurna.",
-        ];
-
-        if (texture) {
-            rules.push(`**Terapkan Tekstur Secara Realistis:** Aksesori HARUS dirender dengan tekstur **${texture}** yang fotorealistis, menonjolkan kualitas premium dari bahan tersebut.`);
-        }
-
-        rules.push("**Terapkan Aksesori:** Pasang aksesori secara realistis pada orang tersebut. Aksesori harus memiliki bayangan dan pencahayaan alami yang konsisten dengan adegan aslinya, menonjolkan keahlian pembuatannya.");
-        rules.push("**Keluaran:** Kembalikan HANYA gambar akhir yang telah diedit. Jangan sertakan teks apa pun.");
-
-        const numberedRules = rules.map((rule, index) => `${index + 1}. ${rule}`).join('\n');
-
-        prompt = `Anda adalah AI ahli coba-pakai virtual untuk merek mewah Artisan Batik. Anda akan diberikan 'gambar model' dan 'gambar aksesori batik'. Tugas Anda adalah menambahkan aksesori batik dari 'gambar aksesori' secara realistis ke orang di 'gambar model'.
-
-**Aturan Penting:**
-${numberedRules}`;
-    } else {
-        const rules = [
-            "**Penggantian Pakaian Lengkap:** Anda HARUS sepenuhnya MENGHAPUS dan MENGGANTI item pakaian yang dikenakan oleh orang di 'gambar model' dengan pakaian batik baru.",
-            "**Keaslian Batik:** Pakaian baru HARUS terlihat seperti batik tulis asli buatan tangan. Tampilkan ketidaksempurnaan yang halus, tekstur organik, dan keunikan yang berasal dari keahlian tangan. HINDARI tampilan yang datar, digital, atau 'tercetak'.",
-        ];
-
-        if (garmentInfo.category === 'top' || garmentInfo.category === 'outerwear' || garmentInfo.category === 'dress') {
-            rules.push("**Perhatian Khusus pada Kerah & Detail:** Untuk atasan (kemeja, gaun, luaran), berikan perhatian **ekstra** pada area kerah, plaket (garis kancing), dan manset. Pola batik pada area ini HARUS menyambung secara alami dan akurat dengan pola pada badan pakaian, seolah-olah dipotong dari kain yang sama. Hindari kerah polos atau detail dengan pola yang tidak cocok.");
-        }
-
-        rules.push("**Pertahankan Model:** Wajah, rambut, bentuk tubuh, dan pose orang dari 'gambar model' HARUS tetap tidak berubah.");
-        rules.push("**Pertahankan Latar Belakang:** Seluruh latar belakang dari 'gambar model' HARUS dipertahankan dengan sempurna.");
-
-        if (texture) {
-            rules.push(`**Terapkan Tekstur Secara Realistis:** Pakaian batik baru HARUS dirender dengan tekstur **${texture}** yang fotorealistis. Perhatikan dengan sangat detail bagaimana kain tersebut menjuntai dan terlipat di tubuh model, mencerminkan kualitasnya.`);
-        }
-
-        rules.push("**Keluaran:** Kembalikan HANYA gambar akhir yang telah diedit. Jangan sertakan teks apa pun.");
-
-        const numberedRules = rules.map((rule, index) => `${index + 1}. ${rule}`).join('\n');
-
-        prompt = `Anda adalah AI ahli coba-pakai virtual untuk merek mewah Artisan Batik. Anda akan diberikan 'gambar model' dan 'gambar pakaian batik'. Tugas Anda adalah membuat gambar fotorealistis baru di mana orang dari 'gambar model' mengenakan karya batik dari 'gambar pakaian'.
-
-**Aturan Penting:**
-${numberedRules}`;
+    if (texture) {
+        rules.push(`**Terapkan Tekstur Secara Realistis:** Kemeja batik baru HARUS dirender dengan tekstur **${texture}** yang fotorealistis. Perhatikan dengan sangat detail bagaimana kain tersebut menjuntai dan terlipat di tubuh model, mencerminkan kualitasnya.`);
     }
-    return prompt;
+
+    rules.push("**Keluaran:** Kembalikan HANYA gambar akhir yang telah diedit. Jangan sertakan teks apa pun.");
+
+    const numberedRules = rules.map((rule, index) => `${index + 1}. ${rule}`).join('\n');
+
+    return `Anda adalah AI ahli coba-pakai virtual untuk merek mewah Artisan Batik. Anda akan diberikan 'gambar model' dan 'gambar pakaian batik' (berupa pola kain atau baju). Tugas Anda adalah membuat gambar fotorealistis baru di mana orang dari 'gambar model' mengenakan **KEMEJA BATIK** yang dibuat dari 'gambar pakaian batik' tersebut.
+
+**Aturan Penting:**
+${numberedRules}`;
 };
 
 export const constructPoseVariationPrompt = (activeLayers: OutfitLayer[], poseInstruction: string) => {
     const outfitDescription = activeLayers
         .slice(1)
-        .map(layer => `- Sebuah ${layer.garment?.name} yang terbuat dari ${layer.texture || 'bahan premium'}.`)
+        .map(layer => `- Sebuah Kemeja Batik yang terbuat dari ${layer.texture || 'bahan premium'}.`)
         .join('\n');
 
-    return `Anda adalah seorang fotografer fesyen ahli dan AI simulasi fisika untuk merek Artisan Batik. Tugas Anda adalah meregenerasi gambar seseorang dalam pose baru sambil mempertahankan realisme absolut dari pakaian batik mereka.
+    return `Anda adalah seorang fotografer fesyen ahli dan AI simulasi fisika untuk merek Artisan Batik. Tugas Anda adalah meregenerasi gambar seseorang dalam pose baru sambil mempertahankan realisme absolut dari kemeja batik mereka.
 
-**Masukan:** Gambar seseorang yang mengenakan pakaian Artisan Batik.
+**Masukan:** Gambar seseorang yang mengenakan Kemeja Batik Artisan Batik.
 
 **Konteks Pakaian:** Orang dalam gambar mengenakan item berikut:
-${outfitDescription || '- Pakaian batik mereka saat ini.'}
+${outfitDescription || '- Kemeja batik mereka saat ini.'}
 
 **Instruksi:**
 1.  **Pose Baru:** Regenerasi gambar yang menunjukkan orang tersebut dalam pose baru yang elegan dan sama persis ini: "${poseInstruction}".
@@ -281,8 +232,8 @@ ${outfitDescription || '- Pakaian batik mereka saat ini.'}
 export const getOutfitDescription = (activeLayers: OutfitLayer[]): string => {
     return activeLayers
         .slice(1)
-        .map(layer => `- Sebuah ${layer.garment?.name} dibuat dari ${layer.texture || 'kain premium'}, menampilkan motif batik tulis asli yang rumit.`)
-        .join('\n') || '- Pakaian batik mereka saat ini.';
+        .map(layer => `- Sebuah Kemeja Batik dibuat dari ${layer.texture || 'kain premium'}, menampilkan motif batik tulis asli yang rumit.`)
+        .join('\n') || '- Kemeja batik mereka saat ini.';
 };
 
 export const constructLookbookPrompt = (
@@ -299,7 +250,7 @@ export const constructLookbookPrompt = (
 Anda adalah seorang direktur kreatif AI dan fotografer profesional untuk Artisan Batik, sebuah merek fesyen mewah Indonesia. Keahlian Anda adalah menciptakan gambar-gambar berkualitas editorial yang fotorealistis, terasa otentik, hangat, dan khas Indonesia.
 
 **Tugas:**
-Buat **satu** foto OOTD (Outfit of the Day) yang unik berdasarkan gambar model yang mengenakan pakaian tertentu.
+Buat **satu** foto OOTD (Outfit of the Day) yang unik berdasarkan gambar model yang mengenakan kemeja batik tertentu.
 
 **Deskripsi Pakaian:**
 ${outfitDescription}
@@ -312,7 +263,7 @@ ${customInstruction}
 **Aturan Ketat:**
 1.  **FOTOREALISME ADALAH UTAMA:** Gambar akhir harus terlihat seperti foto asli, bukan hasil generasi AI.
 2.  **JAGA IDENTITAS:** Wajah, rambut, bentuk tubuh, dan etnis model HARUS tetap identik dengan gambar masukan. JANGAN mengubah orangnya.
-3.  **JAGA PAKAIAN:** Pakaian batik HARUS dipertahankan dengan sempurna—pola, warna, tekstur, dan cara jatuhnya di tubuh model.
+3.  **JAGA PAKAIAN:** Kemeja batik HARUS dipertahankan dengan sempurna—pola, warna, tekstur, dan cara jatuhnya di tubuh model.
 4.  **NUANSA INDONESIA:** Adegan, latar belakang, dan pencahayaan baru harus membangkitkan suasana Indonesia yang canggih dan alami. Gunakan elemen-elemen seperti:
     -   **Pencahayaan:** Hangat, alami, cahaya senja keemasan.
     -   **Lokasi:** Kafe elegan dengan furnitur rotan, lobi kantor modern dengan aksen kayu jati, taman tropis yang rimbun, beranda rumah tradisional Jawa (joglo), galeri seni minimalis.
@@ -344,7 +295,7 @@ ${shotType}
 
 **Aturan Ketat:**
 1.  **IKUTI INSTRUKSI PENGGUNA:** Terapkan perubahan yang diminta dalam prompt penyempurnaan secara akurat.
-2.  **PERTAHANKAN ELEMEN INTI:** Jaga agar orang dan pakaian tetap konsisten dengan gambar asli, kecuali diinstruksikan sebaliknya.
+2.  **PERTAHANKAN ELEMEN INTI:** Jaga agar orang dan kemeja batik tetap konsisten dengan gambar asli, kecuali diinstruksikan sebaliknya.
 3.  **REALISME & KUALITAS:** Hasilnya harus fotorealistis dan berkualitas editorial tinggi.
 4.  **FORMAT KELUARAN:** Kembalikan HANYA gambar yang telah dibuat ulang. Tanpa teks.
 `;

@@ -1,8 +1,6 @@
-
 import React from 'react';
 import { WardrobePickerModal } from '../../modals/WardrobePickerModal';
 import { TextureSelectionModal } from '../../modals/TextureSelectionModal';
-import { CategorizeGarmentModal } from '../../modals/CategorizeGarmentModal';
 import { EditGarmentModal } from '../../modals/EditGarmentModal';
 import { ConfirmationDialog } from '../../ui/confirmation-dialog';
 import { WardrobeItem, OutfitLayer } from '../../../types';
@@ -13,14 +11,11 @@ interface GarmentModalsProps {
         setIsWardrobeOpen: (open: boolean) => void;
         isTextureModalOpen: boolean;
         setIsTextureModalOpen: (open: boolean) => void;
-        isCategorizeModalOpen: boolean;
-        setIsCategorizeModalOpen: (open: boolean) => void;
         isEditGarmentModalOpen: boolean;
         setIsEditGarmentModalOpen: (open: boolean) => void;
     };
     selections: {
         garmentForTexture: WardrobeItem | null;
-        garmentToCategorize: File | null;
         garmentToEdit: WardrobeItem | null;
         deletingGarment: WardrobeItem | null;
         setDeletingGarment: (garment: WardrobeItem | null) => void;
@@ -31,7 +26,6 @@ interface GarmentModalsProps {
         handleEditGarment: (garment: WardrobeItem) => void;
         handleDeleteGarment: (garment: WardrobeItem) => void;
         handleTextureConfirm: (texture: string) => void;
-        handleCategorizeConfirm: (category: any) => void;
         handleSaveGarmentEdit: (garment: WardrobeItem) => void;
         handleConfirmDeleteGarment: () => void;
     };
@@ -59,12 +53,6 @@ const GarmentModals: React.FC<GarmentModalsProps> = ({ modals, selections, handl
                 onClose={() => modals.setIsTextureModalOpen(false)}
                 onConfirm={handlers.handleTextureConfirm}
                 garment={selections.garmentForTexture}
-            />
-            <CategorizeGarmentModal
-                isOpen={modals.isCategorizeModalOpen}
-                onClose={() => modals.setIsCategorizeModalOpen(false)}
-                onConfirm={handlers.handleCategorizeConfirm}
-                garmentPreviewUrl={selections.garmentToCategorize ? URL.createObjectURL(selections.garmentToCategorize) : null}
             />
             <EditGarmentModal
                 isOpen={modals.isEditGarmentModalOpen}

@@ -295,7 +295,7 @@ export const generateProductInformation = async (
         const imagePart = dataUrlToPart(baseImageDataUrl);
         const outfitDetails = activeLayers
             .slice(1) // skip base model
-            .map(layer => `- ${layer.garment?.name} (Kategori: ${layer.garment?.category}, Bahan: ${layer.texture})`)
+            .map(layer => `- ${layer.garment?.name} (Kategori: Kemeja Batik, Bahan: ${layer.texture})`)
             .join('\n');
             
         const userPrompt = `
