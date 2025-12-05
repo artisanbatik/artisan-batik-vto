@@ -54,10 +54,7 @@ const StudioLayout: React.FC<StudioLayoutProps> = ({
                 
                 {/* Desktop Toggle Button */}
                 {!isMobile && (
-                   <div className={cn(
-                       "absolute top-1/2 -translate-y-1/2 z-20 transition-all duration-300 ease-[cubic-bezier(0.32,0.72,0,1)]",
-                       isPanelOpen ? "right-[420px]" : "right-0"
-                   )}>
+                   <div className="absolute top-1/2 -translate-y-1/2 right-0 z-20">
                         <button
                             onClick={() => setIsPanelOpen(!isPanelOpen)}
                             className="bg-white dark:bg-stone-900 border-l border-t border-b border-stone-200 dark:border-stone-800 p-2 rounded-l-xl shadow-md text-stone-600 dark:text-stone-400 hover:text-stone-900 dark:hover:text-stone-100 hover:bg-stone-50 dark:hover:bg-stone-800 transition-colors"
