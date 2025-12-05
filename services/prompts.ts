@@ -177,7 +177,7 @@ Instruksi akhir:
 export const constructModelGenPrompt = (backgroundColor: string) => {
     return `**Tujuan Utama:** Buat foto model pria/wanita ¾ badan (dari kepala hingga sekitar lutut) yang fotorealistis untuk merek mewah Artisan Batik.
 **Subjek:** Gunakan orang dari gambar yang disediakan. Pertahankan identitas, fitur unik, dan tipe tubuh mereka.
-**Pakaian (PENTING):** Ubah pakaian yang dikenakan orang tersebut menjadi **kaos putih polos dan celana bahan netral**. Jangan ada pola, logo, atau warna mencolok pada pakaian.
+**Pakaian (PENTING):** Ubah pakaian yang dikenakan orang tersebut menjadi **kaos putih polos dan celana panjang hitam**. Jangan ada pola, logo, atau warna mencolok pada pakaian.
 **Pose & Ekspresi:** Tempatkan mereka dalam pose model berdiri standar yang santai dan elegan dengan ekspresi netral yang percaya diri.
 **Latar Belakang:** Latar belakang HARUS berupa latar studio bersih berwarna solid menggunakan kode hex yang sama persis ini: ${backgroundColor}.
 **Aturan Penting:**
