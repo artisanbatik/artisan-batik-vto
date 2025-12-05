@@ -1,3 +1,4 @@
+
 /**
  * @license
  * SPDX-License-Identifier: Apache-2.0
@@ -54,12 +55,12 @@ const StudioLayout: React.FC<StudioLayoutProps> = ({
                 {/* Desktop Toggle Button */}
                 {!isMobile && (
                    <div className={cn(
-                       "absolute top-1/2 -translate-y-1/2 z-20 transition-all duration-300",
-                       isPanelOpen ? "right-[320px] lg:right-[384px]" : "right-0"
+                       "absolute top-1/2 -translate-y-1/2 z-20 transition-all duration-300 ease-[cubic-bezier(0.32,0.72,0,1)]",
+                       isPanelOpen ? "right-[420px]" : "right-0"
                    )}>
                         <button
                             onClick={() => setIsPanelOpen(!isPanelOpen)}
-                            className="bg-stone-100 dark:bg-stone-800 border-l border-t border-b border-stone-300 dark:border-stone-700 p-1.5 rounded-l-lg shadow-sm text-stone-600 dark:text-stone-400 hover:text-stone-900 dark:hover:text-stone-200"
+                            className="bg-white dark:bg-stone-900 border-l border-t border-b border-stone-200 dark:border-stone-800 p-2 rounded-l-xl shadow-md text-stone-600 dark:text-stone-400 hover:text-stone-900 dark:hover:text-stone-100 hover:bg-stone-50 dark:hover:bg-stone-800 transition-colors"
                         >
                             {isPanelOpen ? <ChevronRightIcon className="w-5 h-5" /> : <ChevronLeftIcon className="w-5 h-5" />}
                         </button>

@@ -24,14 +24,18 @@ export const Panel: React.FC<PanelProps> = ({
 }) => {
   return (
     <div className={cn(
-      "pt-6 border-t border-stone-400/50 dark:border-stone-700/50 transition-opacity duration-300 flex flex-col",
+      "flex flex-col h-full transition-opacity duration-300",
       isDisabled ? "opacity-50 pointer-events-none" : "opacity-100",
       className
     )}>
-      <div className="flex items-center justify-between mb-3 flex-shrink-0">
+      <div className="flex items-center justify-between mb-4 flex-shrink-0">
         <div className="flex items-center gap-3">
-            {icon && <span className="text-stone-600 dark:text-stone-400">{icon}</span>}
-            <Heading level={3}>
+            {icon && (
+                <div className="p-2 bg-white dark:bg-stone-900 rounded-lg shadow-sm border border-stone-200 dark:border-stone-800 text-stone-700 dark:text-stone-300">
+                    {icon}
+                </div>
+            )}
+            <Heading level={4} className="text-stone-800 dark:text-stone-200 font-sans tracking-tight">
               {title}
             </Heading>
         </div>
