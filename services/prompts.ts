@@ -191,6 +191,7 @@ export const constructVTOPrompt = (garmentInfo: WardrobeItem, texture?: string) 
         "**Penggantian Menjadi Kemeja Batik:** Anda HARUS sepenuhnya MENGHAPUS atasan (baju/kaos) yang dikenakan oleh orang di 'gambar model' dan MENGGANTINYA dengan **KEMEJA BATIK** baru yang dibuat dari pola di 'gambar pakaian batik'.",
         "**Keaslian Batik:** Kemeja baru HARUS terlihat seperti kemeja batik tulis asli buatan tangan. Tampilkan ketidaksempurnaan yang halus, tekstur organik, dan keunikan yang berasal dari keahlian tangan. HINDARI tampilan yang datar, digital, atau 'tercetak'.",
         "**Detail Kemeja:** Berikan perhatian **ekstra** pada area kerah kemeja, plaket (garis kancing), dan manset lengan. Pola batik pada area ini HARUS menyambung secara alami dan akurat dengan pola pada badan kemeja, seolah-olah dipotong dari kain yang sama. Buat kerah kemeja yang tajam dan rapi.",
+        "**Harmonisasi Celana (PENTING):** UBAH warna celana panjang yang dikenakan model agar **serasi dan matching** dengan warna/motif kemeja batik baru. Pilih warna celana yang paling melengkapi batik (misalnya: hitam, coklat, krem, navy, atau abu-abu). Jangan biarkan warna celana bertabrakan.",
         "**Pertahankan Model:** Wajah, rambut, bentuk tubuh, dan pose orang dari 'gambar model' HARUS tetap tidak berubah.",
         "**Pertahankan Latar Belakang:** Seluruh latar belakang dari 'gambar model' HARUS dipertahankan dengan sempurna.",
     ];
