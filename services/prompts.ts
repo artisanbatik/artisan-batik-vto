@@ -28,7 +28,7 @@ export const SHOT_TYPES = {
     },
     'Special Moments (Occasion Guide)': {
         description: "Elegant, elevated shots for formal events like weddings or ceremonies.",
-        prompt: "Sebuah acara formal yang elegan, seperti pernikahan, upacara, atau pesta malam. Latar belakangnya megah, pencahayaan indah, dan suasananya istimewa. Pakaian harus ditampilkan sebagai puncak keanggunan."
+        prompt: "Sebuah acara formal yang elegan, seperti pernikahan, upacara, atau pesta malam. Latar belakangnya megah, pencahayaan indah, dan suasananya istimewa. Pakaian harus terlihat sebagai puncak keanggunan."
     },
 };
 
@@ -159,145 +159,89 @@ Ini adalah cerita, doa, dan semangat yang kami titipkan untuk Anda. 😊
 | **Ukuran**          | S, M, L, XL, XXL                                                                                                                                                  |
 | **SEO Title**       | Kemeja Batik Tulis Lengan Panjang Motif “Macan Senja” \| Artisan Batik                                                                                            |
 | **SEO Description** | Temukan Kemeja Batik Tulis “Macan Senja”. Sebuah karya seni eksklusif dengan motif macan yang dilukis tangan di atas katun primissima yang halus. Miliki ceritanya. |
-| **Tags**            | Batik Tulis, Kemeja Batik, Batik Asli, Kemeja Pria, Motif Harimau, Motif Macan, Katun Primissima, Premium                                                         |
+| **Tags**            | Batik Tulis, Kemeja Batik, Batik Asli, Kemeja Pria, Motif Harimau, Motif Macan, Katun Primissima, Premium, Merah                                                 |
 \`\`\`
 \`\`\`
-
-Fallbacks (jika data terbatas):
-
-- Jika motif/tipe tidak jelas dari input, berikan nama motif generik yang elegan.
-- Jika bahan tidak disebutkan, gunakan teks: "Bahan: tidak disebutkan" di kolom Bahan.
-- Jika warna dominan tidak bisa dipastikan, pilih kata yang paling menonjol di gambar.
-
-Instruksi akhir:
-
-- Keluaran harus langsung siap copy-paste ke field WooCommerce.
 `;
 
-export const constructModelGenPrompt = (backgroundColor: string) => {
-    return `**Tujuan Utama:** Buat foto model pria/wanita ¾ badan (dari kepala hingga sekitar lutut) yang fotorealistis untuk merek mewah Artisan Batik.
-**Subjek:** Gunakan orang dari gambar yang disediakan. Pertahankan identitas, fitur unik, dan tipe tubuh mereka.
-**Pakaian (PENTING):** Ubah pakaian yang dikenakan orang tersebut menjadi **kaos putih polos dan celana panjang hitam**. Jangan ada pola, logo, atau warna mencolok pada pakaian.
-**Pose & Ekspresi:** Tempatkan mereka dalam pose model berdiri standar yang santai dan elegan dengan ekspresi netral yang percaya diri.
-**Latar Belakang:** Latar belakang HARUS berupa latar studio bersih berwarna solid menggunakan kode hex yang sama persis ini: ${backgroundColor}.
-**Aturan Penting:**
-1. **Framing:** Gambar akhir HARUS berupa **potret ¾ badan**, menampilkan model dari kepala hingga sekitar area lutut. JANGAN menampilkan seluruh badan.
-2. **Tanpa Teks:** Gambar yang dihasilkan TIDAK BOLEH mengandung teks, logo, atau watermark apa pun.
-**Keluaran:** Kembalikan HANYA file gambar akhir. Jangan sertakan teks atau penjelasan apa pun dalam respons Anda.`;
+export const constructModelGenPrompt = (backgroundColor: string): string => {
+    return `Generate a professional photo of a fashion model standing in a studio.
+The background MUST be a solid color with hex code ${backgroundColor}.
+The model should be looking at the camera with a neutral but pleasant expression.
+Ensure the lighting is soft and even, suitable for e-commerce.`;
 };
 
-export const constructVTOPrompt = (garmentInfo: WardrobeItem, texture?: string) => {
-    const rules = [
-        "**Penggantian Menjadi Kemeja Batik:** Anda HARUS sepenuhnya MENGHAPUS atasan (baju/kaos) yang dikenakan oleh orang di 'gambar model' dan MENGGANTINYA dengan **KEMEJA BATIK** baru yang dibuat dari pola di 'gambar pakaian batik'.",
-        "**Keaslian Batik:** Kemeja baru HARUS terlihat seperti kemeja batik tulis asli buatan tangan. Tampilkan ketidaksempurnaan yang halus, tekstur organik, dan keunikan yang berasal dari keahlian tangan. HINDARI tampilan yang datar, digital, atau 'tercetak'.",
-        "**Detail Kemeja:** Berikan perhatian **ekstra** pada area kerah kemeja, plaket (garis kancing), dan manset lengan. Pola batik pada area ini HARUS menyambung secara alami dan akurat dengan pola pada badan kemeja, seolah-olah dipotong dari kain yang sama. Buat kerah kemeja yang tajam dan rapi.",
-        "**Harmonisasi Celana (PENTING):** UBAH warna celana panjang yang dikenakan model agar **serasi dan matching** dengan warna/motif kemeja batik baru. Pilih warna celana yang paling melengkapi batik (misalnya: hitam, coklat, krem, navy, atau abu-abu). Jangan biarkan warna celana bertabrakan.",
-        "**Pertahankan Model:** Wajah, rambut, bentuk tubuh, dan pose orang dari 'gambar model' HARUS tetap tidak berubah.",
-        "**Pertahankan Latar Belakang:** Seluruh latar belakang dari 'gambar model' HARUS dipertahankan dengan sempurna.",
-    ];
+export const constructVTOPrompt = (garmentInfo: WardrobeItem, texture: string = 'Cotton'): string => {
+    return `Perform a realistic virtual try-on.
+The user has provided an image of a person (first image) and a garment image (second image).
+Dress the person in the provided garment.
+Garment details:
+- Name: ${garmentInfo.name}
+- Category: ${garmentInfo.category}
+- Material/Texture: ${texture} (e.g., Batik fabric)
 
-    if (texture) {
-        rules.push(`**Terapkan Tekstur Secara Realistis:** Kemeja batik baru HARUS dirender dengan tekstur **${texture}** yang fotorealistis. Perhatikan dengan sangat detail bagaimana kain tersebut menjuntai dan terlipat di tubuh model, mencerminkan kualitasnya.`);
-    }
-
-    rules.push("**Keluaran:** Kembalikan HANYA gambar akhir yang telah diedit. Jangan sertakan teks apa pun.");
-
-    const numberedRules = rules.map((rule, index) => `${index + 1}. ${rule}`).join('\n');
-
-    return `Anda adalah AI ahli coba-pakai virtual untuk merek mewah Artisan Batik. Anda akan diberikan 'gambar model' dan 'gambar pakaian batik' (berupa pola kain atau baju). Tugas Anda adalah membuat gambar fotorealistis baru di mana orang dari 'gambar model' mengenakan **KEMEJA BATIK** yang dibuat dari 'gambar pakaian batik' tersebut.
-
-**Aturan Penting:**
-${numberedRules}`;
+Maintain the person's pose, facial features, and the background exactly as they are.
+Ensure the fabric drapes naturally on the body, respecting gravity and folds.
+The lighting on the garment should match the lighting on the person.
+If the garment is a Batik shirt, ensure the pattern is preserved and mapped correctly to the body shape.`;
 };
 
-export const constructPoseVariationPrompt = (activeLayers: OutfitLayer[], poseInstruction: string) => {
-    const outfitDescription = activeLayers
-        .slice(1)
-        .map(layer => `- Sebuah Kemeja Batik yang terbuat dari ${layer.texture || 'bahan premium'}.`)
-        .join('\n');
+export const getOutfitDescription = (layers: OutfitLayer[]): string => {
+    if (layers.length <= 1) return "a basic outfit";
+    
+    const descriptions = layers.slice(1).map(layer => {
+        const name = layer.garment?.name || "garment";
+        const texture = layer.texture || "fabric";
+        const category = layer.garment?.category || "clothing";
+        return `${texture} ${category} (${name})`;
+    });
 
-    return `Anda adalah seorang fotografer fesyen ahli dan AI simulasi fisika untuk merek Artisan Batik. Tugas Anda adalah meregenerasi gambar seseorang dalam pose baru sambil mempertahankan realisme absolut dari kemeja batik mereka.
-
-**Masukan:** Gambar seseorang yang mengenakan Kemeja Batik Artisan Batik.
-
-**Konteks Pakaian:** Orang dalam gambar mengenakan item berikut:
-${outfitDescription || '- Kemeja batik mereka saat ini.'}
-
-**Instruksi:**
-1.  **Pose Baru:** Regenerasi gambar yang menunjukkan orang tersebut dalam pose baru yang elegan dan sama persis ini: "${poseInstruction}".
-2.  **Pertahankan Identitas:** Identitas orang, fitur wajah unik, tipe tubuh, dan gaya latar belakang HARUS tetap IDENTIK dengan gambar asli.
-3.  **Juntaian Realistis (Paling Penting):** Berdasarkan konteks pakaian, simulasikan bagaimana kain batik akan secara realistis menjuntai, terlipat, dan tergantung di tubuh orang tersebut dalam pose baru. Patuhi prinsip-prinsip fisika untuk kain premium buatan tangan.
-4.  **Keluaran:** Kembalikan HANYA gambar akhir yang fotorealistis. Jangan sertakan teks apa pun.`;
+    return descriptions.join(", ");
 };
 
-export const getOutfitDescription = (activeLayers: OutfitLayer[]): string => {
-    return activeLayers
-        .slice(1)
-        .map(layer => `- Sebuah Kemeja Batik dibuat dari ${layer.texture || 'kain premium'}, menampilkan motif batik tulis asli yang rumit.`)
-        .join('\n') || '- Kemeja batik mereka saat ini.';
+export const constructPoseVariationPrompt = (activeLayers: OutfitLayer[], poseInstruction: string): string => {
+    const outfitDescription = getOutfitDescription(activeLayers);
+    
+    return `Generate a new image of the person from the input image, but change their pose.
+Target Pose: ${poseInstruction}.
+The person is wearing: ${outfitDescription}.
+
+Crucial Requirements:
+1. KEEP the same person (face, hair, body type).
+2. KEEP the same outfit details (patterns, textures, style).
+3. KEEP the same background.
+4. ONLY change the pose to match the target instruction.
+5. Ensure the clothing deforms naturally with the new pose.`;
 };
 
 export const constructLookbookPrompt = (
-    outfitDescription: string,
-    shotType: string,
-    variation: string,
+    outfitDescription: string, 
+    shotType: string, 
+    variation: string, 
     customPrompt?: string
 ): string => {
-    const customInstruction = customPrompt 
-        ? `**Instruksi Kustom Pengguna (Prioritas Utama):**\n${customPrompt}`
-        : `**Instruksi Variasi Spesifik untuk Foto Ini:**\n${variation}`;
+    let base = `Fashion editorial photography. Shot type: ${shotType}.
+The model is wearing: ${outfitDescription}.
+Scene/Vibe: ${variation}.`;
 
-    return `
-Anda adalah seorang direktur kreatif AI dan fotografer profesional untuk Artisan Batik, sebuah merek fesyen mewah Indonesia. Keahlian Anda adalah menciptakan gambar-gambar berkualitas editorial yang fotorealistis, terasa otentik, hangat, dan khas Indonesia.
+    if (customPrompt) {
+        base += `\nAdditional instructions: ${customPrompt}`;
+    }
 
-**Tugas:**
-Buat **satu** foto OOTD (Outfit of the Day) yang unik berdasarkan gambar model yang mengenakan kemeja batik tertentu.
-
-**Deskripsi Pakaian:**
-${outfitDescription}
-
-**Gaya & Konteks Umum:**
-${shotType}
-
-${customInstruction}
-
-**Aturan Ketat:**
-1.  **FOTOREALISME ADALAH UTAMA:** Gambar akhir harus terlihat seperti foto asli, bukan hasil generasi AI.
-2.  **JAGA IDENTITAS:** Wajah, rambut, bentuk tubuh, dan etnis model HARUS tetap identik dengan gambar masukan. JANGAN mengubah orangnya.
-3.  **JAGA PAKAIAN:** Kemeja batik HARUS dipertahankan dengan sempurna—pola, warna, tekstur, dan cara jatuhnya di tubuh model.
-4.  **NUANSA INDONESIA:** Adegan, latar belakang, dan pencahayaan baru harus membangkitkan suasana Indonesia yang canggih dan alami. Gunakan elemen-elemen seperti:
-    -   **Pencahayaan:** Hangat, alami, cahaya senja keemasan.
-    -   **Lokasi:** Kafe elegan dengan furnitur rotan, lobi kantor modern dengan aksen kayu jati, taman tropis yang rimbun, beranda rumah tradisional Jawa (joglo), galeri seni minimalis.
-    -   **Properti:** Kerajinan tangan Indonesia, pot keramik, tanaman tropis (monstera, daun pisang).
-5.  **ADEGAN KONTEKSTUAL:** Adegan yang dihasilkan HARUS sesuai dengan gaya & konteks yang dipilih.
-6.  **FORMAT KELUARAN:** Kembalikan HANYA gambar akhir. Tanpa teks, tanpa deskripsi, tanpa markdown.
-`;
+    base += `\nEnsure high quality, photorealistic, 8k resolution, highly detailed texture of the Batik fabric.`;
+    return base;
 };
 
 export const constructRegenerateLookbookPrompt = (
-    outfitDescription: string,
-    shotType: string,
+    outfitDescription: string, 
+    shotType: string, 
     refinementPrompt: string
 ): string => {
-    return `
-Anda adalah seorang editor foto AI dan direktur kreatif untuk merek fesyen mewah Artisan Batik.
+    return `Edit the provided lookbook image.
+Context: ${shotType}.
+The model is wearing: ${outfitDescription}.
+User Refinement Request: ${refinementPrompt}.
 
-**Tugas:**
-Buat ulang gambar yang disediakan berdasarkan instruksi penyempurnaan dari pengguna, sambil mempertahankan esensi dan kualitas aslinya.
-
-**Deskripsi Pakaian dalam Gambar:**
-${outfitDescription}
-
-**Gaya & Konteks Asli:**
-${shotType}
-
-**Instruksi Penyempurnaan dari Pengguna (Prioritas Utama):**
-"${refinementPrompt}"
-
-**Aturan Ketat:**
-1.  **IKUTI INSTRUKSI PENGGUNA:** Terapkan perubahan yang diminta dalam prompt penyempurnaan secara akurat.
-2.  **PERTAHANKAN ELEMEN INTI:** Jaga agar orang dan kemeja batik tetap konsisten dengan gambar asli, kecuali diinstruksikan sebaliknya.
-3.  **REALISME & KUALITAS:** Hasilnya harus fotorealistis dan berkualitas editorial tinggi.
-4.  **FORMAT KELUARAN:** Kembalikan HANYA gambar yang telah dibuat ulang. Tanpa teks.
-`;
+Maintain the identity of the model and the details of the outfit.
+Apply the requested changes (e.g., lighting, background elements, expression) while keeping the core subject consistent.`;
 };
