@@ -7,28 +7,28 @@ import { WardrobeItem, OutfitLayer } from "../types";
 
 export const SHOT_TYPES = {
     'Lookbook (Editorial)': {
-        description: "Artistic, stylized shots for showcasing a collection.",
-        prompt: "Sebuah pemotretan lookbook editorial yang artistik dan canggih. Fokus pada komposisi yang menarik, pencahayaan dramatis, dan pose high-fashion. Pikirkan sampul majalah."
+        description: "Artistic, stylized shots for showcasing a collection with Indonesian aesthetics.",
+        prompt: "Sebuah pemotretan lookbook editorial yang artistik dan canggih dengan sentuhan estetika Nusantara kontemporer. Fokus pada komposisi yang menarik, pencahayaan dramatis, dan pose high-fashion. Latar belakang harus memiliki elemen tekstur atau arsitektur modern Indonesia."
     },
     'Everyday Use (Lifestyle Guide)': {
-        description: "Showcasing the outfit in natural, relatable daily situations.",
-        prompt: "Sebuah adegan gaya hidup yang santai dan alami. Model berada di lingkungan sehari-hari yang nyaman, seperti kafe yang trendi, berjalan-jalan di taman kota, atau menjelajahi pasar lokal. Tangkap momen candid yang terasa otentik."
+        description: "Showcasing the outfit in natural Indonesian daily situations.",
+        prompt: "Sebuah adegan gaya hidup yang santai dan alami di Indonesia. Model berada di lingkungan seperti kafe trendi di Jakarta Selatan, area Senopati, atau berjalan santai di trotoar Bali yang asri dengan tanaman tropis. Tangkap momen candid yang terasa otentik."
     },
     'Office / Work': {
-        description: "Presenting the outfit in a professional, work-related environment.",
-        prompt: "Lingkungan kantor modern yang profesional dan penuh gaya. Latar belakangnya bisa berupa lobi yang dirancang dengan baik, ruang kerja minimalis, atau saat istirahat kopi. Pakaian harus terlihat rapi dan cocok untuk bekerja."
+        description: "Presenting the outfit in a professional Indonesian office environment.",
+        prompt: "Lingkungan kantor modern yang profesional di kawasan bisnis Jakarta (seperti SCBD atau Thamrin). Latar belakangnya bisa berupa lobi gedung tinggi dengan sentuhan kayu, atau ruang kerja minimalis dengan pemandangan kota Jakarta. Pakaian harus terlihat rapi dan berwibawa."
     },
     'Events': {
-        description: "The outfit in the context of a general event or social gathering.",
-        prompt: "Sebuah acara sosial yang meriah atau pertemuan. Suasananya bisa berupa pembukaan galeri seni, pesta kebun sore hari, atau pertemuan santai dengan teman-teman. Fokus pada interaksi dan suasana yang hidup."
+        description: "The outfit in the context of an Indonesian social gathering.",
+        prompt: "Sebuah acara sosial atau kondangan yang meriah namun elegan. Suasananya bisa berupa pesta kebun sore hari di area Menteng atau galeri seni di Yogyakarta. Pencahayaan hangat khas tropis, dekorasi bunga lokal (melati atau anggrek), dan suasana yang hidup."
     },
     'Family Gathering': {
-        description: "Warm, candid shots suitable for family-oriented events.",
-        prompt: "Suasana pertemuan keluarga yang hangat dan intim. Pikirkan momen candid saat perayaan, makan bersama, atau sekadar bersantai di rumah yang nyaman. Pencahayaan harus lembut dan mengundang."
+        description: "Warm, candid shots suitable for Indonesian family events (Arisan/Lebaran).",
+        prompt: "Suasana pertemuan keluarga Indonesia yang hangat dan intim (seperti suasana Lebaran atau Arisan). Latar belakang berupa rumah modern tropis atau rumah bergaya Joglo dengan perabot kayu jati. Pencahayaan lembut, kekeluargaan, dan mengundang."
     },
     'Special Moments (Occasion Guide)': {
-        description: "Elegant, elevated shots for formal events like weddings or ceremonies.",
-        prompt: "Sebuah acara formal yang elegan, seperti pernikahan, upacara, atau pesta malam. Latar belakangnya megah, pencahayaan indah, dan suasananya istimewa. Pakaian harus terlihat sebagai puncak keanggunan."
+        description: "Elegant shots for formal Indonesian events.",
+        prompt: "Sebuah acara formal yang elegan di Indonesia, seperti resepsi pernikahan di gedung mewah atau hotel berbintang di Jakarta/Bali. Latar belakang megah dengan elemen dekorasi gebyok modern atau lampu gantung kristal. Pakaian harus terlihat sebagai puncak keanggunan."
     },
 };
 
@@ -228,7 +228,8 @@ Scene/Vibe: ${variation}.`;
         base += `\nAdditional instructions: ${customPrompt}`;
     }
 
-    base += `\nEnsure high quality, photorealistic, 8k resolution, highly detailed texture of the Batik fabric.`;
+    // Enforce Indonesian vibe globally
+    base += `\nIMPORTANT: The overall atmosphere, environment, and lighting must reflect a high-end, modern Indonesian aesthetic (tropical warm lighting, Indonesian architectural elements, or lush tropical vegetation). Ensure high quality, photorealistic, 8k resolution, highly detailed texture of the Batik fabric.`;
     return base;
 };
 
@@ -243,5 +244,5 @@ The model is wearing: ${outfitDescription}.
 User Refinement Request: ${refinementPrompt}.
 
 Maintain the identity of the model and the details of the outfit.
-Apply the requested changes (e.g., lighting, background elements, expression) while keeping the core subject consistent.`;
+Apply the requested changes (e.g., lighting, background elements, expression) while keeping the core subject and the Indonesian atmosphere consistent.`;
 };
